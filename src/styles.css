@@ -1,0 +1,13 @@
+/* Import all style modules */
+@import './styles/globals.css';
+@import './styles/variables.css';
+@import './styles/animations.css';
+@import './styles/layout.css';
+
+/* Component-specific styles */
+@import './styles/components/sidebar.css';
+@import './styles/components/hero.css';
+@import './styles/components/cards.css';
+@import './styles/components/tools.css';
+@import './styles/components/ai-comparison.css';
+@import './styles/components/footer.css';
