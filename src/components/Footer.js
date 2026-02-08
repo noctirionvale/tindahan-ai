@@ -8,9 +8,9 @@ const Footer = () => {
         <p className="muted footer-text">Your trusted source for unbiased AI explanations.</p>
       </div>
       <ul className="footer-links">
-        <li><a href="javascript:void(0)">Newsletter</a></li>
-        <li><a href="javascript:void(0)">Contact</a></li>
-        <li><a href="javascript:void(0)">Privacy</a></li>
+        <li><button onClick={() => {}}>Newsletter</button></li>
+        <li><button onClick={() => {}}>Contact</button></li>
+        <li><button onClick={() => {}}>Privacy</button></li>
       </ul>
     </footer>
   );
