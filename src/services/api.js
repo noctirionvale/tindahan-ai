@@ -154,7 +154,7 @@ const getEnhancedDemoResponses = (question) => {
           description: 'Question assumptions, explore nuances',
           color: '#ff4fd8',
           icon: '🔍',
-          text: `[DEMO MODE] If you see this, the backend API call failed. Check:\n1. Is node server.js running?\n2. Do you have REACT_APP_GEMINI_API_KEY in .env.local?\n3. Check browser console for errors.\n\nCritical view: "${question}"`
+          text: `[DEMO MODE] If you see this, the backend API call failed. Check:\n1. Is node server.js running?\n2. Do you have REACT_APP_DEEPSEEK_API_KEY in .env.local?\n3. Check browser console for errors.\n\nCritical view: "${question}"`
         }
       ]);
     }, 800);
