@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { fetchAIResponse } from '../services/api';
+import { fetchAIResponse, TEXT_LIMITS } from '../services/api';
 
 const AIComparison = () => {
   const [question, setQuestion] = useState('');
@@ -7,9 +7,22 @@ const AIComparison = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const handleQuestionChange = (e) => {
+    const value = e.target.value;
+    // Limit to max characters
+    if (value.length <= TEXT_LIMITS.questionMax) {
+      setQuestion(value);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!question.trim()) {
       setError('Please enter a question');
+      return;
+    }
+
+    if (question.length > TEXT_LIMITS.questionMax) {
+      setError(`Question must be under ${TEXT_LIMITS.questionMax} characters`);
       return;
     }
 
@@ -31,7 +44,14 @@ const AIComparison = () => {
   const handleAskAnother = () => {
     setQuestion('');
     setResponses([]);
+    setError('');
   };
+
+  // Calculate character count and percentage
+  const charCount = question.length;
+  const maxChars = TEXT_LIMITS.questionMax;
+  const percentage = (charCount / maxChars) * 100;
+  const isNearLimit = percentage > 80;
 
   return (
     <div id="ai-comparison" className="section-padding">
@@ -41,18 +61,75 @@ const AIComparison = () => {
       </div>
 
       <div className="api-notice">
-  💡 Using Deepseek API - Advanced AI perspective comparison
-</div>
+        💡 Using Deepseek API - Advanced AI perspective comparison
+      </div>
 
       <div className="ai-input-section">
-        <textarea
-          id="question-input"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder="Ask anything... (e.g., 'How does AI actually work?' or 'Should I be worried about AI?')"
-          onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
-        />
-        <button id="submit-btn" onClick={handleSubmit} disabled={loading}>
+        <div style={{ position: 'relative' }}>
+          <textarea
+            id="question-input"
+            value={question}
+            onChange={handleQuestionChange}
+            placeholder={`Ask anything... (e.g., 'How does AI actually work?' or 'Should I be worried about AI?')\n\nMax ${maxChars} characters`}
+            onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSubmit()}
+            style={{
+              width: '100%',
+              minHeight: '120px',
+              paddingBottom: '40px' // Space for counter
+            }}
+          />
+          
+          {/* Character Counter */}
+          <div 
+            style={{
+              position: 'absolute',
+              bottom: '10px',
+              right: '15px',
+              fontSize: '0.85rem',
+              color: isNearLimit ? '#ff4fd8' : '#00e5ff',
+              fontWeight: '600',
+              transition: 'color 0.3s ease'
+            }}
+          >
+            {charCount} / {maxChars}
+          </div>
+
+          {/* Progress Bar */}
+          <div 
+            style={{
+              position: 'absolute',
+              bottom: '0',
+              left: '0',
+              right: '0',
+              height: '3px',
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '0 0 8px 8px',
+              overflow: 'hidden'
+            }}
+          >
+            <div 
+              style={{
+                height: '100%',
+                width: `${Math.min(percentage, 100)}%`,
+                background: isNearLimit 
+                  ? 'linear-gradient(90deg, #00e5ff, #ff4fd8)' 
+                  : 'linear-gradient(90deg, #00e5ff, #6a5cff)',
+                transition: 'width 0.3s ease'
+              }}
+            />
+          </div>
+        </div>
+
+        <button 
+          id="submit-btn" 
+          onClick={handleSubmit} 
+          disabled={loading || charCount === 0}
+          style={{
+            marginTop: '1rem',
+            opacity: loading || charCount === 0 ? 0.6 : 1,
+            cursor: loading || charCount === 0 ? 'not-allowed' : 'pointer'
+          }}
+        >
           {loading ? 'Analyzing...' : 'Compare'}
         </button>
       </div>
