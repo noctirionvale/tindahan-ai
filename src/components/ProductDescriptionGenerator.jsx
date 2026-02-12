@@ -312,7 +312,7 @@ Write now:
         {descriptions.length > 0 && (
           <div className="descriptions-grid">
             <div className="results-header">
-              <h3>✅ Tapos na! Your Product Descriptions</h3>
+              <h3>✅ Tapos na! Ito ang Product Descriptions mo</h3>
               <button onClick={handleReset} className="reset-button">
                 Generate Another
               </button>
@@ -372,7 +372,7 @@ Write now:
           <div className="tips-section">
             <h4>💡 Tips para sa Better Descriptions</h4>
             <ul>
-              <li>Include specific details (size, kulay, material)</li>
+              <li>Include specific details (sukat,kulay,mateyal)</li>
               <li>Mention benefits (time-saver, mas maganda, mas matibay)</li>
               <li>Add use cases (perfect for work, travel, regalo)</li>
               <li>Be honest - accurate descriptions = less returns!</li>
