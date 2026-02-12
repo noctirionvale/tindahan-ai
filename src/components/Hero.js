@@ -46,7 +46,6 @@ const Hero = () => {
           </div>
 
           <div className="hero-trust">
-            <p className="trust-text">✨ No credit card required • 5 free generations daily</p>
           </div>
         </div>
       </div>
