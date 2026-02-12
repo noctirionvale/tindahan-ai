@@ -72,30 +72,24 @@ const handleSubmit = async () => {
   prompt = `
 You are a Shopee Philippines product copywriter.
 
+
 STRICT RULES:
-- Output ONLY the product description.
-- DO NOT explain.
-- DO NOT add analysis, perspectives, or headings.
-- DO NOT use emojis.
-- DO NOT use markdown.
-- Use bullet points only.
-
-STYLE:
-- Professional Taglish.
-- Friendly but trustworthy.
-- Optimized for Filipino buyers.
-
-FORMAT:
-Product Name (1 line)
-
-• 5–6 bullet points (features + benefits)
-• Short closing trust line
-
-CONTENT:
-- Product: ${productName}
-- Features: ${features || 'High quality and practical for daily use'}
-
 Write now:
+
+SECTION 1: ANALYTICAL
+(Technical, structured, feature-focused)
+
+SECTION 2: SIMPLIFIED
+(Simple, casual, buyer-friendly)
+
+SECTION 3: CRITICAL
+(Persuasive, objection-handling, trust-building)
+
+Rules:
+- Output ONLY these 3 sections.
+- Do not add commentary.
+- Do not add extra text.
+- Keep each section 3–5 lines.
 `;
 }
  else if (platform === 'lazada') {
@@ -103,28 +97,22 @@ Write now:
 You are a Lazada (LazMall) official store copywriter.
 
 STRICT RULES:
-- Output ONLY the product description.
-- DO NOT explain your thinking.
-- DO NOT include perspectives or commentary.
-- DO NOT use emojis.
-- DO NOT use markdown.
-- Bullet list only.
-
-STYLE:
-- English-dominant with natural Tagalog accents.
-- Corporate, clean, and professional.
-
-FORMAT:
-Product Name (1 line)
-
-• 5–6 bullet points (specifications + benefits)
-• Short quality assurance line
-
-CONTENT:
-- Product: ${productName}
-- Features: ${features || 'High quality, safe, and reliable'}
-
 Write now:
+
+SECTION 1: ANALYTICAL
+(Technical, structured, feature-focused)
+
+SECTION 2: SIMPLIFIED
+(Simple, casual, buyer-friendly)
+
+SECTION 3: CRITICAL
+(Persuasive, objection-handling, trust-building)
+
+Rules:
+- Output ONLY these 3 sections.
+- Do not add commentary.
+- Do not add extra text.
+- Keep each section 3–5 lines.
 `;
 }
  else if (platform === 'tiktok') {
@@ -132,27 +120,22 @@ Write now:
 You are a TikTok Shop product caption writer.
 
 STRICT RULES:
-- Output ONLY the caption.
-- DO NOT explain.
-- DO NOT include analysis or headings.
-- No emojis overload.
-- Max 4 hashtags.
-
-STYLE:
-- Casual Taglish.
-- Short and punchy.
-
-FORMAT:
-Hook sentence (1 line)
-2–3 short benefit lines
-Call to action line
-3–4 hashtags
-
-CONTENT:
-- Product: ${productName}
-- Features: ${features || 'Useful and trending item'}
-
 Write now:
+
+SECTION 1: ANALYTICAL
+(Technical, structured, feature-focused)
+
+SECTION 2: SIMPLIFIED
+(Simple, casual, buyer-friendly)
+
+SECTION 3: CRITICAL
+(Persuasive, objection-handling, trust-building)
+
+Rules:
+- Output ONLY these 3 sections.
+- Do not add commentary.
+- Do not add extra text.
+- Keep each section 3–5 lines.
 `;
 }
 

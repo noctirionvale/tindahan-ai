@@ -1,70 +1,103 @@
 import axios from 'axios';
 
-// NEW: Fetch product descriptions (Simplified for Tindahan)
-export const fetchProductDescriptions = async (prompt) => {
-  console.log('📝 Generating product description...');
+// NEW: Fetch and Parse into 3 Distinct Styles
+export const fetchProductDescriptions = async (basePrompt) => {
+  console.log('📝 Generating 3-style descriptions...');
   
+  const strictPrompt = `${basePrompt}
+
+IMPORTANT OUTPUT FORMAT:
+You MUST provide the response in exactly these 3 sections. Do not add intro text.
+
+SECTION 1: ANALYTICAL
+(Write a detailed, feature-heavy, technical version here.)
+
+SECTION 2: SIMPLIFIED
+(Write a casual, easy-to-read, mass-market version here.)
+
+SECTION 3: CRITICAL
+(Write a hard-selling, persuasive, objection-handling version here.)`;
+
   const maxRetries = 3;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      // NOTE: Ensure your backend endpoint /api/compare is actually running
-      // If you are using a direct DeepSeek integration, this URL might need changing.
-      // For now, we assume the Vercel backend is handling the key.
       const response = await axios.post('/api/compare', {
-        question: prompt
-      }, {
-        timeout: 60000
-      });
+        question: strictPrompt
+      }, { timeout: 60000 });
 
-      if (!response.data.success) {
-        throw new Error('Failed to get response from backend');
-      }
+      if (!response.data.success) throw new Error('Backend Error');
 
-      const responseText = response.data.data;
-      
-      // Stop parsing sections! Just return the clean text.
-      return [{
-        text: cleanDescription(responseText),
-        name: "Generated Description",
-        icon: "✨",
-        color: "#10b981"
-      }];
-      
+      const fullText = response.data.data || "";
+
+      return parseSections(fullText);
+
     } catch (error) {
-      console.error(`❌ Attempt ${attempt} failed:`, error.message);
-      
-      if (attempt < maxRetries) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
+      console.error(`Attempt ${attempt} failed:`, error);
+      if (attempt < maxRetries) await new Promise(r => setTimeout(r, 2000));
     }
   }
-  
-  // Fallback if API fails
+
   return getDemoProductDescriptions();
 };
 
-// Simple cleaner
-const cleanDescription = (text) => {
-  return text
-    .replace(/###\s*\[.*?\]/g, '') 
-    .replace(/\*\*/g, '') 
-    .replace(/^["']|["']$/g, '') // Remove surrounding quotes
-    .trim();
+// PARSER
+const parseSections = (text) => {
+  const analyticalMatch = text.match(/SECTION 1: ANALYTICAL\s*([\s\S]*?)(?=SECTION 2:|$)/i);
+  const simplifiedMatch = text.match(/SECTION 2: SIMPLIFIED\s*([\s\S]*?)(?=SECTION 3:|$)/i);
+  const criticalMatch = text.match(/SECTION 3: CRITICAL\s*([\s\S]*?)(?=$)/i);
+
+  const clean = (str) =>
+    str ? str.trim().replace(/\*\*/g, '') : "Content generation failed.";
+
+  return [
+    {
+      style: "ANALYTICAL",
+      title: "Technical & Detailed",
+      text: clean(analyticalMatch ? analyticalMatch[1] : text),
+      icon: "📊",
+      color: "#8b5cf6"
+    },
+    {
+      style: "SIMPLIFIED",
+      title: "Casual & Friendly",
+      text: clean(simplifiedMatch ? simplifiedMatch[1] : ""),
+      icon: "💡",
+      color: "#10b981"
+    },
+    {
+      style: "CRITICAL",
+      title: "Persuasive & Viral",
+      text: clean(criticalMatch ? criticalMatch[1] : ""),
+      icon: "🔥",
+      color: "#f43f5e"
+    }
+  ];
 };
 
-// Fallback Demo Data (Professional Taglish)
+// DEMO MODE
 const getDemoProductDescriptions = () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          text: "[DEMO MODE: API Error] 🔴 Connectivity Issue. \n\nAng Product na ito ay perfect para sa daily use! Siguradong matibay at sulit ang pera mo. Subukan na para maniwala! (Please check your API Key)",
-          name: "System Offline",
-          icon: "⚠️",
-          color: "#ff6b6b"
-        }
-      ]);
-    }, 800);
-  });
+  return [
+    {
+      style: "ANALYTICAL",
+      title: "Technical & Detailed",
+      text: "Demo: High-spec features with technical explanation.",
+      icon: "📊",
+      color: "#8b5cf6"
+    },
+    {
+      style: "SIMPLIFIED",
+      title: "Casual & Friendly",
+      text: "Demo: Madali gamitin at sulit sa araw-araw.",
+      icon: "💡",
+      color: "#10b981"
+    },
+    {
+      style: "CRITICAL",
+      title: "Persuasive & Viral",
+      text: "Demo: Bakit mo kailangan ito? Dahil ito ang best choice sa price at quality.",
+      icon: "🔥",
+      color: "#f43f5e"
+    }
+  ];
 };
