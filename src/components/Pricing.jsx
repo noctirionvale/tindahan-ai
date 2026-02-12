@@ -5,7 +5,7 @@ const Pricing = () => {
   const plans = [
     {
       name: 'Free',
-      price: '$0',
+      price: '₱0',
       period: 'forever',
       description: 'Perfect for trying out tindahan.ai',
       features: [
@@ -20,7 +20,7 @@ const Pricing = () => {
     },
     {
       name: 'Starter',
-      price: '$19',
+      price: '₱1,100',
       period: 'per month',
       description: 'For serious sellers & creators',
       features: [
@@ -37,7 +37,7 @@ const Pricing = () => {
     },
     {
       name: 'Pro',
-      price: '$49',
+      price: '₱2,700',
       period: 'per month',
       description: 'For teams and agencies',
       features: [
@@ -55,7 +55,7 @@ const Pricing = () => {
     },
     {
       name: 'Business',
-      price: '$99',
+      price: '₱5,500',
       period: 'per month',
       description: 'For scaling businesses',
       features: [
