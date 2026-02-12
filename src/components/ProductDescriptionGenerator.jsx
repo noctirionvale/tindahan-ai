@@ -5,7 +5,7 @@ import './ProductGenerator.css';
 const ProductDescriptionGenerator = () => {
   const [productName, setProductName] = useState('');
   const [features, setFeatures] = useState('');
-  const [platforms, setPlatforms] = useState(['shopee', 'lazada', 'tiktok']); // All selected by default
+  const [platforms, setPlatforms] = useState(['shopee', 'lazada', 'tiktok']);
   const [descriptions, setDescriptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -16,7 +16,6 @@ const ProductDescriptionGenerator = () => {
     recentProducts: []
   });
 
-  // Load analytics from localStorage on mount
   useEffect(() => {
     const savedAnalytics = localStorage.getItem('tindahan_analytics');
     if (savedAnalytics) {
@@ -24,7 +23,6 @@ const ProductDescriptionGenerator = () => {
     }
   }, []);
 
-  // Save analytics to localStorage
   const saveAnalytics = (newData) => {
     const updated = { ...analytics, ...newData };
     setAnalytics(updated);
@@ -38,15 +36,8 @@ const ProductDescriptionGenerator = () => {
       setPlatforms([...platforms, platform]);
     }
   };
-  
-  // Platform info
-  const platformInfo = {
-    shopee: { name: 'Shopee', icon: '🛍️', color: '#ee4d2d' },
-    lazada: { name: 'Lazada', icon: '🏪', color: '#0f156d' },
-    tiktok: { name: 'TikTok Shop', icon: '🎵', color: '#000000' }
-  };
 
-const handleSubmit = async () => {
+  const handleSubmit = async () => {
     if (!productName.trim()) {
       setError('Please enter a product name');
       return;
@@ -62,90 +53,77 @@ const handleSubmit = async () => {
     setDescriptions([]);
 
     try {
-      // Create platform-specific prompts
       const platformDescriptions = [];
       
       for (const platform of platforms) {
         let prompt = '';
         
+        // CLEAN TEMPLATE - No funny descriptions!
+        const basePrompt = `You are a product description writer for ${platform.toUpperCase()}.
+
+STRICT RULES:
+- Output ONLY the product description.
+- DO NOT explain your thinking.
+- DO NOT include perspectives, analysis, or commentary.
+- DO NOT use headings like "Analytical Perspective" or "SEO-Focused".
+- DO NOT mention AI.
+- DO NOT include markdown formatting (no ### or **).
+- Keep it concise and sales-focused.
+
+STYLE:
+- English-dominant with natural Tagalog accents (kung kailangan).
+- Professional, clear, and trustworthy.
+- Optimized for Filipino online shoppers.
+- Bullet-point format only.
+
+CONTENT:
+- Focus on benefits and key features.
+- Avoid medical or exaggerated claims.
+- Avoid unnecessary adjectives.
+- No fluff or over-the-top language.
+
+FORMAT:
+Product Name (1 line)
+• Bullet list of 5-7 key features/benefits
+• Short closing line with trust signal (official store / sealed / authentic / COD available)
+
+Now write a product description for:
+Product: ${productName}
+${features ? `Features: ${features}` : ''}`;
+
         if (platform === 'shopee') {
-  prompt = `
-You are a Shopee Philippines product copywriter.
+          prompt = basePrompt + `
 
+Platform-specific notes for Shopee:
+- Include trust signals like "COD available" or "Official store"
+- Mention Free shipping if applicable
+- Keep professional but friendly`;
+        } else if (platform === 'lazada') {
+          prompt = basePrompt + `
 
-STRICT RULES:
-Write now:
+Platform-specific notes for Lazada:
+- More formal and specification-focused
+- Include warranty/guarantee if applicable
+- Emphasize authenticity`;
+        } else if (platform === 'tiktok') {
+          prompt = basePrompt + `
 
-SECTION 1: ANALYTICAL
-(Technical, structured, feature-focused)
-
-SECTION 2: SIMPLIFIED
-(Simple, casual, buyer-friendly)
-
-SECTION 3: CRITICAL
-(Persuasive, objection-handling, trust-building)
-
-Rules:
-- Output ONLY these 3 sections.
-- Do not add commentary.
-- Do not add extra text.
-- Keep each section 3–5 lines.
-`;
-}
- else if (platform === 'lazada') {
-  prompt = `
-You are a Lazada (LazMall) official store copywriter.
-
-STRICT RULES:
-Write now:
-
-SECTION 1: ANALYTICAL
-(Technical, structured, feature-focused)
-
-SECTION 2: SIMPLIFIED
-(Simple, casual, buyer-friendly)
-
-SECTION 3: CRITICAL
-(Persuasive, objection-handling, trust-building)
-
-Rules:
-- Output ONLY these 3 sections.
-- Do not add commentary.
-- Do not add extra text.
-- Keep each section 3–5 lines.
-`;
-}
- else if (platform === 'tiktok') {
-  prompt = `
-You are a TikTok Shop product caption writer.
-
-STRICT RULES:
-Write now:
-
-SECTION 1: ANALYTICAL
-(Technical, structured, feature-focused)
-
-SECTION 2: SIMPLIFIED
-(Simple, casual, buyer-friendly)
-
-SECTION 3: CRITICAL
-(Persuasive, objection-handling, trust-building)
-
-Rules:
-- Output ONLY these 3 sections.
-- Do not add commentary.
-- Do not add extra text.
-- Keep each section 3–5 lines.
-`;
-}
-
+Platform-specific notes for TikTok Shop:
+- Shorter (5 bullets max)
+- Gen Z/Millennial friendly but still professional
+- Add trending appeal without being cringe`;
+        }
 
         const response = await fetchProductDescriptions(prompt);
         
-        // Add platform info to each response
-        const platformResponse = response.map(desc => ({
+        // Add platform info and labels
+        const platformResponse = response.map((desc, index) => ({
           ...desc,
-          platform: platform
+          platform: platform,
+          name: `${platform.charAt(0).toUpperCase() + platform.slice(1)} Description`,
+          description: 'Clean, professional, ready to use',
+          icon: platform === 'shopee' ? '🛍️' : platform === 'lazada' ? '🏪' : '🎵',
+          color: platform === 'shopee' ? '#ee4d2d' : platform === 'lazada' ? '#0f156d' : '#000000'
         }));
         
         platformDescriptions.push(...platformResponse);
@@ -166,7 +144,7 @@ Rules:
           timestamp: new Date().toISOString(),
           characterCount: platformDescriptions.reduce((sum, d) => sum + d.text.length, 0)
         },
-        ...analytics.recentProducts.slice(0, 9) // Keep last 10
+        ...analytics.recentProducts.slice(0, 9)
       ];
 
       saveAnalytics({
@@ -200,22 +178,23 @@ Rules:
   const charCount = productName.length + features.length;
   const maxChars = 500;
 
-  
+  const platformInfo = {
+    shopee: { name: 'Shopee', icon: '🛍️', color: '#ee4d2d' },
+    lazada: { name: 'Lazada', icon: '🏪', color: '#0f156d' },
+    tiktok: { name: 'TikTok Shop', icon: '🎵', color: '#000000' }
+  };
 
   return (
     <div className="product-generator-section" id="product-generator">
       <div className="product-generator-content">
         
-        {/* Header */}
         <div className="generator-header">
           <h2>📦 Product Description Generator</h2>
-          <p>Generate unique, platform-optimized descriptions para sa Shopee, Lazada & TikTok Shop!</p>
+          <p>Generate professional, ready-to-use descriptions para sa Shopee, Lazada & TikTok Shop!</p>
         </div>
 
-        {/* Input Form */}
         <div className="generator-form">
           
-          {/* Product Name */}
           <div className="form-group">
             <label htmlFor="product-name">Ano ang Produkto? *</label>
             <input
@@ -229,7 +208,6 @@ Rules:
             />
           </div>
 
-          {/* Features */}
           <div className="form-group">
             <label htmlFor="features">Key Features (optional)</label>
             <textarea
@@ -246,7 +224,6 @@ Rules:
             </div>
           </div>
 
-          {/* Platform Selector - CHECKBOXES */}
           <div className="form-group">
             <label>Saan mo ibebenta? (Select all that apply)</label>
             <div className="platform-checkboxes">
@@ -266,7 +243,6 @@ Rules:
             </div>
           </div>
 
-          {/* Generate Button */}
           <button 
             onClick={handleSubmit} 
             disabled={loading || !productName.trim() || platforms.length === 0}
@@ -276,32 +252,28 @@ Rules:
           </button>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="error-box">
             {error}
           </div>
         )}
 
-        {/* Loading */}
         {loading && (
           <div className="loading-box">
             <div className="loading-spinner"></div>
-            <p>Ginagawa ang product descriptions mo...</p>
+            <p>Creating professional product descriptions...</p>
           </div>
         )}
 
-        {/* Generated Descriptions */}
         {descriptions.length > 0 && (
           <div className="descriptions-grid">
             <div className="results-header">
-              <h3>✅ Tapos na! Ito na ang Product Descriptions mo😊</h3>
+              <h3>✅ Tapos na! Your Product Descriptions</h3>
               <button onClick={handleReset} className="reset-button">
                 Generate Another
               </button>
             </div>
 
-            {/* Group by platform */}
             {platforms.map(platform => {
               const platformDescs = descriptions.filter(d => d.platform === platform);
               if (platformDescs.length === 0) return null;
@@ -350,16 +322,15 @@ Rules:
           </div>
         )}
 
-        {/* Tips Section */}
         {descriptions.length === 0 && !loading && (
           <div className="tips-section">
             <h4>💡 Tips para sa Better Descriptions</h4>
             <ul>
-              <li>Include specific details (sukat,kulay,materyal)</li>
-              <li>Mention benefits (time-saver,mas maganda,mas matibay)</li>
-              <li>Add use cases (perfect for work,travel,regalo)</li>
-              <li>Be honest - accurate descriptions = less returns!</li>
-              <li>Maglagay ng emojis para eye-catching! ✨</li>
+              <li>Be specific - include size, color, material</li>
+              <li>Focus on benefits, not just features</li>
+              <li>Mention use cases (work, travel, gifts)</li>
+              <li>Be honest to reduce returns</li>
+              <li>Add trust signals (official, sealed, COD)</li>
             </ul>
           </div>
         )}
