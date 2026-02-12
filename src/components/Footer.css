@@ -1,0 +1,330 @@
+/* ========================================
+   FOOTER - MODERN PINOY STYLE
+   ======================================== */
+
+.footer-section {
+  position: relative;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 10, 15, 0.95) 0%,
+    rgba(5, 5, 10, 1) 100%
+  );
+  border-top: 1px solid rgba(0, 229, 255, 0.2);
+  overflow: hidden;
+  color: #fff;
+}
+
+/* Decorative Wave */
+.footer-wave {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  overflow: hidden;
+  line-height: 0;
+  pointer-events: none;
+}
+
+.footer-wave svg {
+  display: block;
+  width: calc(100% + 1.3px);
+  height: 80px;
+  fill: rgba(0, 229, 255, 0.05);
+}
+
+/* Footer Content */
+.footer-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 80px 2rem 2rem 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+/* ========== MAIN FOOTER ========== */
+.footer-main {
+  display: grid;
+  /* Updated to 3 columns to match the actual JSX structure */
+  grid-template-columns: 2fr 1fr 1.5fr; 
+  gap: 4rem;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-column h4 {
+  color: #00e5ff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.5px;
+}
+
+/* ========== ABOUT SECTION ========== */
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.footer-logo {
+  height: 50px;
+  width: auto;
+  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.3));
+}
+
+.footer-tagline {
+  color: #10b981;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  max-width: 350px;
+}
+
+/* ========== SOCIAL LINKS ========== */
+.social-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #e0e0e0;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.social-link:hover {
+  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.social-link.twitter:hover {
+  border-color: #1DA1F2;
+  box-shadow: 0 0 12px rgba(29, 161, 242, 0.2);
+}
+
+.social-link.facebook:hover {
+  border-color: #1877F2;
+  box-shadow: 0 0 12px rgba(24, 119, 242, 0.2);
+}
+
+.social-link.tiktok:hover {
+  border-color: #fe2c55;
+  box-shadow: 0 0 12px rgba(254, 44, 85, 0.2);
+}
+
+.social-link svg {
+  flex-shrink: 0;
+}
+
+/* ========== NEWSLETTER ========== */
+.newsletter-form {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.newsletter-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: rgb(254, 255, 255);
+  border: 1px solid rgba(14, 1, 1, 0);
+  border-radius: 8px;
+  color: #140101f3;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.3s ease;
+  min-width: 0; /* Prevents flex flex-overflow */
+}
+
+.newsletter-input:focus {
+  border-color: #00e5ff;
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.2);
+}
+
+.newsletter-input::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.newsletter-btn {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #10b981 0%, #00e5ff 100%);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.newsletter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+/* ========== FOOTER BOTTOM ========== */
+.footer-bottom {
+  padding-top: 2rem;
+}
+
+.footer-bottom-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.copyright {
+  color: #bdbdbd;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.footer-legal {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.footer-legal a {
+  color: #bdbdbd;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.3s ease;
+}
+
+.footer-legal a:hover {
+  color: #00e5ff;
+}
+
+.separator {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.8rem;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+  .footer-main {
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+  .footer-column.about {
+    grid-column: 1 / -1; /* Makes the brand span full width on tablet */
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    padding: 60px 1.5rem 2rem 1.5rem;
+  }
+
+  .footer-main {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    text-align: center;
+  }
+
+  .footer-brand {
+    justify-content: center;
+  }
+  
+  .footer-tagline {
+    margin: 0 auto 1rem auto;
+  }
+
+  .social-links {
+    align-items: stretch;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  .newsletter-form {
+    flex-direction: column;
+    max-width: 350px;
+    margin: 0 auto;
+  }
+
+  .newsletter-btn {
+    width: 100%;
+  }
+
+  .footer-bottom-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .footer-legal {
+    justify-content: center;
+  }
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes footerGlow {
+  0%, 100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.footer-section::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, transparent 70%);
+  animation: footerGlow 4s ease-in-out infinite;
+  pointer-events: none;
+}
+/* ========== NEWSLETTER SUCCESS STATE ========== */
+.newsletter-success {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 8px;
+  color: #10b981;
+  font-size: 0.95rem;
+  font-weight: 600;
+  animation: slideFadeUp 0.4s ease forwards;
+}
+
+.newsletter-success svg {
+  flex-shrink: 0;
+  color: #10b981;
+}
+
+@keyframes slideFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
