@@ -55,62 +55,64 @@ const ProductDescriptionGenerator = () => {
     setDescriptions([]);
 
     try {
-      // Create platform-specific prompts
       const platformDescriptions = [];
       
       for (const platform of platforms) {
         let prompt = '';
         
+        // BETTER PROMPTS: Strict "Professional Taglish" instructions
         if (platform === 'shopee') {
-          prompt = `Generate a Shopee product description for:
-Product: ${productName}
-Features: ${features || 'Not specified'}
-
-Requirements:
-- 80-120 words
-- Include emojis (⭐✨💯)
-- Keyword-rich for SEO
-- Highlight benefits
-- Add urgency (Limited stock!)
-- Filipino-friendly tone`;
+          prompt = `Act as a top-rated Shopee Philippines Seller. Write a product description for: "${productName}".
+          Features: ${features || 'General high quality features'}
+          
+          RULES:
+          1. Language: Taglish (Professional but friendly).
+          2. Structure: Use bullet points for features.
+          3. Tone: Trustworthy, helpful, exciting (but not "jeje").
+          4. SEO: Include keywords naturally.
+          5. Add a "Bakit Sulit?" section.`;
+          
         } else if (platform === 'lazada') {
-          prompt = `Generate a Lazada product description for:
-Product: ${productName}
-Features: ${features || 'Not specified'}
-
-Requirements:
-- 100-150 words
-- Professional tone
-- Feature-focused
-- Include specifications
-- Trust-building language`;
+          prompt = `Act as a Lazada Mall (LazMall) Official Store. Write a product description for: "${productName}".
+          Features: ${features || 'General high quality features'}
+          
+          RULES:
+          1. Language: English-dominant with natural Tagalog accents (Corporate/Professional).
+          2. Focus on Specifications and Quality Assurance.
+          3. Use a clear list format.
+          4. No emojis, keep it clean and professional.`;
+          
         } else if (platform === 'tiktok') {
-          prompt = `Generate a TikTok Shop product description for:
-Product: ${productName}
-Features: ${features || 'Not specified'}
-
-Requirements:
-- 50-80 words (short & punchy!)
-- Viral/trendy language
-- Gen Z/Millennial appeal
-- Use trending phrases
-- Include call-to-action
-- Emoji-heavy 🔥💖✨`;
+          prompt = `Act as a viral TikTok Shop Affiliate. Write a script/caption for: "${productName}".
+          Features: ${features || 'General high quality features'}
+          
+          RULES:
+          1. Language: Casual Taglish (Gen-Z friendly but readable).
+          2. Hook: Start with a question or problem (e.g., "Hirap ka ba maghanap ng...?").
+          3. Call to Action: "Click the yellow basket now!"
+          4. Use 3-4 relevant hashtags only.`;
         }
 
+        // Call the API
         const response = await fetchProductDescriptions(prompt);
         
-        // Add platform info to each response
+        // Map the result
         const platformResponse = response.map(desc => ({
           ...desc,
-          platform: platform
+          platform: platform,
+          // Assign specific titles/colors based on platform
+          name: platform === 'shopee' ? 'Shopee Optimized' : 
+                platform === 'lazada' ? 'LazMall Standard' : 'TikTok Viral Caption',
+          icon: platformInfo[platform].icon,
+          color: platformInfo[platform].color
         }));
         
         platformDescriptions.push(...platformResponse);
       }
 
       setDescriptions(platformDescriptions);
-
+      
+      // ... (Keep your analytics update code here) ...
       // Update Analytics
       const newPlatformUsage = { ...analytics.platformUsage };
       platforms.forEach(platform => {
@@ -124,7 +126,7 @@ Requirements:
           timestamp: new Date().toISOString(),
           characterCount: platformDescriptions.reduce((sum, d) => sum + d.text.length, 0)
         },
-        ...analytics.recentProducts.slice(0, 9) // Keep last 10
+        ...analytics.recentProducts.slice(0, 9)
       ];
 
       saveAnalytics({
@@ -134,13 +136,12 @@ Requirements:
       });
 
     } catch (err) {
-      setError('Failed to generate descriptions. Please try again.');
+      setError('Failed to generate. Please check your connection.');
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
-
   const handleCopy = (text, index) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
