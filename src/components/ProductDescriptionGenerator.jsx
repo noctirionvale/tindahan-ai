@@ -312,7 +312,7 @@ Write now:
         {descriptions.length > 0 && (
           <div className="descriptions-grid">
             <div className="results-header">
-              <h3>✅ Tapos na! Ito ang Product Descriptions mo</h3>
+              <h3>✅ Tapos na! Ito na ang Product Descriptions mo😊</h3>
               <button onClick={handleReset} className="reset-button">
                 Generate Another
               </button>
