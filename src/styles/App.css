@@ -151,7 +151,7 @@ body::after {
 }
 
 .logo-image {
-  height: 120px;
+  height: 95px;
   width: auto;
   filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.4));
   transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -525,7 +525,7 @@ body::after {
   }
   
   .logo-image {
-    height: 80px;
+    height: 30px;
   }
 }
 
