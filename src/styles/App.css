@@ -539,3 +539,80 @@ body::after {
     filter: blur(20px);
   }
 }
+
+/* ========================================
+   USER BAR - FIXED (Doesn't cover logo)
+   Replace the previous CSS with this
+   ======================================== */
+
+.user-bar {
+  position: fixed;
+  top: 1.5rem;
+  left: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.8rem 1.5rem;
+  background: rgba(30, 41, 59, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(203, 213, 225, 0.2);
+  border-radius: 50px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.user-bar span {
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.logout-btn {
+  padding: 0.6rem 1.5rem;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.5);
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}
+
+/* Don't add padding-top to content - logo stays in place */
+.content-center {
+  padding-top: 0;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .user-bar {
+    top: 1rem;
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+    padding: 0.6rem 1rem;
+    gap: 1rem;
+    justify-content: space-between;
+  }
+
+  .user-bar span {
+    font-size: 0.85rem;
+  }
+
+  .logout-btn {
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+  }
+}
