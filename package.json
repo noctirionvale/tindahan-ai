@@ -20,7 +20,7 @@
     "yaml": "^2.8.2"
   },
   "scripts": {
-  "start": "concurrently \"node server.js\" \"set PORT=3000 && react-scripts start\"",
+  "start": "node server.js",
   "dev": "concurrently \"node server.js\" \"set PORT=3000 && react-scripts start\"",
   "build": "react-scripts build",
     "test": "react-scripts test",
