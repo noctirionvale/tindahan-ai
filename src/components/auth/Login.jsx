@@ -24,7 +24,7 @@ const Login = ({ onLoginSuccess, switchToSignup }) => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', formData);
+      const response = await axios.post('https://tindahan-ai-production.up.railway.app/api/auth/login', formData);
 
       if (response.data.success) {
         // Save token to localStorage
