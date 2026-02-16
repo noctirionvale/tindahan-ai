@@ -11,24 +11,14 @@ require('dotenv').config();
 
 const app = express();
 
-// ============================================
-// CORS & MIDDLEWARE
-// ============================================
+// Middleware
 app.use(cors({
-  origin: [
-    'https://tindahan-ai.vercel.app',
-    'http://localhost:3000',
-    'http://localhost:5000'
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: '*',  // Allow all origins temporarily for testing
+  credentials: true
 }));
 app.use(express.json());
 
-// ============================================
-// POSTGRESQL CONNECTION POOL
-// ============================================
+// PostgreSQL Connection Pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
@@ -46,6 +36,7 @@ pool.query('SELECT NOW()', (err, res) => {
 // ============================================
 // AUTH MIDDLEWARE
 // ============================================
+
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -204,8 +195,9 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
 });
 
 // ============================================
-// DEEPSEEK API ROUTE
+// DEEPSEEK API ROUTE (Your existing code)
 // ============================================
+
 app.post('/api/compare', async (req, res) => {
   try {
     const { question } = req.body;
@@ -217,6 +209,8 @@ app.post('/api/compare', async (req, res) => {
       });
     }
 
+    // Your Deepseek API code here
+    // Example response:
     const OpenAI = require('openai');
     
     const client = new OpenAI({
@@ -253,6 +247,7 @@ app.post('/api/compare', async (req, res) => {
 // ============================================
 // START SERVER
 // ============================================
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
