@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Tindahan.AI",
+  "name": "Tindahan.AI - AI Tools for Pinoy Sellers",
+  "description": "Generate product descriptions and video scripts in seconds. AI-powered content creation for Filipino online sellers.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +11,30 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait",
+  "theme_color": "#ff6b35",
+  "background_color": "#1a1a2e",
+  "scope": "/",
+  "categories": ["business", "productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Generate Description",
+      "short_name": "Generate",
+      "description": "Create product description",
+      "url": "/?action=generate",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    }
+  ]
 }

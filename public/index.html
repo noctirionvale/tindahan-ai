@@ -3,25 +3,95 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
     <meta http-equiv="Content-Security-Policy" 
         content="default-src 'self';
                  script-src 'self' 'unsafe-eval' 'unsafe-inline' https:;
                  style-src 'self' 'unsafe-inline' https:;
                  font-src 'self' https:;
                  connect-src 'self' http://localhost:5000 https://tindahan-ai-production.up.railway.app https://api.deepseek.com https://api.web3forms.com;
-img-src 'self' data: https:;" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
+                 img-src 'self' data: https:;" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#ff6b35" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Tindahan.AI" />
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="AI-powered content creation for Filipino online sellers. Generate product descriptions and video scripts in seconds." />
+    <meta name="keywords" content="AI, Philippines, online selling, product description, content creation, Filipino sellers" />
+    <meta name="author" content="Tindahan.AI" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tindahan-ai.vercel.app/" />
+    <meta property="og:title" content="Tindahan.AI - AI Tools for Pinoy Sellers" />
+    <meta property="og:description" content="Generate product descriptions and video scripts in seconds with AI" />
+    <meta property="og:image" content="%PUBLIC_URL%/logo512.png" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://tindahan-ai.vercel.app/" />
+    <meta property="twitter:title" content="Tindahan.AI - AI Tools for Pinoy Sellers" />
+    <meta property="twitter:description" content="Generate product descriptions and video scripts in seconds with AI" />
+    <meta property="twitter:image" content="%PUBLIC_URL%/logo512.png" />
+    
+    <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="%PUBLIC_URL%/logo192.png" />
+    
+    <!-- Manifest -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <title>Tindahan.ai</title>
+    
+    <title>Tindahan.AI - AI Tools for Pinoy Sellers</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker
+            .register('%PUBLIC_URL%/service-worker.js')
+            .then((registration) => {
+              console.log('✅ Service Worker registered:', registration);
+              
+              // Check for updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('🔄 New version available! Refresh to update.');
+                  }
+                });
+              });
+            })
+            .catch((error) => {
+              console.log('❌ Service Worker registration failed:', error);
+            });
+        });
+      }
+
+      // Install prompt
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        console.log('💾 Install prompt ready');
+        
+        // You can show your custom install button here
+        // Example: document.getElementById('installButton').style.display = 'block';
+      });
+
+      window.addEventListener('appinstalled', () => {
+        console.log('✅ PWA installed successfully!');
+        deferredPrompt = null;
+      });
+    </script>
   </body>
 </html>
