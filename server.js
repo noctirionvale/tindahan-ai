@@ -13,7 +13,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: '*',  // Allow all origins temporarily for testing
+  origin: 'https://tindahan-ai.vercel.app'
   credentials: true
 }));
 app.use(express.json());
