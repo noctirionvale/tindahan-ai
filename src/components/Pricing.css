@@ -266,3 +266,294 @@
     padding: 2rem;
   }
 }
+/* ============================================
+   ADD THESE TO YOUR EXISTING Pricing.css
+   ============================================ */
+
+/* Pricing Badge */
+.pricing-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff6b35, #ff8c42);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+/* Currency Switcher */
+.currency-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.currency-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.currency-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.currency-btn:hover {
+  background: rgba(255, 107, 53, 0.2);
+  border-color: #ff6b35;
+  color: #fff;
+}
+
+.currency-btn.active {
+  background: linear-gradient(135deg, #ff6b35, #ff8c42);
+  border-color: transparent;
+  color: white;
+  font-weight: 600;
+}
+
+/* PHP Equivalent */
+.php-equivalent {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4px;
+}
+
+/* Coming Soon Banner */
+.coming-soon-banner {
+  margin: 60px 0 40px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+}
+
+.coming-soon-banner h3 {
+  color: #fff;
+  font-size: 24px;
+  margin-bottom: 30px;
+}
+
+.coming-soon-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.coming-soon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: transform 0.2s ease;
+}
+
+.coming-soon-item:hover { transform: translateY(-4px); }
+.coming-soon-item span { font-size: 32px; }
+.coming-soon-item p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-card {
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 40px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.modal-close:hover { background: rgba(255, 255, 255, 0.2); }
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.modal-header h2 {
+  color: #fff;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.modal-price {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ff6b35;
+}
+
+.modal-price span {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.modal-php {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4px;
+}
+
+/* Payment Sections */
+.payment-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.payment-section h3 {
+  color: #fff;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.payment-section p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+/* GCash QR */
+.gcash-qr-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.gcash-qr {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 3px solid #00a651;
+}
+
+/* Payment Steps */
+.payment-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.step {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+/* Email Button */
+.email-button {
+  display: block;
+  text-align: center;
+  background: linear-gradient(135deg, #00a651, #00c961);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 8px;
+  transition: all 0.2s ease;
+}
+
+.email-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 166, 81, 0.4);
+}
+
+.email-button.intl {
+  background: linear-gradient(135deg, #ff6b35, #ff8c42);
+}
+
+.email-button.intl:hover {
+  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+}
+
+.upgrade-note {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-size: 12px !important;
+  font-style: italic;
+}
+
+/* Divider */
+.payment-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 13px;
+}
+
+.payment-divider::before,
+.payment-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .coming-soon-grid { grid-template-columns: repeat(2, 1fr); }
+  .modal-card { padding: 24px; }
+  .modal-header h2 { font-size: 20px; }
+  .gcash-qr { width: 150px; height: 150px; }
+  .currency-switcher { gap: 6px; }
+  .currency-btn { padding: 5px 10px; font-size: 12px; }
+}
