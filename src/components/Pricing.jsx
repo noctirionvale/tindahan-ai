@@ -234,15 +234,12 @@ const Pricing = () => {
 
             {/* Filipino Payment */}
             <div className="payment-section ph-payment">
-              <h3>🇵🇭 Filipino Users - Pay via GCash</h3>
               <p>Scan the QR code below with your GCash app:</p>
               <div className="gcash-qr-wrapper">
-                <img src="/gcash-qr.jpg" alt="GCash QR Code" className="gcash-qr" />
+              <img src="/gcash-qr.jpg" alt="GCash QR Code" className="gcash-qr" />
               </div>
               <div className="payment-steps">
-                <div className="step">1️⃣ Scan QR code with GCash app</div>
-                <div className="step">2️⃣ Send <strong>₱{selectedPlan.phpPrice.toLocaleString()}</strong></div>
-                <div className="step">3️⃣ Email proof of payment + your account email to:</div>
+                <div className="step">Email proof of payment + your account email to:</div>
                 <a
                   href={`mailto:spawntaneousbulb@gmail.com?subject=Tindahan.AI ${selectedPlan.name} Upgrade&body=Hi! I just paid for the ${selectedPlan.name} plan (₱${selectedPlan.phpPrice}/month). My Tindahan.AI account email is: [YOUR EMAIL HERE]. Please upgrade my account. Thank you!`}
                   className="email-button"
