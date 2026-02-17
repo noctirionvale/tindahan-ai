@@ -55,7 +55,7 @@ const Pricing = () => {
       ],
       cta: 'Start Free',
       popular: false,
-      color: '#64748b',
+      color: '#6da3ee00',
       planKey: 'free'
     },
     {
@@ -93,8 +93,8 @@ const Pricing = () => {
         'Dedicated support'
       ],
       cta: 'Upgrade Now',
-      popular: false,
-      color: '#8b5cf6',
+      popular: true,
+      color: '#ff6b35',
       planKey: 'premium'
     }
   ];
@@ -115,7 +115,6 @@ const Pricing = () => {
         <div className="pricing-header">
           <h2>Simple, Transparent Pricing</h2>
           <p>Start free. Scale as you grow. Cancel anytime.</p>
-          <div className="pricing-badge">🇵🇭 Made for Filipino Sellers</div>
 
           {/* Currency Switcher */}
           <div className="currency-switcher">
