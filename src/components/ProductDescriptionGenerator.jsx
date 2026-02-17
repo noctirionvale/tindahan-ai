@@ -6,6 +6,7 @@ const ProductDescriptionGenerator = () => {
   const [productName, setProductName] = useState('');
   const [features, setFeatures] = useState('');
   const [platforms, setPlatforms] = useState(['shopee', 'lazada', 'tiktok']);
+// Amazon, Etsy, eBay are off by default - user can select them
   const [descriptions, setDescriptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,7 +21,10 @@ const ProductDescriptionGenerator = () => {
   const platformInfo = {
     shopee: { name: 'Shopee', icon: '🛍️', color: '#ee4d2d' },
     lazada: { name: 'Lazada', icon: '🏪', color: '#0f156d' },
-    tiktok: { name: 'TikTok Shop', icon: '🎵', color: '#000000' }
+    tiktok: { name: 'TikTok Shop', icon: '🎵', color: '#000000' },
+    amazon: { name: 'Amazon', icon: '📦', color: '#ff9900' },
+    etsy: { name: 'Etsy', icon: '🎨', color: '#f1641e' },
+    ebay: { name: 'eBay', icon: '🏷️', color: '#0064d2' }
   };
 
   // 2. Lifecycle & Persistence
@@ -80,13 +84,19 @@ const ProductDescriptionGenerator = () => {
       for (const platform of platforms) {
         let prompt = '';
 
-        if (platform === 'shopee') {
-          prompt = `You are a Shopee Philippines product copywriter. Output ONLY the description. Style: Professional Taglish. Format: Product Name + Bullet points. Product: ${productName}. Features: ${features || 'High quality'}`;
-        } else if (platform === 'lazada') {
-          prompt = `You are a Lazada official copywriter. Style: Corporate English/Taglish. Format: Specs + Benefits. Product: ${productName}. Features: ${features || 'Safe and reliable'}`;
-        } else if (platform === 'tiktok') {
-          prompt = `You are a TikTok Shop caption writer. Style: Casual/Viral. Product: ${productName}. Features: ${features || 'Trending item'}`;
-        }
+       if (platform === 'shopee') {
+  prompt = `You are a Shopee Philippines product copywriter. Output ONLY the description. Style: Professional Taglish. Format: Product Name + Bullet points. Product: ${productName}. Features: ${features || 'High quality'}`;
+} else if (platform === 'lazada') {
+  prompt = `You are a Lazada official copywriter. Style: Corporate English/Taglish. Format: Specs + Benefits. Product: ${productName}. Features: ${features || 'Safe and reliable'}`;
+} else if (platform === 'tiktok') {
+  prompt = `You are a TikTok Shop caption writer. Style: Casual/Viral. Product: ${productName}. Features: ${features || 'Trending item'}`;
+} else if (platform === 'amazon') {
+  prompt = `You are an Amazon US product listing expert. Output ONLY the listing. Style: Professional English. Format: Title + 5 bullet points + short description. SEO optimized. Product: ${productName}. Features: ${features || 'High quality product'}`;
+} else if (platform === 'etsy') {
+  prompt = `You are an Etsy shop listing expert. Output ONLY the listing. Style: Warm, handcrafted, story-driven English. Format: Catchy title + description with story + materials/details. Product: ${productName}. Features: ${features || 'Unique handcrafted item'}`;
+} else if (platform === 'ebay') {
+  prompt = `You are an eBay listing expert. Output ONLY the listing. Style: Clear, factual, buyer-focused English. Format: Title + condition + description + why buy from us. Product: ${productName}. Features: ${features || 'Quality item'}`;
+}
 
         const response = await fetchProductDescriptions(prompt);
         const results = Array.isArray(response) ? response : [{ text: response }];
@@ -94,8 +104,11 @@ const ProductDescriptionGenerator = () => {
         const platformResponse = results.map(desc => ({
           ...desc,
           platform,
-          name: platform === 'shopee' ? 'Shopee Optimized' : 
-                platform === 'lazada' ? 'LazMall Standard' : 'TikTok Viral Caption',
+          name: platform === 'shopee' ? 'Shopee Optimized' :
+      platform === 'lazada' ? 'LazMall Standard' :
+      platform === 'tiktok' ? 'TikTok Viral Caption' :
+      platform === 'amazon' ? 'Amazon Listing' :
+      platform === 'etsy' ? 'Etsy Shop Listing' : 'eBay Listing',
           icon: platformInfo[platform].icon,
           color: platformInfo[platform].color
         }));
