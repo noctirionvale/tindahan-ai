@@ -55,6 +55,65 @@ const authenticateToken = (req, res, next) => {
 };
 
 // ============================================
+// USAGE TRACKING & LIMITS
+// ============================================
+
+// Plan limits
+const PLAN_LIMITS = {
+  free: 5,
+  starter: 50,
+  pro: 200,
+  business: 999999 // Unlimited
+};
+
+// Check and update usage
+async function checkUsageLimit(userId) {
+  const result = await pool.query(
+    'SELECT plan_type, generations_today, last_generation_date FROM users WHERE id = $1',
+    [userId]
+  );
+
+  if (result.rows.length === 0) {
+    throw new Error('User not found');
+  }
+
+  const user = result.rows[0];
+  const today = new Date().toISOString().split('T')[0];
+  const lastDate = user.last_generation_date ? user.last_generation_date.toISOString().split('T')[0] : null;
+
+  // Reset count if it's a new day
+  if (lastDate !== today) {
+    await pool.query(
+      'UPDATE users SET generations_today = 0, last_generation_date = CURRENT_DATE WHERE id = $1',
+      [userId]
+    );
+    return { allowed: true, remaining: PLAN_LIMITS[user.plan_type] - 1, limit: PLAN_LIMITS[user.plan_type], plan: user.plan_type };
+  }
+
+  // Check if user has exceeded limit
+  const limit = PLAN_LIMITS[user.plan_type] || PLAN_LIMITS.free;
+  const remaining = limit - user.generations_today;
+
+  if (user.generations_today >= limit) {
+    return { allowed: false, remaining: 0, limit, plan: user.plan_type };
+  }
+
+  return { allowed: true, remaining: remaining - 1, limit, plan: user.plan_type };
+}
+
+// Increment usage count
+async function incrementUsage(userId) {
+  await pool.query(
+    `UPDATE users 
+     SET generations_today = generations_today + 1, 
+         total_generations = total_generations + 1,
+         last_generation_date = CURRENT_DATE 
+     WHERE id = $1`,
+    [userId]
+  );
+}
+
+// ============================================
 // AUTH ROUTES
 // ============================================
 
@@ -175,7 +234,7 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/auth/me', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, email, name, created_at, last_login FROM users WHERE id = $1',
+      'SELECT id, email, name, created_at, last_login, plan_type FROM users WHERE id = $1',
       [req.user.id]
     );
 
@@ -195,10 +254,10 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
 });
 
 // ============================================
-// DEEPSEEK API ROUTE (Your existing code)
+// DEEPSEEK API ROUTE (WITH USAGE TRACKING)
 // ============================================
 
-app.post('/api/compare', async (req, res) => {
+app.post('/api/compare', authenticateToken, async (req, res) => {
   try {
     const { question } = req.body;
 
@@ -209,8 +268,20 @@ app.post('/api/compare', async (req, res) => {
       });
     }
 
-    // Your Deepseek API code here
-    // Example response:
+    // Check usage limit
+    const usageCheck = await checkUsageLimit(req.user.id);
+
+    if (!usageCheck.allowed) {
+      return res.status(429).json({
+        success: false,
+        error: 'Daily limit reached',
+        limit: usageCheck.limit,
+        plan: usageCheck.plan,
+        message: `You've reached your daily limit of ${usageCheck.limit} generations. Upgrade your plan for more!`
+      });
+    }
+
+    // Call Deepseek API
     const OpenAI = require('openai');
     
     const client = new OpenAI({
@@ -230,9 +301,17 @@ app.post('/api/compare', async (req, res) => {
 
     const responseText = completion.choices[0].message.content;
 
+    // Increment usage count
+    await incrementUsage(req.user.id);
+
     res.json({
       success: true,
-      data: responseText
+      data: responseText,
+      usage: {
+        remaining: usageCheck.remaining,
+        limit: usageCheck.limit,
+        plan: usageCheck.plan
+      }
     });
 
   } catch (error) {
@@ -241,6 +320,47 @@ app.post('/api/compare', async (req, res) => {
       success: false,
       error: 'Failed to get AI response'
     });
+  }
+});
+
+// ============================================
+// GET USER USAGE STATS
+// ============================================
+
+app.get('/api/usage', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT plan_type, generations_today, last_generation_date, total_generations 
+       FROM users WHERE id = $1`,
+      [req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = result.rows[0];
+    const limit = PLAN_LIMITS[user.plan_type] || PLAN_LIMITS.free;
+    const today = new Date().toISOString().split('T')[0];
+    const lastDate = user.last_generation_date ? user.last_generation_date.toISOString().split('T')[0] : null;
+
+    // Reset if new day
+    const generationsToday = (lastDate === today) ? user.generations_today : 0;
+
+    res.json({
+      success: true,
+      usage: {
+        plan: user.plan_type,
+        today: generationsToday,
+        limit: limit,
+        remaining: limit - generationsToday,
+        total: user.total_generations
+      }
+    });
+
+  } catch (error) {
+    console.error('Usage stats error:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -254,4 +374,5 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Database: PostgreSQL`);
   console.log(`🔐 Auth: JWT`);
+  console.log(`📊 Plan Limits: Free=${PLAN_LIMITS.free}, Starter=${PLAN_LIMITS.starter}, Pro=${PLAN_LIMITS.pro}`);
 });
