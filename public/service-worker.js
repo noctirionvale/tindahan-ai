@@ -1,5 +1,5 @@
 // Tindahan.AI Service Worker
-const CACHE_NAME = 'tindahan-ai-v1';
+const CACHE_NAME = 'tindahan-ai-v2';
 const urlsToCache = [
   '/',
   '/static/css/main.css',
