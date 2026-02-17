@@ -128,8 +128,12 @@ const ProductDescriptionGenerator = () => {
       });
 
     } catch (err) {
-      setError('Failed to generate. Please check your connection.');
-      console.error(err);
+  if (err.message?.includes('limit') || err.message?.includes('upgrade')) {
+    setError('🚫 ' + err.message + ' Click "See Pricing" to upgrade!');
+  } else {
+    setError('Failed to generate. Please check your connection.');
+  }
+  console.error(err);
     } finally {
       setLoading(false);
     }

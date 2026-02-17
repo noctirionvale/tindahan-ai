@@ -40,9 +40,15 @@ const response = await axios.post('https://tindahan-ai-production.up.railway.app
       return parseSections(fullText);
 
     } catch (error) {
-      console.error(`Attempt ${attempt} failed:`, error);
-      if (attempt < maxRetries) await new Promise(r => setTimeout(r, 2000));
-    }
+  console.error(`Attempt ${attempt} failed:`, error);
+  
+  // Check if it's a usage limit error
+  if (error.response?.status === 429) {
+    throw new Error(error.response.data.message || 'Daily limit reached! Please upgrade your plan.');
+  }
+  
+  if (attempt < maxRetries) await new Promise(r => setTimeout(r, 2000));
+}
   }
 
   return getDemoProductDescriptions();
