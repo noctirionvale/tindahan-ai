@@ -22,9 +22,16 @@ SECTION 3: CRITICAL
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const response = await axios.post('/api/compare', {
-        question: strictPrompt
-      }, { timeout: 60000 });
+      const token = localStorage.getItem('tindahan_token');
+
+const response = await axios.post('https://tindahan-ai-production.up.railway.app/api/compare', {
+  question: strictPrompt
+}, { 
+  timeout: 60000,
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
 
       if (!response.data.success) throw new Error('Backend Error');
 
