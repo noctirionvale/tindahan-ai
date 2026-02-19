@@ -2,6 +2,7 @@
 // TINDAHAN.AI - Backend Server with PostgreSQL Auth
 // ============================================
 
+const Replicate = require('replicate');
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
@@ -376,3 +377,180 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🔐 Auth: JWT`);
   console.log(`📊 Plan Limits: Free=${PLAN_LIMITS.free}, Starter=${PLAN_LIMITS.starter}, Pro=${PLAN_LIMITS.pro}`);
 });
+
+// ============================================
+// ADD THESE SECTIONS TO YOUR WORKING server.js
+// ============================================
+
+// At the top with other dependencies:
+const Replicate = require('replicate');
+
+// After PayMongo configuration:
+const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
+const replicate = new Replicate({
+  auth: REPLICATE_API_TOKEN,
+});
+
+// Update PLAN_LIMITS to include video generations:
+const PLAN_LIMITS = {
+  free: { descriptions: 15, videos: 1 },        // 15 descriptions, 1 video
+  starter: { descriptions: 200, videos: 10 },   // 200 descriptions, 10 videos
+  premium: { descriptions: 999999, videos: 999999 } // Unlimited
+};
+
+// ============================================
+// VIDEO GENERATION ROUTES
+// ============================================
+
+// Generate video from product image
+app.post('/api/video/generate', authenticateToken, async (req, res) => {
+  try {
+    const { imageUrl } = req.body;
+
+    if (!imageUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'Product image URL is required'
+      });
+    }
+
+    // Check video generation limit
+    const userResult = await pool.query(
+      'SELECT plan_type, video_generations_today, last_video_date, total_video_generations FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = userResult.rows[0];
+    const today = new Date().toISOString().split('T')[0];
+    const lastDate = user.last_video_date ? user.last_video_date.toISOString().split('T')[0] : null;
+
+    // Reset count if new day
+    let videosToday = user.video_generations_today || 0;
+    if (lastDate !== today) {
+      videosToday = 0;
+      await pool.query(
+        'UPDATE users SET video_generations_today = 0, last_video_date = CURRENT_DATE WHERE id = $1',
+        [req.user.id]
+      );
+    }
+
+    // Check limit
+    const limit = PLAN_LIMITS[user.plan_type]?.videos || PLAN_LIMITS.free.videos;
+    
+    if (user.plan_type === 'free' && (user.total_video_generations || 0) >= 1) {
+      return res.status(429).json({
+        success: false,
+        error: 'Free video limit reached',
+        message: 'You\'ve used your 1 free video generation! Upgrade to Starter (₱450/month) for 10 videos/month.'
+      });
+    }
+
+    if (user.plan_type !== 'free' && videosToday >= limit) {
+      return res.status(429).json({
+        success: false,
+        error: 'Daily video limit reached',
+        message: `You've reached your daily limit of ${limit} videos.`
+      });
+    }
+
+    console.log('🎬 Generating video for user:', req.user.id);
+
+    // Generate video using Replicate's Stable Video Diffusion
+    const output = await replicate.run(
+      "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
+      {
+        input: {
+          cond_aug: 0.02,
+          decoding_t: 7,
+          input_image: imageUrl,
+          video_length: "14_frames_with_svd",
+          sizing_strategy: "maintain_aspect_ratio",
+          motion_bucket_id: 127,
+          frames_per_second: 6
+        }
+      }
+    );
+
+    // Increment usage
+    await pool.query(
+      `UPDATE users 
+       SET video_generations_today = video_generations_today + 1,
+           total_video_generations = total_video_generations + 1,
+           last_video_date = CURRENT_DATE
+       WHERE id = $1`,
+      [req.user.id]
+    );
+
+    console.log('✅ Video generated successfully');
+
+    res.json({
+      success: true,
+      videoUrl: output,
+      usage: {
+        remaining: user.plan_type === 'free' ? 0 : limit - videosToday - 1,
+        limit: limit,
+        plan: user.plan_type
+      }
+    });
+
+  } catch (error) {
+    console.error('Video generation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate video',
+      details: error.message
+    });
+  }
+});
+
+// Get video generation stats
+app.get('/api/video/usage', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT plan_type, video_generations_today, last_video_date, total_video_generations 
+       FROM users WHERE id = $1`,
+      [req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = result.rows[0];
+    const today = new Date().toISOString().split('T')[0];
+    const lastDate = user.last_video_date ? user.last_video_date.toISOString().split('T')[0] : null;
+    
+    const videosToday = (lastDate === today) ? (user.video_generations_today || 0) : 0;
+    const limit = PLAN_LIMITS[user.plan_type]?.videos || PLAN_LIMITS.free.videos;
+
+    res.json({
+      success: true,
+      usage: {
+        plan: user.plan_type,
+        today: videosToday,
+        limit: limit,
+        remaining: user.plan_type === 'free' ? (1 - (user.total_video_generations || 0)) : (limit - videosToday),
+        total: user.total_video_generations || 0
+      }
+    });
+
+  } catch (error) {
+    console.error('Video usage stats error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ============================================
+// DATABASE MIGRATION FOR VIDEO TRACKING
+// ============================================
+// Run this SQL in Supabase:
+/*
+ALTER TABLE users 
+ADD COLUMN IF NOT EXISTS video_generations_today INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS last_video_date DATE,
+ADD COLUMN IF NOT EXISTS total_video_generations INTEGER DEFAULT 0;
+*/

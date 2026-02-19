@@ -7,6 +7,7 @@ import Analytics from './components/Analytics';
 import Pricing from './components/Pricing';
 import Footer from './components/Footer';
 import './styles/App.css';
+import VideoGenerator from './components/VideoGenerator';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -82,6 +83,7 @@ function App() {
         {/* Main Content */}
         <Hero />
         <ProductDescriptionGenerator />
+        <VideoGenerator />
         <Analytics />
         <Pricing />
         <Footer />
