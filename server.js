@@ -23,6 +23,7 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
+// Replicate Initialization (Only once)
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
 });
@@ -38,8 +39,9 @@ const deepseekClient = new OpenAI({
 
 const PLAN_LIMITS = {
   free: { descriptions: 15, videos: 1 },
-  starter: { descriptions: 50, videos: 10 }, // You mentioned ₱450/mo for 10 videos
+  starter: { descriptions: 200, videos: 10 }, 
   pro: { descriptions: 200, videos: 50 },
+  premium: { descriptions: 999999, videos: 999999 }, // Unified "Premium" as requested
   business: { descriptions: 999999, videos: 999999 }
 };
 
@@ -60,10 +62,6 @@ const authenticateToken = (req, res, next) => {
   }
 };
 
-/**
- * Generic Usage Checker
- * type: 'descriptions' or 'videos'
- */
 async function checkAndIncrementUsage(userId, type) {
   const result = await pool.query(
     'SELECT plan_type, generations_today, video_generations_today, last_generation_date, last_video_date, total_video_generations FROM users WHERE id = $1',
@@ -78,7 +76,6 @@ async function checkAndIncrementUsage(userId, type) {
   const lastDate = isVideo ? (user.last_video_date?.toISOString().split('T')[0]) : (user.last_generation_date?.toISOString().split('T')[0]);
   let countToday = isVideo ? (user.video_generations_today || 0) : (user.generations_today || 0);
 
-  // Reset if new day
   if (lastDate !== today) {
     countToday = 0;
     const resetField = isVideo ? 'video_generations_today = 0, last_video_date = CURRENT_DATE' : 'generations_today = 0, last_generation_date = CURRENT_DATE';
@@ -87,16 +84,14 @@ async function checkAndIncrementUsage(userId, type) {
 
   const limit = PLAN_LIMITS[user.plan_type]?.[type] || PLAN_LIMITS.free[type];
 
-  // Special check for Free Video (Lifetime 1)
   if (user.plan_type === 'free' && isVideo && (user.total_video_generations >= 1)) {
-    return { allowed: false, message: 'Free video limit reached. Upgrade for more!' };
+    return { allowed: false, message: "You've used your 1 free video generation! Upgrade to Starter (₱450/month) for 10 videos/month." };
   }
 
   if (countToday >= limit) {
     return { allowed: false, message: `Daily ${type} limit reached.` };
   }
 
-  // Update DB
   const updateField = isVideo 
     ? 'video_generations_today = video_generations_today + 1, total_video_generations = total_video_generations + 1, last_video_date = CURRENT_DATE'
     : 'generations_today = generations_today + 1, total_generations = total_generations + 1, last_generation_date = CURRENT_DATE';
@@ -110,7 +105,7 @@ async function checkAndIncrementUsage(userId, type) {
 // ROUTES
 // ============================================
 
-// --- AUTH ---
+// --- AUTH ROUTES ---
 app.post('/api/auth/signup', async (req, res) => {
   const { email, password, name } = req.body;
   const hash = await bcrypt.hash(password, 10);
@@ -130,9 +125,7 @@ app.post('/api/auth/login', async (req, res) => {
   if (result.rows.length && await bcrypt.compare(password, result.rows[0].password_hash)) {
     const token = jwt.sign({ id: result.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.json({ success: true, token, user: { id: result.rows[0].id, name: result.rows[0].name } });
-  } else {
-    res.status(400).json({ error: 'Invalid credentials' });
-  }
+  } else { res.status(400).json({ error: 'Invalid credentials' }); }
 });
 
 // --- AI GENERATION ---
@@ -150,18 +143,30 @@ app.post('/api/compare', authenticateToken, async (req, res) => {
 
 app.post('/api/video/generate', authenticateToken, async (req, res) => {
   const { imageUrl } = req.body;
+  if (!imageUrl) return res.status(400).json({ error: 'Product image URL is required' });
+
   const usage = await checkAndIncrementUsage(req.user.id, 'videos');
   if (!usage.allowed) return res.status(429).json({ error: usage.message });
 
   const output = await replicate.run(
     "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
-    { input: { input_image: imageUrl, video_length: "14_frames_with_svd", frames_per_second: 6 } }
+    {
+      input: {
+        cond_aug: 0.02,
+        decoding_t: 7,
+        input_image: imageUrl,
+        video_length: "14_frames_with_svd",
+        sizing_strategy: "maintain_aspect_ratio",
+        motion_bucket_id: 127,
+        frames_per_second: 6
+      }
+    }
   );
 
   res.json({ success: true, videoUrl: output, usage });
 });
 
-// --- STATS ---
+// --- USAGE STATS ---
 app.get('/api/usage', authenticateToken, async (req, res) => {
   const result = await pool.query('SELECT plan_type, generations_today, video_generations_today, total_generations, total_video_generations FROM users WHERE id = $1', [req.user.id]);
   const user = result.rows[0];
