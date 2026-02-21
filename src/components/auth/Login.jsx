@@ -216,28 +216,7 @@ const Login = ({ onLoginSuccess, switchToSignup }) => {
                 Continue with Apple
               </button>
             </div>
-
-            const [showForgotPassword, setShowForgotPassword] = useState(false);
-
-// Add this button in your login form:
-<button 
-  type="button"
-  onClick={() => setShowForgotPassword(true)}
-  className="forgot-password-link"
->
-  Forgot Password?
-</button>
-
-// Add modal:
-{showForgotPassword && (
-  <div className="modal-overlay" onClick={() => setShowForgotPassword(false)}>
-    <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-      <h3>Reset Password</h3>
-      <p>Email: spawntaneousbulb@gmail.com with your account email</p>
-      <button onClick={() => setShowForgotPassword(false)}>Close</button>
-    </div>
-  </div>
-)}
+            
 
             <p className="modal-note">
               <small>🚧 Social login coming soon! For now, please use email/password.</small>
