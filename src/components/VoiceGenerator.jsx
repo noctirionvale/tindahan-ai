@@ -198,17 +198,24 @@ const VoiceGenerator = () => {
             </div>
 
             <div className="option-group">
-              <label>Voice Gender</label>
-              <select 
-                value={gender} 
-                onChange={(e) => setGender(e.target.value)}
-                className="select-input"
-              >
-                <option value="FEMALE">👩 Female</option>
-                <option value="MALE">👨 Male</option>
-              </select>
-            </div>
-          </div>
+  <label>Voice Style</label>
+  <select 
+    value={gender} 
+    onChange={(e) => setGender(e.target.value)}
+    className="select-input"
+  >
+    <optgroup label="🇺🇸 English Voices">
+      <option value="FEMALE">Female (Warm)</option>
+      <option value="MALE">Male (Professional)</option>
+      <option value="FEMALE-CASUAL">Female (Casual)</option>
+      <option value="MALE-CASUAL">Male (Casual)</option>
+    </optgroup>
+    <optgroup label="🇵🇭 Tagalog Voices">
+      <option value="FIL-FEMALE">Babae (Female)</option>
+      <option value="FIL-MALE">Lalaki (Male)</option>
+    </optgroup>
+  </select>
+</div>
 
           {/* Generate Button */}
           {script && !generating && !generatedAudio && (
@@ -232,7 +239,9 @@ const VoiceGenerator = () => {
           {generatedAudio && (
             <div className="audio-preview-section">
               <h3>✨ Your Voiceover is Ready!</h3>
-              <audio src={generatedAudio} controls className="audio-player" />
+              <audio src={generatedAudio} controls autoPlay className="audio-player">
+  Your browser doesn't support audio playback.
+</audio>
               <div className="audio-actions">
                 <button onClick={downloadAudio} className="download-btn">
                   ⬇️ Download Audio

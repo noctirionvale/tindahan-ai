@@ -206,15 +206,17 @@ app.post('/api/voice/generate', authenticateToken, async (req, res) => {
     const usage = await checkAndIncrementUsage(req.user.id, 'voices');
     if (!usage.allowed) return res.status(429).json({ error: usage.message });
 
-    // Map language to Google TTS voice name
-    const voiceMap = {
-      'en-US': { name: 'en-US-Neural2-F', languageCode: 'en-US' },
-      'en-US-male': { name: 'en-US-Neural2-D', languageCode: 'en-US' },
-      'fil-PH': { name: 'fil-PH-Wavenet-A', languageCode: 'fil-PH' },
-      'fil-PH-male': { name: 'fil-PH-Wavenet-C', languageCode: 'fil-PH' }
-    };
+    // Map gender/style to Google TTS voices
+const voiceMap = {
+  'FEMALE': { name: 'en-US-Neural2-F', languageCode: 'en-US' },      // Warm female
+  'MALE': { name: 'en-US-Neural2-D', languageCode: 'en-US' },        // Professional male
+  'FEMALE-CASUAL': { name: 'en-US-Neural2-C', languageCode: 'en-US' }, // Casual female
+  'MALE-CASUAL': { name: 'en-US-Neural2-A', languageCode: 'en-US' },   // Casual male
+  'FIL-FEMALE': { name: 'fil-PH-Wavenet-A', languageCode: 'fil-PH' },  // Tagalog female
+  'FIL-MALE': { name: 'fil-PH-Wavenet-C', languageCode: 'fil-PH' }     // Tagalog male
+};
 
-    const voiceKey = language + (gender === 'MALE' ? '-male' : '');
+const selectedVoice = voiceMap[gender] || voiceMap['FEMALE'];
     const selectedVoice = voiceMap[voiceKey] || voiceMap['en-US'];
 
     const request = {
