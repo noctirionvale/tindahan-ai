@@ -18,25 +18,14 @@ const VoiceGenerator = () => {
     fetchUsage();
   }, []);
 
-  // Sync gender with language
-  useEffect(() => {
-    if (language === 'fil-PH' && !gender.startsWith('FIL-')) {
-      setGender('FIL-FEMALE');
-    } else if (language === 'en-US' && gender.startsWith('FIL-')) {
-      setGender('FEMALE');
-    }
-  }, [language]);
-
   const fetchUsage = async () => {
     try {
       const token = localStorage.getItem('tindahan_token');
       const response = await axios.get(
         'https://tindahan-ai-production.up.railway.app/api/voice/usage',
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { 'Authorization': `Bearer ${token}` } }
       );
-
       if (response.data.success) {
-        console.log('Usage data:', response.data.usage);
         setUsage(response.data.usage);
       }
     } catch (err) {
@@ -62,15 +51,14 @@ const VoiceGenerator = () => {
           features,
           language: language.startsWith('fil') ? 'fil' : 'en'
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { 'Authorization': `Bearer ${token}` } }
       );
 
       if (response.data.success) {
-        setScript(response.data.script || response.data.data);
+        setScript(response.data.script);
       }
     } catch (err) {
       setError('Failed to generate script. Please try again.');
-      console.error('Script generation error:', err);
     } finally {
       setScriptGenerating(false);
     }
@@ -90,15 +78,20 @@ const VoiceGenerator = () => {
       const response = await axios.post(
         'https://tindahan-ai-production.up.railway.app/api/voice/generate',
         { text: script, language, gender },
-        {
-          headers: { Authorization: `Bearer ${token}` },
+        { 
+          headers: { 'Authorization': `Bearer ${token}` },
           timeout: 30000
         }
       );
 
       if (response.data.success) {
         setGeneratedAudio(response.data.audioUrl);
-        fetchUsage();
+        setUsage({
+          ...usage,
+          remaining: response.data.usage.remaining,
+          today: (usage?.today || 0) + 1,
+          total: (usage?.total || 0) + 1
+        });
       }
     } catch (err) {
       if (err.response?.status === 429) {
@@ -121,28 +114,28 @@ const VoiceGenerator = () => {
     document.body.removeChild(link);
   };
 
-  const getRemainingGenerations = () => {
-    if (!usage) return null;
-    if (usage.remaining !== undefined) return usage.remaining;
-    if (usage.descriptions?.remaining !== undefined) return usage.descriptions.remaining;
-    return null;
-  };
-
   return (
     <section id="voice-generator" className="voice-generator-section">
       <div className="voice-generator-content">
+        
         <div className="voice-generator-header">
           <h2>🎙️ AI Voice Generator</h2>
-          <p>Create professional voiceovers for your shop!</p>
-
-          {usage && getRemainingGenerations() !== null && (
+          <p>Create professional voiceovers in English & Tagalog!</p>
+          
+          {usage && (
             <div className="usage-badge">
-              <span>🎤 {getRemainingGenerations()} generations left today</span>
+              {usage.plan === 'free' ? (
+                <span>🎤 {usage.remaining} free voice remaining</span>
+              ) : (
+                <span>🎤 {usage.remaining}/{usage.limit} voices left today</span>
+              )}
             </div>
           )}
         </div>
 
         <div className="voice-generator-container">
+          
+          {/* Product Info */}
           <div className="input-section">
             <div className="input-group">
               <label>Product Name *</label>
@@ -160,68 +153,83 @@ const VoiceGenerator = () => {
               <textarea
                 value={features}
                 onChange={(e) => setFeatures(e.target.value)}
-                placeholder="e.g., Noise cancellation, 20-hour battery..."
+                placeholder="e.g., Noise cancellation, 20-hour battery, waterproof..."
                 className="text-area"
                 rows="3"
               />
             </div>
 
-            <button
+            <button 
               onClick={handleGenerateScript}
               disabled={scriptGenerating || !productName}
               className="generate-script-btn"
             >
-              {scriptGenerating ? 'Generating...' : '✨ Auto-Generate Script'}
+              {scriptGenerating ? 'Generating Script...' : '✨ Auto-Generate Script'}
             </button>
           </div>
 
+          {/* Script Editor */}
           <div className="script-section">
             <label>Script</label>
             <textarea
               value={script}
               onChange={(e) => setScript(e.target.value)}
-              placeholder="Write your script here..."
+              placeholder="Write your voiceover script here or generate one automatically..."
               className="script-textarea"
               rows="6"
             />
-            <div className="script-info">{script.length} / 5000 chars</div>
+            <div className="script-info">
+              {script.length} / 5000 characters
+            </div>
           </div>
 
+          {/* Voice Options */}
           <div className="voice-options">
             <div className="option-group">
               <label>Language</label>
-              <select value={language} onChange={(e) => setLanguage(e.target.value)} className="select-input">
+              <select 
+                value={language} 
+                onChange={(e) => setLanguage(e.target.value)}
+                className="select-input"
+              >
                 <option value="en-US">🇺🇸 English (US)</option>
                 <option value="fil-PH">🇵🇭 Tagalog (Filipino)</option>
               </select>
             </div>
 
+            {/* NEW VOICE STYLE DROPDOWN */}
             <div className="option-group">
               <label>Voice Style</label>
-              <select value={gender} onChange={(e) => setGender(e.target.value)} className="select-input">
-                {language === 'en-US' ? (
-                  <>
-                    <option value="FEMALE">Female (Warm)</option>
-                    <option value="MALE">Male (Professional)</option>
-                    <option value="FEMALE-CASUAL">Female (Casual)</option>
-                    <option value="MALE-CASUAL">Male (Casual)</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="FIL-FEMALE">Babae (Female)</option>
-                    <option value="FIL-MALE">Lalaki (Male)</option>
-                  </>
-                )}
+              <select 
+                value={gender} 
+                onChange={(e) => setGender(e.target.value)}
+                className="select-input"
+              >
+                <optgroup label="🇺🇸 English Voices">
+                  <option value="FEMALE">Female (Warm)</option>
+                  <option value="MALE">Male (Professional)</option>
+                  <option value="FEMALE-CASUAL">Female (Casual)</option>
+                  <option value="MALE-CASUAL">Male (Casual)</option>
+                </optgroup>
+                <optgroup label="🇵🇭 Tagalog Voices">
+                  <option value="FIL-FEMALE">Babae (Female)</option>
+                  <option value="FIL-MALE">Lalaki (Male)</option>
+                </optgroup>
               </select>
             </div>
           </div>
 
+          {/* Generate Button */}
           {script && !generating && !generatedAudio && (
-            <button onClick={handleGenerateVoice} className="generate-voice-btn">
+            <button 
+              onClick={handleGenerateVoice} 
+              className="generate-voice-btn"
+            >
               Generate Voice 🎤
             </button>
           )}
 
+          {/* Generating Status */}
           {generating && (
             <div className="generating-status">
               <div className="loading-spinner"></div>
@@ -229,13 +237,16 @@ const VoiceGenerator = () => {
             </div>
           )}
 
+          {/* Audio Preview */}
           {generatedAudio && (
             <div className="audio-preview-section">
               <h3>✨ Your Voiceover is Ready!</h3>
-              <audio src={generatedAudio} controls autoPlay className="audio-player" />
+              <audio src={generatedAudio} controls className="audio-player" />
               <div className="audio-actions">
-                <button onClick={downloadAudio} className="download-btn">⬇️ Download</button>
-                <button
+                <button onClick={downloadAudio} className="download-btn">
+                  ⬇️ Download Audio
+                </button>
+                <button 
                   onClick={() => {
                     setGeneratedAudio(null);
                     setScript('');
@@ -244,14 +255,51 @@ const VoiceGenerator = () => {
                   }}
                   className="generate-another-btn"
                 >
-                  New Script
+                  Generate Another
                 </button>
               </div>
             </div>
           )}
 
-          {error && <div className="error-message">{error}</div>}
+          {/* Error */}
+          {error && !generating && (
+            <div className="error-message">
+              {error}
+              {error.includes('limit') && (
+                <a href="#pricing" className="upgrade-link"> Upgrade Now →</a>
+              )}
+            </div>
+          )}
+
         </div>
+
+        {/* Use Cases */}
+        <div className="use-cases">
+          <h3>Perfect For:</h3>
+          <div className="cases-grid">
+            <div className="case">
+              <span className="case-icon">🎬</span>
+              <h4>Video Ads</h4>
+              <p>Add voiceover to product videos</p>
+            </div>
+            <div className="case">
+              <span className="case-icon">📱</span>
+              <h4>TikTok & Reels</h4>
+              <p>Engaging social media content</p>
+            </div>
+            <div className="case">
+              <span className="case-icon">🛍️</span>
+              <h4>Shopee Live</h4>
+              <p>Pre-recorded product intros</p>
+            </div>
+            <div className="case">
+              <span className="case-icon">📻</span>
+              <h4>Audio Ads</h4>
+              <p>Radio-style promotions</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
   );
