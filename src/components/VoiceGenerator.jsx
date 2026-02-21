@@ -18,7 +18,7 @@ const VoiceGenerator = () => {
     fetchUsage();
   }, []);
 
-  // Sync gender to language to avoid logic errors
+  // Sync gender with language
   useEffect(() => {
     if (language === 'fil-PH' && !gender.startsWith('FIL-')) {
       setGender('FIL-FEMALE');
@@ -31,11 +31,11 @@ const VoiceGenerator = () => {
     try {
       const token = localStorage.getItem('tindahan_token');
       const response = await axios.get(
-        'https://tindahan-ai-production.up.railway.app/api/voice/usage', // Changed back to voice/usage
-        { headers: { 'Authorization': `Bearer ${token}` } }
+        'https://tindahan-ai-production.up.railway.app/api/voice/usage',
+        { headers: { Authorization: `Bearer ${token}` } }
       );
+
       if (response.data.success) {
-        // Check the actual structure of response.data.usage
         console.log('Usage data:', response.data.usage);
         setUsage(response.data.usage);
       }
@@ -49,20 +49,20 @@ const VoiceGenerator = () => {
       setError('Please enter a product name');
       return;
     }
+
     setScriptGenerating(true);
     setError('');
 
     try {
       const token = localStorage.getItem('tindahan_token');
-      // Use the correct endpoint for script generation
       const response = await axios.post(
-        'https://tindahan-ai-production.up.railway.app/api/voice/generate-script', // Fixed endpoint
+        'https://tindahan-ai-production.up.railway.app/api/voice/generate-script',
         {
           productName,
           features,
           language: language.startsWith('fil') ? 'fil' : 'en'
         },
-        { headers: { 'Authorization': `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.data.success) {
@@ -90,15 +90,14 @@ const VoiceGenerator = () => {
       const response = await axios.post(
         'https://tindahan-ai-production.up.railway.app/api/voice/generate',
         { text: script, language, gender },
-        { 
-          headers: { 'Authorization': `Bearer ${token}` },
+        {
+          headers: { Authorization: `Bearer ${token}` },
           timeout: 30000
         }
       );
 
       if (response.data.success) {
         setGeneratedAudio(response.data.audioUrl);
-        // Refresh usage
         fetchUsage();
       }
     } catch (err) {
@@ -122,27 +121,20 @@ const VoiceGenerator = () => {
     document.body.removeChild(link);
   };
 
-  // Safely render usage remaining
   const getRemainingGenerations = () => {
     if (!usage) return null;
-    
-    // Handle different possible usage structures
-    if (usage.remaining !== undefined) {
-      return usage.remaining;
-    } else if (usage.descriptions?.remaining !== undefined) {
-      return usage.descriptions.remaining;
-    }
+    if (usage.remaining !== undefined) return usage.remaining;
+    if (usage.descriptions?.remaining !== undefined) return usage.descriptions.remaining;
     return null;
   };
 
   return (
     <section id="voice-generator" className="voice-generator-section">
       <div className="voice-generator-content">
-        
         <div className="voice-generator-header">
           <h2>🎙️ AI Voice Generator</h2>
           <p>Create professional voiceovers for your shop!</p>
-          
+
           {usage && getRemainingGenerations() !== null && (
             <div className="usage-badge">
               <span>🎤 {getRemainingGenerations()} generations left today</span>
@@ -151,7 +143,6 @@ const VoiceGenerator = () => {
         </div>
 
         <div className="voice-generator-container">
-          
           <div className="input-section">
             <div className="input-group">
               <label>Product Name *</label>
@@ -175,7 +166,7 @@ const VoiceGenerator = () => {
               />
             </div>
 
-            <button 
+            <button
               onClick={handleGenerateScript}
               disabled={scriptGenerating || !productName}
               className="generate-script-btn"
@@ -193,19 +184,13 @@ const VoiceGenerator = () => {
               className="script-textarea"
               rows="6"
             />
-            <div className="script-info">
-              {script.length} / 5000 chars
-            </div>
+            <div className="script-info">{script.length} / 5000 chars</div>
           </div>
 
           <div className="voice-options">
             <div className="option-group">
               <label>Language</label>
-              <select 
-                value={language} 
-                onChange={(e) => setLanguage(e.target.value)}
-                className="select-input"
-              >
+              <select value={language} onChange={(e) => setLanguage(e.target.value)} className="select-input">
                 <option value="en-US">🇺🇸 English (US)</option>
                 <option value="fil-PH">🇵🇭 Tagalog (Filipino)</option>
               </select>
@@ -213,11 +198,7 @@ const VoiceGenerator = () => {
 
             <div className="option-group">
               <label>Voice Style</label>
-              <select 
-                value={gender} 
-                onChange={(e) => setGender(e.target.value)}
-                className="select-input"
-              >
+              <select value={gender} onChange={(e) => setGender(e.target.value)} className="select-input">
                 {language === 'en-US' ? (
                   <>
                     <option value="FEMALE">Female (Warm)</option>
@@ -254,13 +235,13 @@ const VoiceGenerator = () => {
               <audio src={generatedAudio} controls autoPlay className="audio-player" />
               <div className="audio-actions">
                 <button onClick={downloadAudio} className="download-btn">⬇️ Download</button>
-                <button 
+                <button
                   onClick={() => {
                     setGeneratedAudio(null);
                     setScript('');
                     setProductName('');
                     setFeatures('');
-                  }} 
+                  }}
                   className="generate-another-btn"
                 >
                   New Script
