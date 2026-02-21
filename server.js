@@ -206,25 +206,45 @@ app.post('/api/voice/generate', authenticateToken, async (req, res) => {
     const usage = await checkAndIncrementUsage(req.user.id, 'voices');
     if (!usage.allowed) return res.status(429).json({ error: usage.message });
 
-    // Map gender/style to Google TTS voices
-const voiceMap = {
-  'FEMALE': { name: 'en-US-Neural2-F', languageCode: 'en-US' },      // Warm female
-  'MALE': { name: 'en-US-Neural2-D', languageCode: 'en-US' },        // Professional male
-  'FEMALE-CASUAL': { name: 'en-US-Neural2-C', languageCode: 'en-US' }, // Casual female
-  'MALE-CASUAL': { name: 'en-US-Neural2-A', languageCode: 'en-US' },   // Casual male
-  'FIL-FEMALE': { name: 'fil-PH-Wavenet-A', languageCode: 'fil-PH' },  // Tagalog female
-  'FIL-MALE': { name: 'fil-PH-Wavenet-C', languageCode: 'fil-PH' }     // Tagalog male
-};
+    app.post('/api/voice/generate', authenticateToken, async (req, res) => {
+  try {
+    const { text, gender, language } = req.body;
 
-const selectedVoice = voiceMap[gender] || voiceMap['FEMALE'];
-    const selectedVoice = voiceMap[voiceKey] || voiceMap['en-US'];
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
 
+    // 1. Check usage
+    const usage = await checkAndIncrementUsage(req.user.id, 'voices');
+    if (!usage.allowed) return res.status(429).json({ error: usage.message });
+
+    // 2. Map gender/style to Google TTS voices
+    // We use a key like 'FIL-MALE' or 'FEMALE'
+    const voiceMap = {
+      'FEMALE': { name: 'en-US-Neural2-F', languageCode: 'en-US' },
+      'MALE': { name: 'en-US-Neural2-D', languageCode: 'en-US' },
+      'FEMALE-CASUAL': { name: 'en-US-Neural2-C', languageCode: 'en-US' },
+      'MALE-CASUAL': { name: 'en-US-Neural2-A', languageCode: 'en-US' },
+      'FIL-FEMALE': { name: 'fil-PH-Neural2-A', languageCode: 'fil-PH' },
+      'FIL-MALE': { name: 'fil-PH-Neural2-D', languageCode: 'fil-PH' }
+    };
+
+    // 3. Logic to determine the correct key
+    // If language is fil-PH, we prepend 'FIL-' to the gender
+    let voiceKey = gender; 
+    if (language === 'fil-PH') {
+      voiceKey = `FIL-${gender}`;
+    }
+
+    const selectedVoice = voiceMap[voiceKey] || voiceMap['FEMALE'];
+
+    // 4. Construct Request
     const request = {
       input: { text: text },
       voice: {
         languageCode: selectedVoice.languageCode,
         name: selectedVoice.name,
-        ssmlGender: gender
+        ssmlGender: 'SSML_VOICE_GENDER_UNSPECIFIED'
       },
       audioConfig: {
         audioEncoding: 'MP3',
@@ -233,6 +253,14 @@ const selectedVoice = voiceMap[gender] || voiceMap['FEMALE'];
       }
     };
 
+    // ... your code to call textToSpeechClient.synthesizeSpeech(request)
+    // res.json({ success: true, audioContent: ... });
+
+  } catch (error) {
+    console.error('TTS Error:', error);
+    res.status(500).json({ error: 'Failed to generate voice' });
+  }
+});
     const [response] = await ttsClient.synthesizeSpeech(request);
     const audioBase64 = response.audioContent.toString('base64');
     const audioUrl = `data:audio/mp3;base64,${audioBase64}`;
