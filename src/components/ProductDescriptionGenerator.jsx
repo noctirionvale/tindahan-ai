@@ -6,7 +6,7 @@ const ProductDescriptionGenerator = () => {
   const [productName, setProductName] = useState('');
   const [features, setFeatures] = useState('');
   const [platforms, setPlatforms] = useState(['shopee', 'lazada', 'tiktok']);
-// Amazon, Etsy, eBay are off by default - user can select them
+// Amazon, Facebbok, eBay are off by default - user can select them
   const [descriptions, setDescriptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -23,7 +23,7 @@ const ProductDescriptionGenerator = () => {
     lazada: { name: 'Lazada', icon: '🏪', color: '#0f156d' },
     tiktok: { name: 'TikTok Shop', icon: '🎵', color: '#000000' },
     amazon: { name: 'Amazon', icon: '📦', color: '#ff9900' },
-    etsy: { name: 'Etsy', icon: '🎨', color: '#f1641e' },
+    facebook: { name: 'Facebook Marketplace', icon: '👥', color: '#4267B2' },
     ebay: { name: 'eBay', icon: '🏷️', color: '#0064d2' }
   };
 
@@ -91,8 +91,8 @@ const ProductDescriptionGenerator = () => {
 } else if (platform === 'tiktok') {
   prompt = `You are a TikTok Shop caption writer. Style: Casual/Viral. Product: ${productName}. Features: ${features || 'Trending item'}`;
 } else if (platform === 'amazon') {
-  prompt = `You are an Amazon US product listing expert. Output ONLY the listing. Style: Professional English. Format: Title + 5 bullet points + short description. SEO optimized. Product: ${productName}. Features: ${features || 'High quality product'}`;
-} else if (platform === 'etsy') {
+  prompt = `You are a Facebook seller product listing expert. Output ONLY the listing. Style: Professional English. Format: Title + 5 bullet points + short description. SEO optimized. Product: ${productName}. Features: ${features || 'High quality product'}`;
+} else if (platform === 'facebook') {
   prompt = `You are an Etsy shop listing expert. Output ONLY the listing. Style: Warm, handcrafted, story-driven English. Format: Catchy title + description with story + materials/details. Product: ${productName}. Features: ${features || 'Unique handcrafted item'}`;
 } else if (platform === 'ebay') {
   prompt = `You are an eBay listing expert. Output ONLY the listing. Style: Clear, factual, buyer-focused English. Format: Title + condition + description + why buy from us. Product: ${productName}. Features: ${features || 'Quality item'}`;
@@ -108,7 +108,7 @@ const ProductDescriptionGenerator = () => {
       platform === 'lazada' ? 'LazMall Standard' :
       platform === 'tiktok' ? 'TikTok Viral Caption' :
       platform === 'amazon' ? 'Amazon Listing' :
-      platform === 'etsy' ? 'Etsy Shop Listing' : 'eBay Listing',
+      platform === 'facebook' ? 'Facebook Marketplace Listing' : 'eBay Listing',
           icon: platformInfo[platform].icon,
           color: platformInfo[platform].color
         }));
@@ -161,7 +161,7 @@ const ProductDescriptionGenerator = () => {
       <div className="product-generator-content">
         <div className="generator-header">
           <h2>📦 Product Description Generator</h2>
-          <p>Generate unique, platform-optimized descriptions para sa Shopee, Lazada & TikTok Shop!</p>
+          <p>Generate unique, platform-optimized descriptions para sa Shopee, Lazada, Ebay, Facebook, Amazon & TikTok Shop!</p>
         </div>
 
         <div className="generator-form">

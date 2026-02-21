@@ -434,3 +434,155 @@
     width: 100%;
   }
 }
+
+/* =========================================
+   LAYOUT NORMALIZATION FIX
+   ========================================= */
+
+/* Make form use grid instead of random stack */
+.generator-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem 2rem;
+}
+
+/* Make textarea + platform groups span full width */
+.generator-form .form-group.full-width,
+.platform-group,
+.generate-button {
+  grid-column: span 2;
+}
+
+/* Inputs same height */
+.form-input,
+.form-select {
+  height: 52px;
+}
+
+/* Textarea visual balance */
+.form-textarea {
+  min-height: 120px;
+}
+
+/* Checkbox cards equal height */
+.platform-checkbox .checkbox-content {
+  height: 60px;
+  justify-content: center;
+}
+
+/* Platform group grid more balanced */
+.platform-checkboxes {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+/* Results area uses grid instead of vertical chaos */
+.descriptions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Result cards equal structure */
+.description-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Description text grows naturally */
+.description-text {
+  flex-grow: 1;
+}
+
+/* Card header alignment */
+.card-header {
+  align-items: center;
+}
+
+/* Stats spacing */
+.description-stats {
+  justify-content: space-between;
+}
+
+/* Header spacing consistency */
+.generator-header {
+  margin-bottom: 4rem;
+}
+
+/* Tips section balance */
+.tips-section {
+  margin-top: 3rem;
+}
+
+/* Mobile override */
+@media (max-width: 768px) {
+  .generator-form {
+    grid-template-columns: 1fr;
+  }
+
+  .generator-form .form-group.full-width,
+  .platform-group,
+  .generate-button {
+    grid-column: span 1;
+  }
+
+  .descriptions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Center the form better */
+.product-generator-content {
+  max-width: 900px;
+}
+
+/* Make platform buttons more uniform */
+.platform-checkbox .checkbox-content {
+  min-height: 60px;
+  justify-content: center;
+}
+
+/* Balance textarea height */
+.form-textarea {
+  min-height: 120px;
+}
+
+/* Better button spacing */
+.generate-button {
+  margin-top: 2rem;
+}
+
+/* Make grid tighter */
+.platform-checkboxes {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+/* Force 3x2 platform grid */
+.platform-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+/* Equal height cards */
+.platform-checkbox .checkbox-content {
+  min-height: 64px;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Icon + text spacing */
+.platform-icon {
+  font-size: 1.4rem;
+}
+
+.platform-name {
+  font-size: 0.95rem;
+}
+
+/* Mobile: stack nicely */
+@media (max-width: 768px) {
+  .platform-checkboxes {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
