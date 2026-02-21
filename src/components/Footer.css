@@ -4,11 +4,7 @@
 
 .footer-section {
   position: relative;
-  background: linear-gradient(
-    180deg,
-    rgba(10, 10, 15, 0.95) 0%,
-    rgba(5, 5, 10, 1) 100%
-  );
+  background: var(--surface-gradient);
   border-top: 1px solid rgba(0, 229, 255, 0.2);
   overflow: hidden;
   color: #fff;
