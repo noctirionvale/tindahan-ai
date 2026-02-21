@@ -31,12 +31,13 @@ const VoiceGenerator = () => {
     try {
       const token = localStorage.getItem('tindahan_token');
       const response = await axios.get(
-        'https://tindahan-ai-production.up.railway.app/api/usage', // Fixed endpoint to match unified server
+        'https://tindahan-ai-production.up.railway.app/api/voice/usage', // Changed back to voice/usage
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
       if (response.data.success) {
-        // Adapt to your unified usage structure
-        setUsage(response.data.usage.descriptions); 
+        // Check the actual structure of response.data.usage
+        console.log('Usage data:', response.data.usage);
+        setUsage(response.data.usage);
       }
     } catch (err) {
       console.error('Failed to fetch voice usage:', err);
@@ -53,17 +54,23 @@ const VoiceGenerator = () => {
 
     try {
       const token = localStorage.getItem('tindahan_token');
+      // Use the correct endpoint for script generation
       const response = await axios.post(
-        'https://tindahan-ai-production.up.railway.app/api/compare', // Using your unified AI route
-        { question: `Write a short, persuasive 30-second sales script for a product named ${productName}. Features: ${features}. Language: ${language === 'fil-PH' ? 'Taglish/Filipino' : 'English'}.` },
+        'https://tindahan-ai-production.up.railway.app/api/voice/generate-script', // Fixed endpoint
+        {
+          productName,
+          features,
+          language: language.startsWith('fil') ? 'fil' : 'en'
+        },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
 
       if (response.data.success) {
-        setScript(response.data.data);
+        setScript(response.data.script || response.data.data);
       }
     } catch (err) {
       setError('Failed to generate script. Please try again.');
+      console.error('Script generation error:', err);
     } finally {
       setScriptGenerating(false);
     }
@@ -91,10 +98,8 @@ const VoiceGenerator = () => {
 
       if (response.data.success) {
         setGeneratedAudio(response.data.audioUrl);
-        // Refresh usage from the response
-        if (response.data.usage) {
-          setUsage(response.data.usage);
-        }
+        // Refresh usage
+        fetchUsage();
       }
     } catch (err) {
       if (err.response?.status === 429) {
@@ -117,6 +122,19 @@ const VoiceGenerator = () => {
     document.body.removeChild(link);
   };
 
+  // Safely render usage remaining
+  const getRemainingGenerations = () => {
+    if (!usage) return null;
+    
+    // Handle different possible usage structures
+    if (usage.remaining !== undefined) {
+      return usage.remaining;
+    } else if (usage.descriptions?.remaining !== undefined) {
+      return usage.descriptions.remaining;
+    }
+    return null;
+  };
+
   return (
     <section id="voice-generator" className="voice-generator-section">
       <div className="voice-generator-content">
@@ -125,9 +143,9 @@ const VoiceGenerator = () => {
           <h2>🎙️ AI Voice Generator</h2>
           <p>Create professional voiceovers for your shop!</p>
           
-          {usage && (
+          {usage && getRemainingGenerations() !== null && (
             <div className="usage-badge">
-              <span>🎤 {usage.remaining} generations left today</span>
+              <span>🎤 {getRemainingGenerations()} generations left today</span>
             </div>
           )}
         </div>
@@ -240,6 +258,8 @@ const VoiceGenerator = () => {
                   onClick={() => {
                     setGeneratedAudio(null);
                     setScript('');
+                    setProductName('');
+                    setFeatures('');
                   }} 
                   className="generate-another-btn"
                 >
