@@ -2,6 +2,7 @@
 // TINDAHAN.AI - Unified Backend Server
 // ============================================
 
+const textToSpeech = require('@google-cloud/text-to-speech');
 const Replicate = require('replicate');
 const express = require('express');
 const cors = require('cors');
@@ -38,13 +39,20 @@ const deepseekClient = new OpenAI({
 // ============================================
 
 const PLAN_LIMITS = {
-  free: { descriptions: 15, videos: 1 },
-  starter: { descriptions: 200, videos: 10 }, 
-  pro: { descriptions: 200, videos: 50 },
-  premium: { descriptions: 999999, videos: 999999 }, // Unified "Premium" as requested
-  business: { descriptions: 999999, videos: 999999 }
+  free: { descriptions: 15, videos: 1, voices: 1 },
+  starter: { descriptions: 200, videos: 5, voices: 10 }, 
+  pro: { descriptions: 500, videos: 20, voices: 30 },
+  premium: { descriptions: 999999, videos: 100, voices: 999999 },
+  business: { descriptions: 999999, videos: 100, voices: 999999 }
 };
 
+// Parse the JSON credentials from environment variable
+const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON || '{}');
+
+// Initialize Google TTS client
+const ttsClient = new textToSpeech.TextToSpeechClient({
+  credentials: credentials
+});
 // ============================================
 // MIDDLEWARE & HELPERS
 // ============================================
@@ -178,6 +186,132 @@ app.get('/api/usage', authenticateToken, async (req, res) => {
       videos: { today: user.video_generations_today, limit: PLAN_LIMITS[user.plan_type].videos }
     }
   });
+});
+
+// --- VOICE GENERATION ROUTES ---
+
+app.post('/api/voice/generate', authenticateToken, async (req, res) => {
+  try {
+    const { text, language = 'en-US', gender = 'FEMALE' } = req.body;
+
+    if (!text || text.length === 0) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    if (text.length > 5000) {
+      return res.status(400).json({ error: 'Text too long. Maximum 5000 characters.' });
+    }
+
+    // Check voice generation limit (reuse checkAndIncrementUsage or create voice-specific one)
+    const usage = await checkAndIncrementUsage(req.user.id, 'voices');
+    if (!usage.allowed) return res.status(429).json({ error: usage.message });
+
+    // Map language to Google TTS voice name
+    const voiceMap = {
+      'en-US': { name: 'en-US-Neural2-F', languageCode: 'en-US' },
+      'en-US-male': { name: 'en-US-Neural2-D', languageCode: 'en-US' },
+      'fil-PH': { name: 'fil-PH-Wavenet-A', languageCode: 'fil-PH' },
+      'fil-PH-male': { name: 'fil-PH-Wavenet-C', languageCode: 'fil-PH' }
+    };
+
+    const voiceKey = language + (gender === 'MALE' ? '-male' : '');
+    const selectedVoice = voiceMap[voiceKey] || voiceMap['en-US'];
+
+    const request = {
+      input: { text: text },
+      voice: {
+        languageCode: selectedVoice.languageCode,
+        name: selectedVoice.name,
+        ssmlGender: gender
+      },
+      audioConfig: {
+        audioEncoding: 'MP3',
+        speakingRate: 1.0,
+        pitch: 0.0
+      }
+    };
+
+    const [response] = await ttsClient.synthesizeSpeech(request);
+    const audioBase64 = response.audioContent.toString('base64');
+    const audioUrl = `data:audio/mp3;base64,${audioBase64}`;
+
+    res.json({
+      success: true,
+      audioUrl: audioUrl,
+      audioBase64: audioBase64,
+      usage
+    });
+
+  } catch (error) {
+    console.error('Voice generation error:', error);
+    res.status(500).json({ error: 'Failed to generate voice', details: error.message });
+  }
+});
+
+app.post('/api/voice/generate-script', authenticateToken, async (req, res) => {
+  try {
+    const { productName, features, language = 'en' } = req.body;
+
+    if (!productName) {
+      return res.status(400).json({ error: 'Product name is required' });
+    }
+
+    const prompt = language === 'fil' 
+      ? `Gumawa ng 30-second Tagalog product voiceover script para sa: ${productName}. Features: ${features || 'walang ibinigay'}. Gawin itong engaging at para sa TikTok/Shopee. Output lang yung script, walang intro.`
+      : `Create a 30-second English product voiceover script for: ${productName}. Features: ${features || 'none provided'}. Make it engaging for TikTok/Shopee. Output only the script, no intro.`;
+
+    const completion = await deepseekClient.chat.completions.create({
+      model: 'deepseek-chat',
+      messages: [
+        { role: 'system', content: 'You are a product marketing scriptwriter.' },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 300
+    });
+
+    const script = completion.choices[0].message.content.trim();
+    res.json({ success: true, script: script });
+
+  } catch (error) {
+    console.error('Script generation error:', error);
+    res.status(500).json({ error: 'Failed to generate script' });
+  }
+});
+
+app.get('/api/voice/usage', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT plan_type, voice_generations_today, last_voice_date, total_voice_generations FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = result.rows[0];
+    const today = new Date().toISOString().split('T')[0];
+    const lastDate = user.last_voice_date ? user.last_voice_date.toISOString().split('T')[0] : null;
+    
+    const voicesToday = (lastDate === today) ? (user.voice_generations_today || 0) : 0;
+    const limit = PLAN_LIMITS[user.plan_type]?.voices || 10;
+
+    res.json({
+      success: true,
+      usage: {
+        plan: user.plan_type,
+        today: voicesToday,
+        limit: limit,
+        remaining: user.plan_type === 'free' ? (1 - (user.total_voice_generations || 0)) : (limit - voicesToday),
+        total: user.total_voice_generations || 0
+      }
+    });
+
+  } catch (error) {
+    console.error('Voice usage stats error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 const PORT = process.env.PORT || 5000;
