@@ -5,19 +5,17 @@
 /* ========== CSS VARIABLES ========== */
 :root {
   /* Dark Base (Keep for existing components) */
-  --bg: #0a0e1a;          /* Deep blue-black */
+ --bg: #0a0a0f;           /* Deep Footer Black */
   --text: #ffffff;
-  --muted: #94a3b8;
-  --card-bg: rgba(15, 23, 42, 0.8);
+  --muted: #bdbdbd;        /* Footer Gray */
+  
+  /* New Modern Pinoy Palette */
+  --accent1: #00e5ff;      /* Cyan (Trust) */
+  --accent2: #10b981;      /* Green (Action) */
+  --accent3: #6a5cff;      /* Keeping a hint of purple for AI vibe */
 
-  /* Negosyo Brand Colors */
-  --accent1: #3b82f6;     /* Primary: Bright Blue (Trust, Professional) */
-  --accent2: #f97316;     /* Secondary: Orange (Energy, Action) */
-  --accent3: #0ea5e9;     /* Tertiary: Sky Blue */
-
-  /* Backgrounds & Borders */
-  --sidebar-bg: rgba(15, 15, 25, 0.9);
-  --border-light: rgba(59, 130, 246, 0.2);
+  --border-light: rgba(0, 229, 255, 0.2);
+  --card-bg: rgba(255, 255, 255, 0.03);
 
   /* AI Brand Colors (Keep for tools) */
   --chatgpt-green: #10a37f;
