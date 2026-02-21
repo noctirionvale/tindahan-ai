@@ -557,3 +557,12 @@
   .currency-switcher { gap: 6px; }
   .currency-btn { padding: 5px 10px; font-size: 12px; }
 }
+
+.pricing-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.features-list {
+  flex-grow: 1;
+}

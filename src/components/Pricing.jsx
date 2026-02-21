@@ -60,11 +60,11 @@ const Pricing = () => {
   },
   {
     name: 'Starter',
-    phpPrice: 450,  // 25% cheaper than Photoroom!
+    phpPrice: 299,
     period: 'per month',
-    description: 'For active sellers who need more content',
+    description: 'For small sellers testing video ads',
     features: [
-      '200 description generations/month',
+      '100 description generations/month',
       '10 video generations/month',
       '10 voice generations/month',
       'All 6 platform formats',
@@ -78,14 +78,33 @@ const Pricing = () => {
     planKey: 'starter'
   },
   {
-    name: 'Premium',
-    phpPrice: 5000,
+    name: 'Pro',
+    phpPrice: 599,
     period: 'per month',
-    description: 'For power sellers & growing businesses',
+    description: 'For active sellers & affiliates',
     features: [
-      'Unlimited descriptions',
-      'Unlimited videos',
-      'Unlimited voices',
+      '300 description generations/month',
+      '30 video generations/month',
+      '30 voice generations/month',
+      'All 6 platform formats',
+      'Bulk generation',
+      'Analytics dashboard',
+      'Priority support'
+    ],
+    cta: 'Upgrade Now',
+    popular: false,
+    color: '#8b5cf6',
+    planKey: 'pro'
+  },
+  {
+    name: 'Business',
+    phpPrice: 999,
+    period: 'per month',
+    description: 'For power sellers & growing shops',
+    features: [
+      '800 description generations/month',
+      '80 video generations/month',
+      '80 voice generations/month',
       'All 6 platform formats',
       'Bulk generation',
       'Analytics dashboard',
@@ -95,8 +114,8 @@ const Pricing = () => {
     ],
     cta: 'Upgrade Now',
     popular: false,
-    color: '#8b5cf6',
-    planKey: 'premium'
+    color: '#22c55e',
+    planKey: 'business'
   }
 ];
   const handleUpgradeClick = (plan) => {
