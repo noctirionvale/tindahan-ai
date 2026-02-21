@@ -1,5 +1,6 @@
 // Tindahan.AI Service Worker
-const CACHE_NAME = 'tindahan-ai-v2';
+// In public/service-worker.js - change:
+const CACHE_NAME = 'tindahan-ai-v4'; // Change from v3 to v4
 const urlsToCache = [
   '/',
   '/static/css/main.css',

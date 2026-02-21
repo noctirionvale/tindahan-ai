@@ -70,43 +70,121 @@ const authenticateToken = (req, res, next) => {
   }
 };
 
+// ============================================
+// FIX: Add Owner Bypass to checkAndIncrementUsage
+// ============================================
+
+// Replace your existing checkAndIncrementUsage function with this:
+
 async function checkAndIncrementUsage(userId, type) {
   const result = await pool.query(
-    'SELECT plan_type, generations_today, video_generations_today, last_generation_date, last_video_date, total_video_generations FROM users WHERE id = $1',
+    'SELECT plan_type, email, generations_today, video_generations_today, voice_generations_today, last_generation_date, last_video_date, last_voice_date, total_video_generations, total_voice_generations FROM users WHERE id = $1',
     [userId]
   );
 
   if (result.rows.length === 0) throw new Error('User not found');
   const user = result.rows[0];
+
+  // 👑 OWNER BYPASS - UNLIMITED FOR OWNERS!
+  const OWNER_EMAILS = [
+    'spawntaneousbulb@gmail.com',
+    'noctirionvale@gmail.com'
+  ];
+  
+  if (OWNER_EMAILS.includes(user.email.toLowerCase())) {
+    console.log(`👑 Owner access: ${user.email} - Unlimited ${type}!`);
+    return { 
+      allowed: true, 
+      remaining: 999999, 
+      limit: 999999,
+      plan: 'owner'
+    };
+  }
+
+  // Rest of your existing code for regular users...
   const today = new Date().toISOString().split('T')[0];
   
   const isVideo = type === 'videos';
-  const lastDate = isVideo ? (user.last_video_date?.toISOString().split('T')[0]) : (user.last_generation_date?.toISOString().split('T')[0]);
-  let countToday = isVideo ? (user.video_generations_today || 0) : (user.generations_today || 0);
+  const isVoice = type === 'voices';
+  
+  let lastDate, countToday;
+  
+  if (isVideo) {
+    lastDate = user.last_video_date?.toISOString().split('T')[0];
+    countToday = user.video_generations_today || 0;
+  } else if (isVoice) {
+    lastDate = user.last_voice_date?.toISOString().split('T')[0];
+    countToday = user.voice_generations_today || 0;
+  } else {
+    lastDate = user.last_generation_date?.toISOString().split('T')[0];
+    countToday = user.generations_today || 0;
+  }
 
+  // Reset if new day
   if (lastDate !== today) {
     countToday = 0;
-    const resetField = isVideo ? 'video_generations_today = 0, last_video_date = CURRENT_DATE' : 'generations_today = 0, last_generation_date = CURRENT_DATE';
+    let resetField;
+    if (isVideo) {
+      resetField = 'video_generations_today = 0, last_video_date = CURRENT_DATE';
+    } else if (isVoice) {
+      resetField = 'voice_generations_today = 0, last_voice_date = CURRENT_DATE';
+    } else {
+      resetField = 'generations_today = 0, last_generation_date = CURRENT_DATE';
+    }
     await pool.query(`UPDATE users SET ${resetField} WHERE id = $1`, [userId]);
   }
 
   const limit = PLAN_LIMITS[user.plan_type]?.[type] || PLAN_LIMITS.free[type];
 
+  // Check free video lifetime limit
   if (user.plan_type === 'free' && isVideo && (user.total_video_generations >= 1)) {
-    return { allowed: false, message: "You've used your 1 free video generation! Upgrade to Starter (₱450/month) for 10 videos/month." };
+    return { 
+      allowed: false, 
+      message: "You've used your 1 free video generation! Upgrade to Starter (₱599/month) for 5 videos/month." 
+    };
   }
 
+  // Check free voice lifetime limit
+  if (user.plan_type === 'free' && isVoice && (user.total_voice_generations >= 1)) {
+    return { 
+      allowed: false, 
+      message: "You've used your 1 free voice generation! Upgrade to Starter (₱599/month) for 10 voices/month." 
+    };
+  }
+
+  // Check free description lifetime limit
+  if (user.plan_type === 'free' && !isVideo && !isVoice && (user.total_generations >= 15)) {
+    return { 
+      allowed: false, 
+      message: "You've used all 15 free descriptions! Upgrade to Starter (₱599/month) for 200 descriptions/month." 
+    };
+  }
+
+  // Check daily limits for paid users
   if (countToday >= limit) {
-    return { allowed: false, message: `Daily ${type} limit reached.` };
+    return { 
+      allowed: false, 
+      message: `Daily ${type} limit reached.` 
+    };
   }
 
-  const updateField = isVideo 
-    ? 'video_generations_today = video_generations_today + 1, total_video_generations = total_video_generations + 1, last_video_date = CURRENT_DATE'
-    : 'generations_today = generations_today + 1, total_generations = total_generations + 1, last_generation_date = CURRENT_DATE';
+  // Increment usage
+  let updateField;
+  if (isVideo) {
+    updateField = 'video_generations_today = video_generations_today + 1, total_video_generations = total_video_generations + 1, last_video_date = CURRENT_DATE';
+  } else if (isVoice) {
+    updateField = 'voice_generations_today = voice_generations_today + 1, total_voice_generations = total_voice_generations + 1, last_voice_date = CURRENT_DATE';
+  } else {
+    updateField = 'generations_today = generations_today + 1, total_generations = total_generations + 1, last_generation_date = CURRENT_DATE';
+  }
   
   await pool.query(`UPDATE users SET ${updateField} WHERE id = $1`, [userId]);
   
-  return { allowed: true, remaining: limit - countToday - 1, limit };
+  return { 
+    allowed: true, 
+    remaining: limit - countToday - 1, 
+    limit 
+  };
 }
 
 // ============================================
