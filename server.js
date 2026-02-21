@@ -278,69 +278,70 @@ app.post('/api/voice/generate', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/voice/generate-script', authenticateToken, async (req, res) => {
+app.post('/api/voice/generate', authenticateToken, async (req, res) => {
   try {
-    const { productName, features, language = 'en' } = req.body;
+    const { text, language = 'en-US', gender = 'FEMALE' } = req.body;
 
-    if (!productName) {
-      return res.status(400).json({ error: 'Product name is required' });
+    if (!text || text.length === 0) {
+      return res.status(400).json({ error: 'Text is required' });
     }
 
-    const prompt = language === 'fil' 
-      ? `Gumawa ng 30-second Tagalog product voiceover script para sa: ${productName}. Features: ${features || 'walang ibinigay'}. Gawin itong engaging at para sa TikTok/Shopee. Output lang yung script, walang intro.`
-      : `Create a 30-second English product voiceover script for: ${productName}. Features: ${features || 'none provided'}. Make it engaging for TikTok/Shopee. Output only the script, no intro.`;
-
-    const completion = await deepseekClient.chat.completions.create({
-      model: 'deepseek-chat',
-      messages: [
-        { role: 'system', content: 'You are a product marketing scriptwriter.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.7,
-      max_tokens: 300
-    });
-
-    const script = completion.choices[0].message.content.trim();
-    res.json({ success: true, script: script });
-
-  } catch (error) {
-    console.error('Script generation error:', error);
-    res.status(500).json({ error: 'Failed to generate script' });
-  }
-});
-
-app.get('/api/voice/usage', authenticateToken, async (req, res) => {
-  try {
-    const result = await pool.query(
-      'SELECT plan_type, voice_generations_today, last_voice_date, total_voice_generations FROM users WHERE id = $1',
-      [req.user.id]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+    if (text.length > 5000) {
+      return res.status(400).json({ error: 'Text too long. Maximum 5000 characters.' });
     }
 
-    const user = result.rows[0];
-    const today = new Date().toISOString().split('T')[0];
-    const lastDate = user.last_voice_date ? user.last_voice_date.toISOString().split('T')[0] : null;
-    
-    const voicesToday = (lastDate === today) ? (user.voice_generations_today || 0) : 0;
-    const limit = PLAN_LIMITS[user.plan_type]?.voices || 10;
+    // Check voice generation limit
+    const usage = await checkAndIncrementUsage(req.user.id, 'voices');
+    if (!usage.allowed) return res.status(429).json({ error: usage.message });
+
+    console.log('🎙️ Generating voice');
+
+    // Map gender/style to Google TTS voices
+    const voiceMap = {
+      'FEMALE': { name: 'en-US-Neural2-F', languageCode: 'en-US' },
+      'MALE': { name: 'en-US-Neural2-D', languageCode: 'en-US' },
+      'FEMALE-CASUAL': { name: 'en-US-Neural2-C', languageCode: 'en-US' },
+      'MALE-CASUAL': { name: 'en-US-Neural2-A', languageCode: 'en-US' },
+      'FIL-FEMALE': { name: 'fil-PH-Wavenet-A', languageCode: 'fil-PH' },
+      'FIL-MALE': { name: 'fil-PH-Wavenet-C', languageCode: 'fil-PH' }
+    };
+
+    const selectedVoice = voiceMap[gender] || voiceMap['FEMALE'];
+
+    // Create TTS request
+    const ttsRequest = {
+      input: { text: text },
+      voice: {
+        languageCode: selectedVoice.languageCode,
+        name: selectedVoice.name,
+        ssmlGender: gender.includes('MALE') ? 'MALE' : 'FEMALE'
+      },
+      audioConfig: {
+        audioEncoding: 'MP3',
+        speakingRate: 1.0,
+        pitch: 0.0
+      }
+    };
+
+    const [response] = await ttsClient.synthesizeSpeech(ttsRequest);
+    const audioBase64 = response.audioContent.toString('base64');
+    const audioUrl = `data:audio/mp3;base64,${audioBase64}`;
+
+    console.log('✅ Voice generated successfully');
 
     res.json({
       success: true,
-      usage: {
-        plan: user.plan_type,
-        today: voicesToday,
-        limit: limit,
-        remaining: user.plan_type === 'free' ? (1 - (user.total_voice_generations || 0)) : (limit - voicesToday),
-        total: user.total_voice_generations || 0
-      }
+      audioUrl: audioUrl,
+      audioBase64: audioBase64,
+      usage
     });
 
   } catch (error) {
-    console.error('Voice usage stats error:', error);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Voice generation error:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate voice', 
+      details: error.message 
+    });
   }
 });
 
