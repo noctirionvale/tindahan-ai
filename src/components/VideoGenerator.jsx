@@ -10,8 +10,6 @@ const VideoGenerator = () => {
   const [error, setError] = useState('');
   const [usage, setUsage] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [prompt, setPrompt] = useState('');
-  const [activeFilter, setActiveFilter] = useState('All');
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -149,41 +147,34 @@ const VideoGenerator = () => {
     document.body.removeChild(link);
   };
 
-  const filters = ['All', 'Videos', 'Images', 'Filter'];
-
   return (
-    <div className="gen-wrapper">
-      <div className="gen-split">
+    <div className="video-wrapper">
+      <div className="video-split">
         {/* LEFT: Upload */}
-        <div className="gen-form-panel">
-          <h2 className="gen-title">🎬 Generate Video</h2>
+        <div className="video-form-panel">
+          <h2 className="video-title">🎬 Generate Video</h2>
           
           {usage && (
-            <div className="gen-usage">
+            <div className="video-usage">
               🎥 {usage.remaining}/{usage.limit} left today
             </div>
           )}
 
-          {/* Enhanced Upload Section - Luma Labs Style */}
-          <div className="upload-section">
-            <div className="upload-header">
+          <div className="video-upload-section">
+            <div className="video-upload-header">
               <h3>UPLOAD IMAGE</h3>
               <span>PNG, JPG up to 10MB</span>
             </div>
-            
+
             {!imagePreview ? (
-              <div className="upload-box" onClick={handleUploadClick}>
-                <div className="upload-content">
-                  <div className="upload-icon-wrapper">
-                    <span className="upload-icon">📁</span>
-                  </div>
-                  <h3>Choose a file or drag & drop here</h3>
-                  <p>Upload an image to generate your video</p>
-                  <button className="upload-button">
-                    <span>⬆️</span> Select File
-                  </button>
-                  <div className="upload-hint">PNG, JPG up to 10MB</div>
-                </div>
+              <div className="video-upload-box" onClick={handleUploadClick}>
+                <div className="video-upload-icon">📸</div>
+                <h4>Choose a file or drag & drop here</h4>
+                <p>Upload an image to generate your video</p>
+                <button className="video-select-btn">
+                  <span>📁</span> Select File
+                </button>
+                <div className="video-upload-hint">PNG, JPG up to 10MB</div>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -193,60 +184,20 @@ const VideoGenerator = () => {
                 />
               </div>
             ) : (
-              <div className="image-preview">
+              <div className="video-preview-container">
                 <img src={imagePreview} alt="Preview" />
-                <div className="preview-overlay">
-                  <div className="preview-info">
-                    <span className="preview-badge">1 IMAGE</span>
-                    <span className="preview-badge">UPLOADED</span>
-                  </div>
-                  <div className="preview-actions">
-                    <button className="preview-btn" onClick={handleChangeImage}>✕</button>
-                  </div>
+                <div className="video-preview-overlay">
+                  <span>✅ Image uploaded</span>
+                  <button onClick={handleChangeImage} className="video-change-btn">
+                    Change
+                  </button>
                 </div>
               </div>
             )}
-
-            {/* Ideas Bar - Like Luma Labs */}
-            <div className="ideas-bar">
-              <span className="ideas-label">IDEAS</span>
-              <div className="ideas-filters">
-                {filters.map((filter) => (
-                  <button
-                    key={filter}
-                    className={`idea-filter ${activeFilter === filter ? 'active' : ''}`}
-                    onClick={() => setActiveFilter(filter)}
-                  >
-                    {filter}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Keyframe Reference - Like Luma Labs */}
-            <div className="keyframe-reference">
-              <div className="keyframe-info">
-                <span className="keyframe-badge">KEYFRAME</span>
-                <span className="keyframe-text">REFERENCE · 1 DAY AGO</span>
-              </div>
-              <div className="keyframe-actions">
-                <button className="keyframe-btn">REFERENCE</button>
-                <button className="keyframe-btn modify">MODIFY</button>
-              </div>
-            </div>
-
-            {/* Prompt Input */}
-            <input
-              type="text"
-              className="prompt-input"
-              placeholder="What do you want to see..."
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-            />
           </div>
 
           {selectedFile && !generating && !generatedVideo && (
-            <button onClick={handleGenerate} className="gen-btn generate-btn">
+            <button onClick={handleGenerate} className="video-generate-btn">
               Generate Video 🎬
             </button>
           )}
@@ -254,39 +205,44 @@ const VideoGenerator = () => {
           {generating && (
             <div className="video-generating">
               {uploadProgress > 0 && uploadProgress < 100 && (
-                <div className="video-progress-bar">
+                <div className="video-progress">
                   <div className="video-progress-fill" style={{ width: `${uploadProgress}%` }} />
                 </div>
               )}
-              <div className="loading-spinner"></div>
-              <p>{error || 'Creating...'}</p>
-              <p className="generating-hint">This may take up to 60 seconds</p>
+              <div className="video-spinner"></div>
+              <p>{error || 'Creating your video...'}</p>
+              <p className="video-hint">This may take up to 60 seconds</p>
             </div>
           )}
 
           {error && !generating && (
-            <div className="gen-error">{error}</div>
+            <div className="video-error">
+              {error}
+              {error.includes('limit') && (
+                <a href="#pricing" className="video-upgrade-link">Upgrade Now →</a>
+              )}
+            </div>
           )}
         </div>
 
         {/* RIGHT: Result */}
-        <div className="gen-results-panel">
+        <div className="video-results-panel">
           {generatedVideo ? (
             <>
-              <div className="gen-results-header">
+              <div className="video-results-header">
                 <h3>Your Video</h3>
               </div>
-              <div className="video-result-area">
-                <video src={generatedVideo} controls autoPlay loop className="video-player">
-                  Your browser doesn't support video.
-                </video>
-                <div className="video-actions">
-                  <button onClick={downloadVideo} className="gen-btn download-btn">
+              <div className="video-result-container">
+                <div className="video-player-wrapper">
+                  <video src={generatedVideo} controls autoPlay loop className="video-player" />
+                </div>
+                <div className="video-action-buttons">
+                  <button onClick={downloadVideo} className="video-download-btn">
                     ⬇️ Download
                   </button>
                   <button 
                     onClick={handleChangeImage}
-                    className="gen-reset generate-another-btn"
+                    className="video-new-btn"
                   >
                     New Video
                   </button>
@@ -294,8 +250,8 @@ const VideoGenerator = () => {
               </div>
             </>
           ) : (
-            <div className="gen-empty">
-              <div className="gen-empty-icon">🎬</div>
+            <div className="video-empty">
+              <div className="video-empty-icon">🎬</div>
               <p>Your video will appear here</p>
             </div>
           )}

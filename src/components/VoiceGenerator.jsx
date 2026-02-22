@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react'; // Remove useRef
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './VoiceGenerator.css';
-// No need to import LumaStyles.css separately since it's imported in VoiceGenerator.css
 
 const VoiceGenerator = () => {
   const [productName, setProductName] = useState('');
@@ -14,16 +13,10 @@ const VoiceGenerator = () => {
   const [error, setError] = useState('');
   const [usage, setUsage] = useState(null);
   const [scriptGenerating, setScriptGenerating] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('All');
-  const [prompt, setPrompt] = useState('');
-  // fileInputRef removed
 
   useEffect(() => {
     fetchUsage();
   }, []);
-
-  // Rest of your component remains exactly the same...
-  // (keep all your existing functions - fetchUsage, handleGenerateScript, etc.)
 
   const fetchUsage = async () => {
     try {
@@ -121,91 +114,44 @@ const VoiceGenerator = () => {
     document.body.removeChild(link);
   };
 
-  const filters = ['All', 'Voices', 'Styles', 'Languages'];
-
   return (
-    <section id="voice-generator" className="voice-generator-section">
-      <div className="voice-generator-content">
-        
-        <div className="voice-generator-header">
-          <h2>🎙️ AI Voice Generator</h2>
-          <p>Create professional voiceovers in English & Tagalog!</p>
+    <div className="voice-wrapper">
+      <div className="voice-split">
+        {/* LEFT: Form Panel */}
+        <div className="voice-form-panel">
+          <h2 className="voice-title">🎙️ Generate Voice</h2>
           
           {usage && (
-            <div className="usage-badge">
-              {usage.plan === 'free' ? (
-                <span>🎤 {usage.remaining} free voice remaining</span>
-              ) : (
-                <span>🎤 {usage.remaining}/{usage.limit} voices left today</span>
-              )}
+            <div className="voice-usage">
+              🎤 {usage.remaining}/{usage.limit} left today
             </div>
           )}
-        </div>
 
-        <div className="voice-generator-container">
-          
-          {/* Ideas Bar - Like Luma Labs */}
-          <div className="ideas-bar">
-            <span className="ideas-label">VOICE IDEAS</span>
-            <div className="ideas-filters">
-              {filters.map((filter) => (
-                <button
-                  key={filter}
-                  className={`idea-filter ${activeFilter === filter ? 'active' : ''}`}
-                  onClick={() => setActiveFilter(filter)}
-                >
-                  {filter}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Keyframe Reference - Like Luma Labs */}
-          <div className="keyframe-reference">
-            <div className="keyframe-info">
-              <span className="keyframe-badge">VOICE SAMPLE</span>
-              <span className="keyframe-text">REFERENCE · PROFESSIONAL · 2 DAYS AGO</span>
-            </div>
-            <div className="keyframe-actions">
-              <button className="keyframe-btn">REFERENCE</button>
-              <button className="keyframe-btn modify">MODIFY</button>
-            </div>
-          </div>
-
-          {/* Prompt Input - Like Luma Labs */}
-          <input
-            type="text"
-            className="prompt-input"
-            placeholder="Describe the voice style you want... (e.g., energetic, professional, warm)"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-          />
-
-          {/* Product Info - Enhanced */}
-          <div className="input-section">
-            <div className="upload-header" style={{ marginBottom: '16px' }}>
+          {/* Product Details Section */}
+          <div className="voice-section">
+            <div className="voice-section-header">
               <h3>PRODUCT DETAILS</h3>
               <span>Required for script generation</span>
             </div>
 
-            <div className="input-group">
+            <div className="voice-input-group">
               <label>Product Name *</label>
               <input
                 type="text"
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
                 placeholder="e.g., Wireless Bluetooth Earbuds"
-                className="text-input"
+                className="voice-input"
               />
             </div>
 
-            <div className="input-group">
+            <div className="voice-input-group">
               <label>Features (Optional)</label>
               <textarea
                 value={features}
                 onChange={(e) => setFeatures(e.target.value)}
                 placeholder="e.g., Noise cancellation, 20-hour battery, waterproof..."
-                className="text-area"
+                className="voice-textarea"
                 rows="3"
               />
             </div>
@@ -213,53 +159,52 @@ const VoiceGenerator = () => {
             <button 
               onClick={handleGenerateScript}
               disabled={scriptGenerating || !productName}
-              className="generate-script-btn"
+              className="voice-script-btn"
             >
               {scriptGenerating ? 'Generating Script...' : '✨ Auto-Generate Script'}
             </button>
           </div>
 
-          {/* Script Editor - Enhanced */}
-          <div className="script-section">
-            <div className="upload-header" style={{ marginBottom: '16px' }}>
+          {/* Script Section */}
+          <div className="voice-section">
+            <div className="voice-section-header">
               <h3>VOICE SCRIPT</h3>
               <span>{script.length} / 5000 characters</span>
             </div>
+            
             <textarea
               value={script}
               onChange={(e) => setScript(e.target.value)}
               placeholder="Write your voiceover script here or generate one automatically..."
-              className="script-textarea"
+              className="voice-script-textarea"
               rows="6"
             />
           </div>
 
-          {/* Voice Options - Enhanced */}
-          <div className="voice-options">
-            <div className="option-group">
+          {/* Voice Options */}
+          <div className="voice-options-grid">
+            <div className="voice-option">
               <label>Language</label>
               <select 
                 value={language} 
                 onChange={(e) => setLanguage(e.target.value)}
-                className="select-input"
+                className="voice-select"
               >
                 <option value="en-US">🇺🇸 English (US)</option>
                 <option value="fil-PH">🇵🇭 Tagalog (Filipino)</option>
               </select>
             </div>
 
-            <div className="option-group">
+            <div className="voice-option">
               <label>Voice Style</label>
               <select 
                 value={gender} 
                 onChange={(e) => setGender(e.target.value)}
-                className="select-input"
+                className="voice-select"
               >
                 <optgroup label="🇺🇸 English Voices">
                   <option value="FEMALE">Female (Warm)</option>
                   <option value="MALE">Male (Professional)</option>
-                  <option value="FEMALE-CASUAL">Female (Casual)</option>
-                  <option value="MALE-CASUAL">Male (Casual)</option>
                 </optgroup>
                 <optgroup label="🇵🇭 Tagalog Voices">
                   <option value="FIL-FEMALE">Babae (Female)</option>
@@ -271,90 +216,69 @@ const VoiceGenerator = () => {
 
           {/* Generate Button */}
           {script && !generating && !generatedAudio && (
-            <button 
-              onClick={handleGenerateVoice} 
-              className="generate-voice-btn"
-            >
+            <button onClick={handleGenerateVoice} className="voice-generate-btn">
               Generate Voice 🎤
             </button>
           )}
 
-          {/* Generating Status */}
+          {/* Generating State */}
           {generating && (
-            <div className="generating-status">
-              <div className="loading-spinner"></div>
+            <div className="voice-generating">
+              <div className="voice-spinner"></div>
               <p>Creating your voiceover...</p>
-              <p className="generating-hint">This may take up to 30 seconds</p>
+              <p className="voice-hint">This may take up to 30 seconds</p>
             </div>
           )}
 
-          {/* Audio Preview */}
-          {generatedAudio && (
-            <div className="audio-preview-section">
-              <h3>✨ Your Voiceover is Ready!</h3>
-              <div className="audio-player-wrapper">
-                <audio src={generatedAudio} controls className="audio-player" />
-              </div>
-              <div className="audio-actions">
-                <button onClick={downloadAudio} className="download-btn">
-                  ⬇️ Download Audio
-                </button>
-                <button 
-                  onClick={() => {
-                    setGeneratedAudio(null);
-                    setScript('');
-                    setProductName('');
-                    setFeatures('');
-                  }}
-                  className="generate-another-btn"
-                >
-                  Generate Another
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Error */}
+          {/* Error Message */}
           {error && !generating && (
-            <div className="error-message">
+            <div className="voice-error">
               {error}
               {error.includes('limit') && (
-                <a href="#pricing" className="upgrade-link"> Upgrade Now →</a>
+                <a href="#pricing" className="voice-upgrade-link">Upgrade Now →</a>
               )}
             </div>
           )}
-
         </div>
 
-        {/* Use Cases */}
-        <div className="use-cases">
-          <h3>Perfect For:</h3>
-          <div className="cases-grid">
-            <div className="case">
-              <span className="case-icon">🎬</span>
-              <h4>Video Ads</h4>
-              <p>Add voiceover to product videos</p>
+        {/* RIGHT: Results Panel */}
+        <div className="voice-results-panel">
+          {generatedAudio ? (
+            <>
+              <div className="voice-results-header">
+                <h3>Your Voiceover</h3>
+              </div>
+              <div className="voice-result-container">
+                <div className="voice-player-wrapper">
+                  <audio src={generatedAudio} controls className="voice-player" />
+                </div>
+                <div className="voice-action-buttons">
+                  <button onClick={downloadAudio} className="voice-download-btn">
+                    ⬇️ Download
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setGeneratedAudio(null);
+                      setScript('');
+                      setProductName('');
+                      setFeatures('');
+                    }}
+                    className="voice-new-btn"
+                  >
+                    New Voice
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="voice-empty">
+              <div className="voice-empty-icon">🎤</div>
+              <p>Your voiceover will appear here</p>
             </div>
-            <div className="case">
-              <span className="case-icon">📱</span>
-              <h4>TikTok & Reels</h4>
-              <p>Engaging social media content</p>
-            </div>
-            <div className="case">
-              <span className="case-icon">🛍️</span>
-              <h4>Shopee Live</h4>
-              <p>Pre-recorded product intros</p>
-            </div>
-            <div className="case">
-              <span className="case-icon">📻</span>
-              <h4>Audio Ads</h4>
-              <p>Radio-style promotions</p>
-            </div>
-          </div>
+          )}
         </div>
-
       </div>
-    </section>
+    </div>
   );
 };
 
