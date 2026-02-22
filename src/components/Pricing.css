@@ -1,4 +1,3 @@
-/* Make Pricing fit on screen - NO SCROLL */
 .pricing-section {
   height: calc(100vh - 70px);
   overflow: hidden;
@@ -49,11 +48,6 @@
 .features-list li {
   padding: 0.5rem 0;
   font-size: 0.875rem;
-}
-
-/* Hide coming soon on main pricing view to save space */
-.coming-soon-banner {
-  display: none;
 }
 /* ========================================
    PRICING SECTION - 2x2 GRID LAYOUT

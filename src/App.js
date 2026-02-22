@@ -127,7 +127,7 @@ function App() {
           {/* Tagline at bottom of sidebar */}
           <div className="sidebar-footer">
             <p className="sidebar-tagline">
-              🇵🇭 Ang AI Assistant ng Bawat Negosyante
+              Your PINOY AI Content Assistant ang AI Assistant ng Bawat Negosyante. 🇵🇭
             </p>
             <p className="sidebar-credits">
               © 2026 Made with 💚 in PH

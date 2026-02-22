@@ -69,7 +69,6 @@ const Pricing = () => {
       '10 voice generations/month',
       'All 6 platform formats',
       'Generation history',
-      'Export to CSV',
       'Priority support'
     ],
     cta: 'Upgrade Now',
@@ -87,8 +86,8 @@ const Pricing = () => {
       '30 video generations/month',
       '30 voice generations/month',
       'All 6 platform formats',
-      'Bulk generation',
       'Analytics dashboard',
+      'Export to CSV',
       'Priority support'
     ],
     cta: 'Upgrade Now',
@@ -108,7 +107,6 @@ const Pricing = () => {
       'All 6 platform formats',
       'Bulk generation',
       'Analytics dashboard',
-      'API access',
       'Custom templates',
       'Priority support'
     ],

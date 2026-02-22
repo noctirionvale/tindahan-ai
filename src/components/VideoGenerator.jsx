@@ -153,7 +153,7 @@ const VideoGenerator = () => {
             {!imagePreview ? (
               <label htmlFor="video-upload" className="video-upload-label">
                 <div className="video-upload-icon">📸</div>
-                <p className="video-upload-text">Click to upload</p>
+                <p className="video-upload-text">UPLOAD HERE</p>
                 <span className="video-upload-hint">PNG, JPG up to 10MB</span>
               </label>
             ) : (
