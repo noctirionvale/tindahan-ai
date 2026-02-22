@@ -127,7 +127,7 @@ function App() {
           {/* Tagline at bottom of sidebar */}
           <div className="sidebar-footer">
             <p className="sidebar-tagline">
-              Your Pinoy AI Content Assistant Ang AI Assistant ng Bawat Negosyante
+              🇵🇭 Ang AI Assistant ng Bawat Negosyante
             </p>
             <p className="sidebar-credits">
               © 2026 Made with 💚 in PH
@@ -148,17 +148,36 @@ function App() {
           {activeTab === 'pricing' && (
             <footer className="pricing-footer">
               <div className="footer-content-simple">
-                <div className="footer-links">
-                  <a href="#privacy">Privacy Policy</a>
-                  <span className="separator">•</span>
-                  <a href="#terms">Terms of Service</a>
-                  <span className="separator">•</span>
-                  <a href="#contact">Contact</a>
+                {/* Newsletter Section */}
+                <div className="footer-newsletter">
+                  <h3>Get Updates</h3>
+                  <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
+                    <input 
+                      type="email" 
+                      className="newsletter-input"
+                      placeholder="Your email"
+                    />
+                    <button type="submit" className="newsletter-btn">
+                      Subscribe
+                    </button>
+                  </form>
                 </div>
-                <div className="footer-social">
-                  <a href="#twitter" className="social-icon">𝕏</a>
-                  <a href="#facebook" className="social-icon">f</a>
-                  <a href="#tiktok" className="social-icon">♪</a>
+
+                {/* Bottom Row */}
+                <div className="footer-bottom-row">
+                  <div className="footer-links">
+                    <a href="#privacy">Privacy Policy</a>
+                    <span className="separator">•</span>
+                    <a href="#terms">Terms of Service</a>
+                    <span className="separator">•</span>
+                    <a href="#contact">Contact</a>
+                  </div>
+                  
+                  <div className="footer-social">
+                    <a href="#twitter" className="social-icon" title="Twitter">𝕏</a>
+                    <a href="#facebook" className="social-icon" title="Facebook">f</a>
+                    <a href="#tiktok" className="social-icon" title="TikTok">♪</a>
+                  </div>
                 </div>
               </div>
             </footer>

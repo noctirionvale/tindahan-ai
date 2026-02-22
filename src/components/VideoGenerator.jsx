@@ -35,7 +35,7 @@ const VideoGenerator = () => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setError('Please upload an image file (JPG, PNG, etc.)');
+      setError('Please upload an image file');
       return;
     }
 
@@ -75,7 +75,7 @@ const VideoGenerator = () => {
 
   const handleGenerate = async () => {
     if (!selectedFile) {
-      setError('Please select a product image first');
+      setError('Please select an image first');
       return;
     }
 
@@ -84,10 +84,10 @@ const VideoGenerator = () => {
     setUploadProgress(0);
 
     try {
-      setError('Uploading image...');
+      setError('Uploading...');
       const imageUrl = await uploadToImgur(selectedFile);
       
-      setError('Generating video... This may take 30-60 seconds ⏳');
+      setError('Generating video... 30-60 seconds ⏳');
       const token = localStorage.getItem('tindahan_token');
       
       const response = await axios.post(
@@ -114,11 +114,11 @@ const VideoGenerator = () => {
       console.error('Video generation error:', err);
       
       if (err.response?.status === 429) {
-        setError(err.response.data.message || 'Limit reached! Upgrade your plan.');
+        setError(err.response.data.message || 'Limit reached!');
       } else if (err.code === 'ECONNABORTED') {
-        setError('Request timed out. Check back in a minute.');
+        setError('Timeout. Check back in a minute.');
       } else {
-        setError('Failed to generate video. Please try again.');
+        setError('Failed. Please try again.');
       }
     } finally {
       setGenerating(false);
@@ -137,140 +137,109 @@ const VideoGenerator = () => {
   };
 
   return (
-    <section id="video-generator" className="video-generator-section">
-      <div className="video-generator-content">
-        
-        <div className="video-generator-header">
-          <h2>🎬 AI Video Generator</h2>
-          <p>Transform product images into engaging videos!</p>
+    <div className="gen-wrapper">
+      <div className="gen-split">
+        {/* LEFT: Upload */}
+        <div className="gen-form-panel">
+          <h2 className="gen-title">🎬 Generate Video</h2>
           
           {usage && (
-            <div className="usage-badge">
-              {usage.plan === 'free' ? (
-                <span>🎥 {usage.remaining} free video remaining</span>
-              ) : (
-                <span>🎥 {usage.remaining}/{usage.limit} videos left today</span>
-              )}
+            <div className="gen-usage">
+              🎥 {usage.remaining}/{usage.limit} left today
             </div>
           )}
-        </div>
 
-        <div className="video-generator-container">
-          
-          <div className="upload-section">
-            <div className="upload-box">
-              {!imagePreview ? (
-                <label htmlFor="image-upload" className="upload-label">
-                  <div className="upload-icon">📸</div>
-                  <h3>Upload Product Image</h3>
-                  <p>Click or drag image here</p>
-                  <span className="upload-hint">PNG, JPG up to 10MB</span>
-                </label>
-              ) : (
-                <div className="image-preview">
-                  <img src={imagePreview} alt="Product" />
-                  <button 
-                    onClick={() => {
-                      setSelectedFile(null);
-                      setImagePreview(null);
-                      setGeneratedVideo(null);
-                    }}
-                    className="change-image-btn"
-                  >
-                    Change Image
-                  </button>
-                </div>
-              )}
-              <input
-                id="image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                style={{ display: 'none' }}
-              />
-            </div>
-
-            {selectedFile && !generating && !generatedVideo && (
-              <button onClick={handleGenerate} className="generate-btn">
-                Generate Video 🎬
-              </button>
-            )}
-
-            {generating && (
-              <div className="generating-status">
-                {uploadProgress > 0 && uploadProgress < 100 && (
-                  <div className="progress-bar">
-                    <div className="progress-fill" style={{ width: `${uploadProgress}%` }} />
-                    <span className="progress-text">Uploading... {uploadProgress}%</span>
-                  </div>
-                )}
-                <div className="loading-spinner"></div>
-                <p>{error || 'Creating your video...'}</p>
-                <span className="generating-hint">Usually takes 30-60 seconds</span>
-              </div>
-            )}
-          </div>
-
-          {generatedVideo && (
-            <div className="video-preview-section">
-              <h3>✨ Your Video is Ready!</h3>
-              <div className="video-container">
-                <video src={generatedVideo} controls autoPlay loop className="generated-video">
-                  Your browser doesn't support video.
-                </video>
-              </div>
-              <div className="video-actions">
-                <button onClick={downloadVideo} className="download-btn">
-                  ⬇️ Download Video
-                </button>
+          <div className="video-upload-area">
+            {!imagePreview ? (
+              <label htmlFor="video-upload" className="video-upload-label">
+                <div className="video-upload-icon">📸</div>
+                <p className="video-upload-text">Click to upload</p>
+                <span className="video-upload-hint">PNG, JPG up to 10MB</span>
+              </label>
+            ) : (
+              <div className="video-preview-img">
+                <img src={imagePreview} alt="Product" />
                 <button 
                   onClick={() => {
-                    setGeneratedVideo(null);
                     setSelectedFile(null);
                     setImagePreview(null);
+                    setGeneratedVideo(null);
                   }}
-                  className="generate-another-btn"
+                  className="video-change-btn"
                 >
-                  Generate Another
+                  Change
                 </button>
               </div>
+            )}
+            <input
+              id="video-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              style={{ display: 'none' }}
+            />
+          </div>
+
+          {selectedFile && !generating && !generatedVideo && (
+            <button onClick={handleGenerate} className="gen-btn">
+              Generate Video 🎬
+            </button>
+          )}
+
+          {generating && (
+            <div className="video-generating">
+              {uploadProgress > 0 && uploadProgress < 100 && (
+                <div className="video-progress-bar">
+                  <div className="video-progress-fill" style={{ width: `${uploadProgress}%` }} />
+                </div>
+              )}
+              <div className="loading-spinner"></div>
+              <p>{error || 'Creating...'}</p>
             </div>
           )}
 
           {error && !generating && (
-            <div className="error-message">
-              {error}
-              {error.includes('limit') && (
-                <a href="#pricing" className="upgrade-link"> Upgrade Now →</a>
-              )}
+            <div className="gen-error">{error}</div>
+          )}
+        </div>
+
+        {/* RIGHT: Result */}
+        <div className="gen-results-panel">
+          {generatedVideo ? (
+            <>
+              <div className="gen-results-header">
+                <h3>Your Video</h3>
+              </div>
+              <div className="video-result-area">
+                <video src={generatedVideo} controls autoPlay loop className="video-player">
+                  Your browser doesn't support video.
+                </video>
+                <div className="video-actions">
+                  <button onClick={downloadVideo} className="gen-btn">
+                    ⬇️ Download
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setGeneratedVideo(null);
+                      setSelectedFile(null);
+                      setImagePreview(null);
+                    }}
+                    className="gen-reset"
+                  >
+                    New Video
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="gen-empty">
+              <div className="gen-empty-icon">🎬</div>
+              <p>Your video will appear here</p>
             </div>
           )}
-
         </div>
-
-        <div className="how-it-works">
-          <h3>How It Works</h3>
-          <div className="steps-grid">
-            <div className="step">
-              <span className="step-number">1</span>
-              <h4>Upload Image</h4>
-              <p>Choose your product photo</p>
-            </div>
-            <div className="step">
-              <span className="step-number">2</span>
-              <h4>AI Magic</h4>
-              <p>We create motion & effects</p>
-            </div>
-            <div className="step">
-              <span className="step-number">3</span>
-              <h4>Download</h4>
-              <p>Post to TikTok, Shopee!</p>
-            </div>
-          </div>
-        </div>
-
       </div>
-    </section>
+    </div>
   );
 };
 

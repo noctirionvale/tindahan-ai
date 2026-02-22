@@ -234,17 +234,82 @@
 .pricing-footer {
   background: rgba(15, 15, 25, 0.8);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 2rem;
+  padding: 3rem 2rem 2rem 2rem;
 }
 
 .footer-content-simple {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+/* Newsletter Section */
+.footer-newsletter {
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.footer-newsletter h3 {
+  font-size: 1.5rem;
+  color: #00e5ff;
+  margin-bottom: 1rem;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 0.75rem;
+  max-width: 500px;
+  margin: 0 auto;
+  justify-content: center;
+}
+
+.newsletter-input {
+  flex: 1;
+  padding: 0.875rem 1.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.9375rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.newsletter-input:focus {
+  border-color: #00e5ff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.newsletter-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.newsletter-btn {
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #10b981 0%, #00e5ff 100%);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.newsletter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+/* Footer Links & Social */
+.footer-bottom-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .footer-links {
@@ -299,7 +364,7 @@
 .faq-float-btn {
   position: fixed;
   bottom: 2rem;
-  right: 2rem;
+  left: 280px; /* Position it next to sidebar, not over footer */
   width: 56px;
   height: 56px;
   background: linear-gradient(135deg, #3b82f6 0%, #f97316 100%);
@@ -312,6 +377,7 @@
   box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
   transition: all 0.3s ease;
   z-index: 999;
+  pointer-events: auto; /* Make sure it's clickable */
 }
 
 .faq-float-btn:hover {
@@ -535,7 +601,7 @@
 
   .faq-float-btn {
     bottom: 1.5rem;
-    right: 1.5rem;
+    left: 1.5rem; /* Keep it on left on mobile too */
     width: 52px;
     height: 52px;
     font-size: 1.5rem;

@@ -6,7 +6,6 @@ const ProductDescriptionGenerator = () => {
   const [productName, setProductName] = useState('');
   const [features, setFeatures] = useState('');
   const [platforms, setPlatforms] = useState(['shopee', 'lazada', 'tiktok']);
-// Amazon, Facebbok, eBay are off by default - user can select them
   const [descriptions, setDescriptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -17,7 +16,6 @@ const ProductDescriptionGenerator = () => {
     recentProducts: []
   });
 
-  // 1. Static Configuration
   const platformInfo = {
     shopee: { name: 'Shopee', icon: '🛍️', color: '#ee4d2d' },
     lazada: { name: 'Lazada', icon: '🏪', color: '#0f156d' },
@@ -27,7 +25,6 @@ const ProductDescriptionGenerator = () => {
     ebay: { name: 'eBay', icon: '🏷️', color: '#0064d2' }
   };
 
-  // 2. Lifecycle & Persistence
   useEffect(() => {
     const savedAnalytics = localStorage.getItem('tindahan_analytics');
     if (savedAnalytics) {
@@ -41,7 +38,6 @@ const ProductDescriptionGenerator = () => {
     localStorage.setItem('tindahan_analytics', JSON.stringify(updated));
   };
 
-  // 3. Handlers
   const handlePlatformToggle = (platform) => {
     if (platforms.includes(platform)) {
       setPlatforms(platforms.filter(p => p !== platform));
@@ -84,19 +80,19 @@ const ProductDescriptionGenerator = () => {
       for (const platform of platforms) {
         let prompt = '';
 
-       if (platform === 'shopee') {
-  prompt = `You are a Shopee Philippines product copywriter. Output ONLY the description. Style: Professional Taglish. Format: Product Name + Bullet points. Product: ${productName}. Features: ${features || 'High quality'}`;
-} else if (platform === 'lazada') {
-  prompt = `You are a Lazada official copywriter. Style: Corporate English/Taglish. Format: Specs + Benefits. Product: ${productName}. Features: ${features || 'Safe and reliable'}`;
-} else if (platform === 'tiktok') {
-  prompt = `You are a TikTok Shop caption writer. Style: Casual/Viral. Product: ${productName}. Features: ${features || 'Trending item'}`;
-} else if (platform === 'amazon') {
-  prompt = `You are a Facebook seller product listing expert. Output ONLY the listing. Style: Professional English. Format: Title + 5 bullet points + short description. SEO optimized. Product: ${productName}. Features: ${features || 'High quality product'}`;
-} else if (platform === 'facebook') {
-  prompt = `You are an Etsy shop listing expert. Output ONLY the listing. Style: Warm, handcrafted, story-driven English. Format: Catchy title + description with story + materials/details. Product: ${productName}. Features: ${features || 'Unique handcrafted item'}`;
-} else if (platform === 'ebay') {
-  prompt = `You are an eBay listing expert. Output ONLY the listing. Style: Clear, factual, buyer-focused English. Format: Title + condition + description + why buy from us. Product: ${productName}. Features: ${features || 'Quality item'}`;
-}
+        if (platform === 'shopee') {
+          prompt = `You are a Shopee Philippines product copywriter. Output ONLY the description. Style: Professional Taglish. Format: Product Name + Bullet points. Product: ${productName}. Features: ${features || 'High quality'}`;
+        } else if (platform === 'lazada') {
+          prompt = `You are a Lazada official copywriter. Style: Corporate English/Taglish. Format: Specs + Benefits. Product: ${productName}. Features: ${features || 'Safe and reliable'}`;
+        } else if (platform === 'tiktok') {
+          prompt = `You are a TikTok Shop caption writer. Style: Casual/Viral. Product: ${productName}. Features: ${features || 'Trending item'}`;
+        } else if (platform === 'amazon') {
+          prompt = `You are an Amazon listing expert. Output ONLY the listing. Style: Professional English. Format: Title + 5 bullet points + short description. SEO optimized. Product: ${productName}. Features: ${features || 'High quality product'}`;
+        } else if (platform === 'facebook') {
+          prompt = `You are a Facebook seller. Output ONLY the listing. Style: Warm, conversational. Format: Catchy title + description. Product: ${productName}. Features: ${features || 'Great item'}`;
+        } else if (platform === 'ebay') {
+          prompt = `You are an eBay listing expert. Output ONLY the listing. Style: Clear, factual, buyer-focused English. Format: Title + condition + description + why buy from us. Product: ${productName}. Features: ${features || 'Quality item'}`;
+        }
 
         const response = await fetchProductDescriptions(prompt);
         const results = Array.isArray(response) ? response : [{ text: response }];
@@ -104,11 +100,7 @@ const ProductDescriptionGenerator = () => {
         const platformResponse = results.map(desc => ({
           ...desc,
           platform,
-          name: platform === 'shopee' ? 'Shopee Optimized' :
-      platform === 'lazada' ? 'LazMall Standard' :
-      platform === 'tiktok' ? 'TikTok Viral Caption' :
-      platform === 'amazon' ? 'Amazon Listing' :
-      platform === 'facebook' ? 'Facebook Marketplace Listing' : 'eBay Listing',
+          name: platformInfo[platform].name,
           icon: platformInfo[platform].icon,
           color: platformInfo[platform].color
         }));
@@ -118,7 +110,6 @@ const ProductDescriptionGenerator = () => {
 
       setDescriptions(platformDescriptions);
 
-      // Update Analytics
       const newPlatformUsage = { ...analytics.platformUsage };
       platforms.forEach(p => {
         newPlatformUsage[p] = (newPlatformUsage[p] || 0) + 1;
@@ -141,137 +132,115 @@ const ProductDescriptionGenerator = () => {
       });
 
     } catch (err) {
-  if (err.message?.includes('limit') || err.message?.includes('upgrade')) {
-    setError('🚫 ' + err.message + ' Click "See Pricing" to upgrade!');
-  } else {
-    setError('Failed to generate. Please check your connection.');
-  }
-  console.error(err);
+      if (err.message?.includes('limit') || err.message?.includes('upgrade')) {
+        setError('🚫 ' + err.message + ' Click "Pricing" to upgrade!');
+      } else {
+        setError('Failed to generate. Please check your connection.');
+      }
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  const charCount = productName.length + features.length;
-  const maxChars = 500;
-
-  // 4. Render Logic
   return (
-    <div className="product-generator-section" id="product-generator">
-      <div className="product-generator-content">
-        <div className="generator-header">
-          <h2>📦 Product Description Generator</h2>
-          <p>Generate unique, platform-optimized descriptions para sa Shopee, Lazada, Ebay, Facebook, Amazon & TikTok Shop!</p>
-        </div>
+    <div className="gen-wrapper">
+      <div className="gen-split">
+        {/* LEFT: Form */}
+        <div className="gen-form-panel">
+          <h2 className="gen-title">📦 Generate Descriptions</h2>
+          
+          <input
+            type="text"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+            placeholder="Product name..."
+            className="gen-input"
+          />
 
-        <div className="generator-form">
-          <div className="form-group">
-            <label htmlFor="product-name">Ano ang Produkto? *</label>
-            <input
-              id="product-name"
-              type="text"
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
-              placeholder="e.g., Wireless Bluetooth Earbuds"
-              className="form-input"
-              maxLength={200}
-            />
-          </div>
+          <textarea
+            value={features}
+            onChange={(e) => setFeatures(e.target.value)}
+            placeholder="Features (optional)..."
+            className="gen-textarea"
+            rows={2}
+          />
 
-          <div className="form-group">
-            <label htmlFor="features">Key Features (optional)</label>
-            <textarea
-              id="features"
-              value={features}
-              onChange={(e) => setFeatures(e.target.value)}
-              placeholder="e.g., Noise cancellation, mabango, matibay"
-              className="form-textarea"
-              rows={3}
-              maxLength={300}
-            />
-            <div className="char-counter">
-              {charCount} / {maxChars} characters
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Saan mo ibebenta?</label>
-            <div className="platform-checkboxes">
-              {Object.entries(platformInfo).map(([key, info]) => (
-                <label key={key} className={`platform-checkbox ${platforms.includes(key) ? 'selected' : ''}`}>
-                  <input
-                    type="checkbox"
-                    checked={platforms.includes(key)}
-                    onChange={() => handlePlatformToggle(key)}
-                  />
-                  <span className="checkbox-content">
-                    <span className="platform-icon">{info.icon}</span>
-                    <span className="platform-name">{info.name}</span>
-                  </span>
-                </label>
-              ))}
-            </div>
+          <div className="gen-platforms">
+            {Object.entries(platformInfo).map(([key, info]) => (
+              <label key={key} className={`gen-platform ${platforms.includes(key) ? 'active' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={platforms.includes(key)}
+                  onChange={() => handlePlatformToggle(key)}
+                />
+                <span>{info.icon}</span>
+              </label>
+            ))}
           </div>
 
           <button 
             onClick={handleSubmit} 
-            disabled={loading || !productName.trim() || platforms.length === 0}
-            className="generate-button"
+            disabled={loading || !productName.trim()}
+            className="gen-btn"
           >
-            {loading ? '🔄 Ginagawa na...' : '✨ Generate Descriptions'}
+            {loading ? '🔄 Generating...' : '✨ Generate'}
           </button>
+
+          {error && <div className="gen-error">{error}</div>}
         </div>
 
-        {error && <div className="error-box">{error}</div>}
-
-        {loading && (
-          <div className="loading-box">
-            <div className="loading-spinner"></div>
-            <p>Ginagawa ang product descriptions mo...</p>
-          </div>
-        )}
-
-        {descriptions.length > 0 && (
-          <div className="descriptions-grid">
-            <div className="results-header">
-              <h3>✅ Tapos na! Your Product Descriptions</h3>
-              <button onClick={handleReset} className="reset-button">Generate Another</button>
+        {/* RIGHT: Results */}
+        <div className="gen-results-panel">
+          {loading && (
+            <div className="gen-loading">
+              <div className="loading-spinner"></div>
+              <p>Creating descriptions...</p>
             </div>
+          )}
 
-            {platforms.map(platform => {
-              const platformDescs = descriptions.filter(d => d.platform === platform);
-              if (platformDescs.length === 0) return null;
+          {!loading && descriptions.length === 0 && (
+            <div className="gen-empty">
+              <div className="gen-empty-icon">✨</div>
+              <p>Your descriptions will appear here</p>
+            </div>
+          )}
 
-              return (
-                <div key={platform} className="platform-group">
-                  <h4 className="platform-group-title">
-                    {platformInfo[platform].icon} {platformInfo[platform].name}
-                  </h4>
-                  {platformDescs.map((desc, index) => (
-                    <div key={index} className="description-card">
-                      <div className="card-header">
-                        <div className="card-title">
-                          <span className="card-icon">{desc.icon}</span>
-                          <div>
-                            <h4 style={{ color: desc.color }}>{desc.name}</h4>
-                            <p className="card-subtitle">{desc.description}</p>
-                          </div>
+          {descriptions.length > 0 && (
+            <>
+              <div className="gen-results-header">
+                <h3>Results</h3>
+                <button onClick={handleReset} className="gen-reset">New</button>
+              </div>
+              
+              <div className="gen-results-scroll">
+                {platforms.map(platform => {
+                  const platformDescs = descriptions.filter(d => d.platform === platform);
+                  if (platformDescs.length === 0) return null;
+
+                  return (
+                    <div key={platform} className="gen-result-group">
+                      <h4 className="gen-result-title">
+                        {platformInfo[platform].icon} {platformInfo[platform].name}
+                      </h4>
+                      {platformDescs.map((desc, index) => (
+                        <div key={index} className="gen-result-card">
+                          <div className="gen-result-text">{desc.text}</div>
+                          <button 
+                            onClick={() => handleCopy(desc.text, `${platform}-${index}`)}
+                            className="gen-copy-btn"
+                          >
+                            {copiedIndex === `${platform}-${index}` ? '✓' : '📋'}
+                          </button>
                         </div>
-                        <button 
-                          onClick={() => handleCopy(desc.text, `${platform}-${index}`)}
-                          className="copy-button"
-                        >
-                          {copiedIndex === `${platform}-${index}` ? '✓ Copied!' : '📋 Copy'}
-                        </button>
-                      </div>
-                      <div className="description-text">{desc.text}</div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
-        )}
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
