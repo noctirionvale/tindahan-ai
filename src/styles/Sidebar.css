@@ -1,8 +1,7 @@
 /* ============================================
-   SIDEBAR DASHBOARD LAYOUT
+   UPDATED SIDEBAR DASHBOARD - MOBILE RESPONSIVE
    ============================================ */
 
-/* Dashboard Wrapper */
 .dashboard-wrapper {
   min-height: 100vh;
   background: linear-gradient(180deg, #0a0e1a 0%, #05070d 100%);
@@ -80,7 +79,7 @@
 .dashboard-body {
   display: flex;
   padding-top: 70px;
-  min-height: calc(100vh - 70px);
+  min-height: 100vh;
 }
 
 /* ========== SIDEBAR ========== */
@@ -96,6 +95,8 @@
   padding: 2rem 1rem;
   overflow-y: auto;
   z-index: 100;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-header {
@@ -122,6 +123,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex: 1;
 }
 
 .sidebar-tab {
@@ -173,12 +175,259 @@
   flex: 1;
 }
 
-/* ========== MAIN CONTENT ========== */
+/* ========== SIDEBAR FOOTER ========== */
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-tagline {
+  font-size: 0.8125rem;
+  color: #10b981;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+.sidebar-credits {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0;
+}
+
+/* ========== MAIN CONTENT - FULL HEIGHT ========== */
 .main-content {
   margin-left: 260px;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 260px);
+}
+
+/* Full height for generators (no scroll) */
+.main-content.full-height {
+  height: calc(100vh - 70px);
+  overflow: hidden;
+}
+
+/* Allow scroll when pricing is active */
+.main-content.with-footer {
+  min-height: calc(100vh - 70px);
+  overflow-y: auto;
+}
+
+.generator-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+/* Make generators take full available height */
+.generator-container > section {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========== PRICING FOOTER (Only on Pricing Tab) ========== */
+.pricing-footer {
+  background: rgba(15, 15, 25, 0.8);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding: 2rem;
-  max-width: calc(100% - 260px);
+}
+
+.footer-content-simple {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  color: #3b82f6;
+}
+
+.separator {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.footer-social {
+  display: flex;
+  gap: 1rem;
+}
+
+.social-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.social-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+/* ========== FLOATING FAQ BUTTON ========== */
+.faq-float-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #3b82f6 0%, #f97316 100%);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+  transition: all 0.3s ease;
+  z-index: 999;
+}
+
+.faq-float-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px rgba(59, 130, 246, 0.6);
+}
+
+/* ========== FAQ MODAL ========== */
+.faq-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.faq-modal {
+  background: rgba(15, 15, 25, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2.5rem;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.faq-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.faq-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.faq-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.faq-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s;
+}
+
+.faq-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.faq-item h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 0.75rem;
+}
+
+.faq-item p {
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  margin: 0;
 }
 
 /* ========== LOADING SCREEN ========== */
@@ -210,7 +459,33 @@
   font-size: 0.9375rem;
 }
 
-/* ========== RESPONSIVE ========== */
+/* ========== SCROLLBAR ========== */
+.sidebar::-webkit-scrollbar,
+.generator-container::-webkit-scrollbar,
+.faq-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track,
+.generator-container::-webkit-scrollbar-track,
+.faq-modal::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+.generator-container::-webkit-scrollbar-thumb,
+.faq-modal::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover,
+.generator-container::-webkit-scrollbar-thumb:hover,
+.faq-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ========== MOBILE RESPONSIVE ========== */
 @media (max-width: 1024px) {
   .sidebar {
     width: 220px;
@@ -218,7 +493,7 @@
 
   .main-content {
     margin-left: 220px;
-    max-width: calc(100% - 220px);
+    width: calc(100% - 220px);
   }
 }
 
@@ -235,24 +510,49 @@
     font-size: 1rem;
   }
 
+  /* Hide sidebar by default on mobile */
   .sidebar {
     transform: translateX(-100%);
     transition: transform 0.3s ease;
     z-index: 999;
+    width: 260px;
   }
 
   .sidebar.open {
     transform: translateX(0);
   }
 
-  .main-content {
+  .main-content,
+  .main-content.full-height,
+  .main-content.with-footer {
     margin-left: 0;
-    max-width: 100%;
-    padding: 1.5rem 1rem;
+    width: 100%;
   }
 
-  .tab-label {
-    font-size: 0.875rem;
+  .generator-container {
+    padding: 0;
+  }
+
+  .faq-float-btn {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 52px;
+    height: 52px;
+    font-size: 1.5rem;
+  }
+
+  .faq-modal {
+    padding: 2rem 1.5rem;
+    margin: 1rem;
+  }
+
+  .faq-title {
+    font-size: 1.5rem;
+  }
+
+  .footer-content-simple {
+    flex-direction: column;
+    text-align: center;
   }
 }
 
@@ -267,7 +567,10 @@
 
   .sidebar {
     top: 60px;
-    width: 240px;
+  }
+
+  .main-content.full-height {
+    height: calc(100vh - 60px);
   }
 
   .top-logo {
@@ -278,22 +581,9 @@
     padding: 0.5rem 1rem;
     font-size: 0.8125rem;
   }
-}
 
-/* ========== SCROLLBAR ========== */
-.sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  .faq-modal {
+    padding: 1.5rem 1rem;
+    max-height: 90vh;
+  }
 }
