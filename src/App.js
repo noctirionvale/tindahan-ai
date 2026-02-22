@@ -5,7 +5,6 @@ import ProductDescriptionGenerator from './components/ProductDescriptionGenerato
 import VideoGenerator from './components/VideoGenerator';
 import VoiceGenerator from './components/VoiceGenerator';
 import Pricing from './components/Pricing';
-import Footer from './components/Footer';
 import './styles/App.css';
 import './styles/Sidebar.css';
 
@@ -13,7 +12,8 @@ function App() {
   const [user, setUser] = useState(null);
   const [authMode, setAuthMode] = useState('login');
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('description'); // 'description', 'video', 'voice', 'pricing'
+  const [activeTab, setActiveTab] = useState('description');
+  const [showFAQ, setShowFAQ] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('tindahan_token');
@@ -48,7 +48,6 @@ function App() {
     );
   }
 
-  // If not logged in, show auth pages
   if (!user) {
     return (
       <div className="main-wrapper">
@@ -67,7 +66,6 @@ function App() {
     );
   }
 
-  // If logged in, show dashboard with sidebar
   return (
     <div className="dashboard-wrapper">
       {/* Top Bar */}
@@ -84,12 +82,11 @@ function App() {
         </div>
       </div>
 
-      {/* Main Layout */}
       <div className="dashboard-body">
         {/* Sidebar */}
         <aside className="sidebar">
           <div className="sidebar-header">
-            <h3>Generators</h3>
+            <h3>GENERATORS</h3>
             <p>Choose your tool</p>
           </div>
 
@@ -126,19 +123,100 @@ function App() {
               <span className="tab-label">Pricing</span>
             </button>
           </nav>
+
+          {/* Tagline at bottom of sidebar */}
+          <div className="sidebar-footer">
+            <p className="sidebar-tagline">
+              🇵🇭 Ang AI Assistant ng Bawat Negosyante
+            </p>
+            <p className="sidebar-credits">
+              © 2026 Made with 💚 in PH
+            </p>
+          </div>
         </aside>
 
-        {/* Main Content Area */}
-        <main className="main-content">
-          {activeTab === 'description' && <ProductDescriptionGenerator />}
-          {activeTab === 'video' && <VideoGenerator />}
-          {activeTab === 'voice' && <VoiceGenerator />}
-          {activeTab === 'pricing' && <Pricing />}
+        {/* Main Content - Full Height */}
+        <main className={`main-content ${activeTab === 'pricing' ? 'with-footer' : 'full-height'}`}>
+          <div className="generator-container">
+            {activeTab === 'description' && <ProductDescriptionGenerator />}
+            {activeTab === 'video' && <VideoGenerator />}
+            {activeTab === 'voice' && <VoiceGenerator />}
+            {activeTab === 'pricing' && <Pricing />}
+          </div>
+
+          {/* Footer - Only shows on Pricing tab */}
+          {activeTab === 'pricing' && (
+            <footer className="pricing-footer">
+              <div className="footer-content-simple">
+                <div className="footer-links">
+                  <a href="#privacy">Privacy Policy</a>
+                  <span className="separator">•</span>
+                  <a href="#terms">Terms of Service</a>
+                  <span className="separator">•</span>
+                  <a href="#contact">Contact</a>
+                </div>
+                <div className="footer-social">
+                  <a href="#twitter" className="social-icon">𝕏</a>
+                  <a href="#facebook" className="social-icon">f</a>
+                  <a href="#tiktok" className="social-icon">♪</a>
+                </div>
+              </div>
+            </footer>
+          )}
         </main>
       </div>
 
-      {/* Footer */}
-      <Footer />
+      {/* Floating FAQ Button */}
+      <button 
+        className="faq-float-btn"
+        onClick={() => setShowFAQ(!showFAQ)}
+        title="Frequently Asked Questions"
+      >
+        ?
+      </button>
+
+      {/* FAQ Modal */}
+      {showFAQ && (
+        <div className="faq-modal-overlay" onClick={() => setShowFAQ(false)}>
+          <div className="faq-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="faq-close" onClick={() => setShowFAQ(false)}>×</button>
+            
+            <h2 className="faq-title">Frequently Asked Questions</h2>
+            
+            <div className="faq-list">
+              <div className="faq-item">
+                <h4>How many free generations do I get?</h4>
+                <p>You get 15 lifetime free descriptions, 1 video, and 1 voice generation - no time limit!</p>
+              </div>
+              
+              <div className="faq-item">
+                <h4>Can I cancel anytime?</h4>
+                <p>Yes! Cancel anytime. Just email us at spawntaneousbulb@gmail.com</p>
+              </div>
+              
+              <div className="faq-item">
+                <h4>How do I pay?</h4>
+                <p>Filipino users can pay via GCash. International users via credit/debit card (coming soon).</p>
+              </div>
+              
+              <div className="faq-item">
+                <h4>How long before my account is upgraded?</h4>
+                <p>Within 24 hours after payment confirmation. Usually much faster!</p>
+              </div>
+              
+              <div className="faq-item">
+                <h4>Do you offer refunds?</h4>
+                <p>Yes! 30-day money-back guarantee on all paid plans.</p>
+              </div>
+              
+              <div className="faq-item">
+                <h4>Is my data safe?</h4>
+                <p>Yes! We use industry-standard encryption and never share your data.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
