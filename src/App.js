@@ -174,10 +174,10 @@ function App() {
                   </div>
                   
                   <div className="footer-social">
-                    <a href="#twitter" className="social-icon" title="Twitter">𝕏</a>
-                    <a href="#facebook" className="social-icon" title="Facebook">f</a>
-                    <a href="#tiktok" className="social-icon" title="TikTok">♪</a>
-                  </div>
+  <a href="https://twitter.com/tindahanai" target="_blank" rel="noopener noreferrer" className="social-icon" title="Twitter">𝕏</a>
+  <a href="https://facebook.com/tindahanai" target="_blank" rel="noopener noreferrer" className="social-icon" title="Facebook">f</a>
+  <a href="https://tiktok.com/@tindahanai" target="_blank" rel="noopener noreferrer" className="social-icon" title="TikTok">♪</a>
+</div>
                 </div>
               </div>
             </footer>

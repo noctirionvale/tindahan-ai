@@ -1,7 +1,7 @@
 /* ============================================
    PRODUCT GENERATOR - OPTIMIZED FIT-ON-SCREEN
    ============================================ */
-
+@import '../styles/GeneratorPremium.css';
 .gen-wrapper {
   height: calc(100vh - 70px);
   overflow: hidden;
