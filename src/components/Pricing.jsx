@@ -195,15 +195,15 @@ const Pricing = () => {
           <div className="faq-grid">
             <div className="faq-item">
               <h4>How many free generations do I get?</h4>
-              <p>You get 15 lifetime free generations - no time limit! Use them whenever you want.</p>
+              <p>You get 15 lifetime free product generations - no time limit! Use them whenever you want.</p>
             </div>
             <div className="faq-item">
               <h4>Can I cancel anytime?</h4>
-              <p>Yes! Cancel anytime. Just email us at spawntaneousbulb@gmail.com</p>
+              <p>Yes! Cancel anytime. Just email us at noctirionvale@gmail.com</p>
             </div>
             <div className="faq-item">
               <h4>How do I pay?</h4>
-              <p>Filipino users can pay via GCash. International users via credit/debit card (coming soon).</p>
+              <p>Filipino users can pay via GCash. International users via credit/debit card.</p>
             </div>
             <div className="faq-item">
               <h4>How long before my account is upgraded?</h4>
