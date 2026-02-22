@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import Login from './components/auth/Login';
 import Signup from './components/auth/Signup';
-import Hero from './components/Hero';
 import ProductDescriptionGenerator from './components/ProductDescriptionGenerator';
-import Analytics from './components/Analytics';
+import VideoGenerator from './components/VideoGenerator';
+import VoiceGenerator from './components/VoiceGenerator';
 import Pricing from './components/Pricing';
 import Footer from './components/Footer';
 import './styles/App.css';
-import VideoGenerator from './components/VideoGenerator';
-import VoiceGenerator from './components/VoiceGenerator';
+import './styles/Sidebar.css';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
+  const [authMode, setAuthMode] = useState('login');
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('description'); // 'description', 'video', 'voice', 'pricing'
 
-  // Check if user is already logged in
   useEffect(() => {
     const token = localStorage.getItem('tindahan_token');
     const savedUser = localStorage.getItem('tindahan_user');
@@ -41,7 +40,12 @@ function App() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="loading-screen">
+        <div className="loading-spinner"></div>
+        <p>Loading...</p>
+      </div>
+    );
   }
 
   // If not logged in, show auth pages
@@ -63,34 +67,78 @@ function App() {
     );
   }
 
-  // If logged in, show main app
+  // If logged in, show dashboard with sidebar
   return (
-    <div className="main-wrapper">
-      <main className="content-center">
-        
-        {/* Logo */}
-        <div className="logo-container">
-          <img src="pointingai.png" alt="Tindahan.AI Logo" className="logo-image" />
+    <div className="dashboard-wrapper">
+      {/* Top Bar */}
+      <div className="top-bar">
+        <div className="top-bar-left">
+          <img src="pointingai.png" alt="Tindahan.AI" className="top-logo" />
+          <span className="top-brand">TINDAHAN.AI</span>
         </div>
-
-        {/* User Info */}
-        <div className="user-bar">
-          <span>Welcome, {user.name}! 👋</span>
-          <button onClick={handleLogout} className="logout-btn">
+        <div className="top-bar-right">
+          <span className="welcome-text">Welcome, {user.name}! 👋</span>
+          <button onClick={handleLogout} className="logout-btn-top">
             Logout
           </button>
         </div>
+      </div>
 
-        {/* Main Content */}
-        <Hero />
-        <ProductDescriptionGenerator />
-        <VideoGenerator />
-        <VoiceGenerator />
-        <Analytics />
-        <Pricing />
-        <Footer />
-        
-      </main>
+      {/* Main Layout */}
+      <div className="dashboard-body">
+        {/* Sidebar */}
+        <aside className="sidebar">
+          <div className="sidebar-header">
+            <h3>Generators</h3>
+            <p>Choose your tool</p>
+          </div>
+
+          <nav className="sidebar-nav">
+            <button
+              className={`sidebar-tab ${activeTab === 'description' ? 'active' : ''}`}
+              onClick={() => setActiveTab('description')}
+            >
+              <span className="tab-icon">📝</span>
+              <span className="tab-label">Description</span>
+            </button>
+
+            <button
+              className={`sidebar-tab ${activeTab === 'video' ? 'active' : ''}`}
+              onClick={() => setActiveTab('video')}
+            >
+              <span className="tab-icon">🎬</span>
+              <span className="tab-label">Video</span>
+            </button>
+
+            <button
+              className={`sidebar-tab ${activeTab === 'voice' ? 'active' : ''}`}
+              onClick={() => setActiveTab('voice')}
+            >
+              <span className="tab-icon">🎙️</span>
+              <span className="tab-label">Voice</span>
+            </button>
+
+            <button
+              className={`sidebar-tab ${activeTab === 'pricing' ? 'active' : ''}`}
+              onClick={() => setActiveTab('pricing')}
+            >
+              <span className="tab-icon">💳</span>
+              <span className="tab-label">Pricing</span>
+            </button>
+          </nav>
+        </aside>
+
+        {/* Main Content Area */}
+        <main className="main-content">
+          {activeTab === 'description' && <ProductDescriptionGenerator />}
+          {activeTab === 'video' && <VideoGenerator />}
+          {activeTab === 'voice' && <VoiceGenerator />}
+          {activeTab === 'pricing' && <Pricing />}
+        </main>
+      </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
