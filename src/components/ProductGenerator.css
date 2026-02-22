@@ -5,17 +5,27 @@
 
 .product-generator-section {
   width: 100%;
-  min-height: 100vh;
-  padding: 100px 0;
+  height: 100%;
+  padding: 0;
   background: transparent;
   position: relative;
   z-index: 10;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .product-generator-content {
   max-width: 800px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 1rem 1.5rem;
+
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 /* ========== HEADER - MINIMAL & CLEAN ========== */
@@ -237,7 +247,10 @@
 
 /* ========== RESULTS - PREMIUM CARDS ========== */
 .descriptions-grid {
-  margin-top: 2rem;
+  margin-top: 1rem;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .results-header {
@@ -415,8 +428,8 @@
 /* ========== RESPONSIVE - MOBILE FIRST ========== */
 @media (max-width: 768px) {
   .product-generator-section {
-    padding: 60px 0;
-  }
+  padding: 0;
+}
 
   .product-generator-content {
     padding: 0 1rem;
@@ -516,4 +529,12 @@
       transform: translateY(0);
     }
   }
+
+  .generator-form {
+  flex-shrink: 0;
+}
+
+.generator-header {
+  flex-shrink: 0;
+}
 }
