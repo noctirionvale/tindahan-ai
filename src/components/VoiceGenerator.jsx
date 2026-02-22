@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './VoiceGenerator.css';
 
@@ -13,6 +13,9 @@ const VoiceGenerator = () => {
   const [error, setError] = useState('');
   const [usage, setUsage] = useState(null);
   const [scriptGenerating, setScriptGenerating] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [prompt, setPrompt] = useState('');
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchUsage();
@@ -114,6 +117,8 @@ const VoiceGenerator = () => {
     document.body.removeChild(link);
   };
 
+  const filters = ['All', 'Voices', 'Styles', 'Languages'];
+
   return (
     <section id="voice-generator" className="voice-generator-section">
       <div className="voice-generator-content">
@@ -135,8 +140,50 @@ const VoiceGenerator = () => {
 
         <div className="voice-generator-container">
           
-          {/* Product Info */}
+          {/* Ideas Bar - Like Luma Labs */}
+          <div className="ideas-bar">
+            <span className="ideas-label">VOICE IDEAS</span>
+            <div className="ideas-filters">
+              {filters.map((filter) => (
+                <button
+                  key={filter}
+                  className={`idea-filter ${activeFilter === filter ? 'active' : ''}`}
+                  onClick={() => setActiveFilter(filter)}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Keyframe Reference - Like Luma Labs */}
+          <div className="keyframe-reference">
+            <div className="keyframe-info">
+              <span className="keyframe-badge">VOICE SAMPLE</span>
+              <span className="keyframe-text">REFERENCE · PROFESSIONAL · 2 DAYS AGO</span>
+            </div>
+            <div className="keyframe-actions">
+              <button className="keyframe-btn">REFERENCE</button>
+              <button className="keyframe-btn modify">MODIFY</button>
+            </div>
+          </div>
+
+          {/* Prompt Input - Like Luma Labs */}
+          <input
+            type="text"
+            className="prompt-input"
+            placeholder="Describe the voice style you want... (e.g., energetic, professional, warm)"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+          />
+
+          {/* Product Info - Enhanced */}
           <div className="input-section">
+            <div className="upload-header" style={{ marginBottom: '16px' }}>
+              <h3>PRODUCT DETAILS</h3>
+              <span>Required for script generation</span>
+            </div>
+
             <div className="input-group">
               <label>Product Name *</label>
               <input
@@ -168,9 +215,12 @@ const VoiceGenerator = () => {
             </button>
           </div>
 
-          {/* Script Editor */}
+          {/* Script Editor - Enhanced */}
           <div className="script-section">
-            <label>Script</label>
+            <div className="upload-header" style={{ marginBottom: '16px' }}>
+              <h3>VOICE SCRIPT</h3>
+              <span>{script.length} / 5000 characters</span>
+            </div>
             <textarea
               value={script}
               onChange={(e) => setScript(e.target.value)}
@@ -178,12 +228,9 @@ const VoiceGenerator = () => {
               className="script-textarea"
               rows="6"
             />
-            <div className="script-info">
-              {script.length} / 5000 characters
-            </div>
           </div>
 
-          {/* Voice Options */}
+          {/* Voice Options - Enhanced */}
           <div className="voice-options">
             <div className="option-group">
               <label>Language</label>
@@ -197,7 +244,6 @@ const VoiceGenerator = () => {
               </select>
             </div>
 
-            {/* NEW VOICE STYLE DROPDOWN */}
             <div className="option-group">
               <label>Voice Style</label>
               <select 
@@ -234,6 +280,7 @@ const VoiceGenerator = () => {
             <div className="generating-status">
               <div className="loading-spinner"></div>
               <p>Creating your voiceover...</p>
+              <p className="generating-hint">This may take up to 30 seconds</p>
             </div>
           )}
 
@@ -241,7 +288,9 @@ const VoiceGenerator = () => {
           {generatedAudio && (
             <div className="audio-preview-section">
               <h3>✨ Your Voiceover is Ready!</h3>
-              <audio src={generatedAudio} controls className="audio-player" />
+              <div className="audio-player-wrapper">
+                <audio src={generatedAudio} controls className="audio-player" />
+              </div>
               <div className="audio-actions">
                 <button onClick={downloadAudio} className="download-btn">
                   ⬇️ Download Audio
