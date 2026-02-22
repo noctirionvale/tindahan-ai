@@ -1,0 +1,161 @@
+/* ===== LUMA LABS SHARED STYLES ===== */
+/* These styles work for both Video and Voice generators */
+
+/* Ideas Bar */
+.ideas-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0;
+  padding: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ideas-label {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.ideas-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.idea-filter {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.idea-filter:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.idea-filter.active {
+  background: #ff6b35;
+  border-color: #ff6b35;
+  color: #fff;
+}
+
+/* Keyframe Reference */
+.keyframe-reference {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 16px 0;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.keyframe-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.keyframe-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 12px;
+  border-radius: 20px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.keyframe-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+}
+
+.keyframe-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.keyframe-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.keyframe-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.keyframe-btn.modify {
+  background: rgba(255, 107, 53, 0.2);
+  border-color: rgba(255, 107, 53, 0.3);
+  color: #ff8c42;
+}
+
+.keyframe-btn.modify:hover {
+  background: rgba(255, 107, 53, 0.3);
+}
+
+/* Prompt Input */
+.prompt-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px 20px;
+  color: #fff;
+  font-size: 15px;
+  margin-bottom: 24px;
+  transition: all 0.2s ease;
+}
+
+.prompt-input:focus {
+  outline: none;
+  border-color: #ff6b35;
+  background: rgba(255, 107, 53, 0.05);
+  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+}
+
+.prompt-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Upload Header (reusable) */
+.upload-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.upload-header h3 {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.upload-header span {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+}
+
+/* Generating Hint */
+.generating-hint {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  margin-top: 8px;
+}

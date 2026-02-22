@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react'; // Remove useRef
 import axios from 'axios';
 import './VoiceGenerator.css';
+// No need to import LumaStyles.css separately since it's imported in VoiceGenerator.css
 
 const VoiceGenerator = () => {
   const [productName, setProductName] = useState('');
@@ -15,11 +16,14 @@ const VoiceGenerator = () => {
   const [scriptGenerating, setScriptGenerating] = useState(false);
   const [activeFilter, setActiveFilter] = useState('All');
   const [prompt, setPrompt] = useState('');
-  const fileInputRef = useRef(null);
+  // fileInputRef removed
 
   useEffect(() => {
     fetchUsage();
   }, []);
+
+  // Rest of your component remains exactly the same...
+  // (keep all your existing functions - fetchUsage, handleGenerateScript, etc.)
 
   const fetchUsage = async () => {
     try {
