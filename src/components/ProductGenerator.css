@@ -1,95 +1,43 @@
-/* ========================================
-   TINDAHAN.AI UNIFIED STYLES - PRICING LOOK
-   ======================================== */
-
-/* Main Container */
-.unified-container {
+/* Description Generator Premium Styles */
+.desc-wrapper {
+  height: calc(100vh - 70px);
+  overflow: hidden;
+  padding: 0;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  min-height: 100vh;
-  padding: 40px 20px;
+  position: relative;
 }
 
-/* Split Layout */
-.unified-split {
+.desc-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
+  height: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  min-height: calc(100vh - 120px);
+  padding: 24px;
 }
 
-/* Cards - Like Pricing Section */
-.unified-card {
+.desc-form-panel,
+.desc-results-panel {
   background: linear-gradient(145deg, rgba(106, 92, 255, 0.05) 0%, rgba(0, 229, 255, 0.03) 100%);
   border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   padding: 32px;
-  transition: all 0.4s ease;
-  position: relative;
-  overflow: hidden;
   backdrop-filter: blur(10px);
+  transition: all 0.4s ease;
 }
 
-.unified-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  border-color: rgba(0, 229, 255, 0.3);
-}
-
-.unified-card.premium {
-  border-color: #00e5ff;
-  background: linear-gradient(145deg, rgba(0, 229, 255, 0.1) 0%, rgba(106, 92, 255, 0.05) 100%);
-}
-
-/* Headers */
-.unified-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.unified-header h2 {
-  font-size: 2.5rem;
+.desc-title {
+  font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 24px;
   background: linear-gradient(135deg, #00e5ff 0%, #6a5cff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.unified-header p {
-  color: #bdbdbd;
-  font-size: 1rem;
-}
-
-/* Badges */
-.unified-badge {
-  display: inline-block;
-  background: linear-gradient(135deg, #ff4fd8 0%, #00e5ff 100%);
-  color: #fff;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 16px;
-}
-
-.usage-badge {
-  background: rgba(0, 229, 255, 0.15);
-  border: 1px solid rgba(0, 229, 255, 0.3);
-  border-radius: 20px;
-  padding: 8px 20px;
-  color: #00e5ff;
-  font-size: 14px;
-  font-weight: 600;
-  display: inline-block;
-}
-
-/* Section Headers */
-.unified-section-header {
+.desc-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -98,273 +46,139 @@
   padding-bottom: 12px;
 }
 
-.unified-section-header h3 {
+.desc-section-header h3 {
   color: #00e5ff;
   font-size: 1.3rem;
   font-weight: 600;
 }
 
-.unified-section-header span {
+.desc-section-header span {
   color: #bdbdbd;
   font-size: 0.85rem;
 }
 
-/* Input Fields - Like Pricing Cards */
-.unified-input,
-.unified-textarea,
-.unified-select {
+.desc-input,
+.desc-textarea {
   width: 100%;
-  background: linear-gradient(145deg, rgba(106, 92, 255, 0.05) 0%, rgba(0, 229, 255, 0.03) 100%);
+  background: rgba(255, 255, 255, 0.08);
   border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 14px 18px;
+  border-radius: 12px;
+  padding: 14px 16px;
   color: #fff;
   font-size: 15px;
   transition: all 0.3s ease;
+  margin-top: 8px;
 }
 
-.unified-input:focus,
-.unified-textarea:focus,
-.unified-select:focus {
-  outline: none;
+.desc-input:focus,
+.desc-textarea:focus {
   border-color: #00e5ff;
   box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+  outline: none;
 }
 
-.unified-input::placeholder,
-.unified-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.3);
-}
-
-/* Buttons - Like Pricing CTA */
-.unified-btn {
+.desc-input-group label {
+  color: #bdbdbd;
+  font-size: 14px;
   display: block;
-  width: 100%;
-  padding: 14px 24px;
-  text-align: center;
-  border: none;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  border: 2px solid transparent;
 }
 
-.unified-btn.primary {
-  background: linear-gradient(135deg, #00e5ff 0%, #6a5cff 100%);
-  color: #fff;
-  box-shadow: 0 4px 20px rgba(0, 229, 255, 0.3);
-}
-
-.unified-btn.primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 30px rgba(0, 229, 255, 0.5);
-}
-
-.unified-btn.secondary {
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
-}
-
-.unified-btn.secondary:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.4);
-  transform: translateY(-2px);
-}
-
-.unified-btn.purple {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  color: #fff;
-  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
-}
-
-.unified-btn.purple:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 30px rgba(139, 92, 246, 0.5);
-}
-
-.unified-btn.green {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: #fff;
-  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
-}
-
-.unified-btn.green:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 30px rgba(16, 185, 129, 0.5);
-}
-
-/* Features List - Like Pricing */
-.unified-features {
-  list-style: none;
-  padding: 0;
+.desc-platform-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
   margin: 20px 0;
 }
 
-.unified-features li {
-  padding: 8px 0;
-  color: #e0e0e0;
+.desc-platform-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.95rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  justify-content: center;
+  gap: 6px;
 }
 
-.unified-features li:last-child {
-  border-bottom: none;
+.desc-platform-btn:hover {
+  border-color: #00e5ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2);
 }
 
-.unified-check {
-  color: #00e5ff;
-  font-weight: bold;
-  font-size: 1.2rem;
+.desc-platform-btn.active {
+  background: linear-gradient(135deg, #8b5cf6, #6a5cff);
+  border-color: #00e5ff;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
 }
 
-/* Empty State */
-.unified-empty {
+.desc-generate-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  border: none;
+  color: white;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+  margin: 24px 0;
+}
+
+.desc-empty {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   color: rgba(255, 255, 255, 0.3);
-  text-align: center;
   min-height: 300px;
 }
 
-.unified-empty-icon {
+.desc-empty-icon {
   font-size: 64px;
   margin-bottom: 16px;
   opacity: 0.5;
   filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.3));
 }
 
-.unified-empty p {
-  font-size: 16px;
-  color: #bdbdbd;
-}
-
-/* Grid Layouts */
-.unified-grid-2 {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin: 20px 0;
-}
-
-/* Upload Area - Like Pricing Cards */
-.unified-upload {
-  border: 2px dashed rgba(255, 255, 255, 0.15);
-  border-radius: 24px;
-  padding: 40px;
-  text-align: center;
-  background: linear-gradient(145deg, rgba(106, 92, 255, 0.03) 0%, rgba(0, 229, 255, 0.02) 100%);
-  cursor: pointer;
+.desc-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  position: relative;
   transition: all 0.3s ease;
 }
 
-.unified-upload:hover {
-  border-color: #00e5ff;
-  background: linear-gradient(145deg, rgba(0, 229, 255, 0.05) 0%, rgba(106, 92, 255, 0.03) 100%);
-  box-shadow: 0 0 30px rgba(0, 229, 255, 0.1);
+.desc-card:hover {
+  border-color: rgba(0, 229, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 229, 255, 0.1);
 }
 
-.unified-upload-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.3));
-}
-
-.unified-upload h4 {
-  color: #fff;
-  font-size: 18px;
-  margin-bottom: 8px;
-}
-
-.unified-upload p {
-  color: #bdbdbd;
-  font-size: 14px;
-  margin-bottom: 20px;
-}
-
-/* Image/Video Preview */
-.unified-preview {
-  border-radius: 20px;
-  overflow: hidden;
-  border: 2px solid rgba(0, 229, 255, 0.3);
-  box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);
-}
-
-.unified-preview img,
-.unified-preview video {
-  width: 100%;
-  display: block;
-}
-
-/* Progress Bar */
-.unified-progress {
-  width: 100%;
-  height: 8px;
+.desc-copy-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  overflow: hidden;
-  margin: 20px 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.unified-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #00e5ff, #6a5cff);
-  transition: width 0.3s ease;
-  box-shadow: 0 0 10px #00e5ff;
-}
-
-/* Loading Spinner */
-.unified-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(0, 229, 255, 0.1);
-  border-top-color: #00e5ff;
-  border-radius: 50%;
-  margin: 0 auto 20px;
-  animation: unified-spin 1s linear infinite;
-  box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
-}
-
-@keyframes unified-spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Error Message */
-.unified-error {
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 16px;
-  padding: 16px;
-  color: #fca5a5;
-  font-size: 14px;
-  margin-top: 20px;
-  text-align: center;
-  backdrop-filter: blur(10px);
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .unified-split {
-    grid-template-columns: 1fr;
-  }
-  
-  .unified-card {
-    padding: 24px;
-  }
-  
-  .unified-grid-2 {
-    grid-template-columns: 1fr;
-  }
-  
-  .unified-header h2 {
-    font-size: 2rem;
-  }
+.desc-copy-btn:hover {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: #00e5ff;
 }
