@@ -189,17 +189,6 @@ const Pricing = () => {
           ))}
         </div>
 
-        {/* Coming Soon */}
-        <div className="coming-soon-banner">
-          <h3>🚀 Coming Soon</h3>
-          <div className="coming-soon-grid">
-            <div className="coming-soon-item"><span>🎬</span><p>Video Script Generator</p></div>
-            <div className="coming-soon-item"><span>📊</span><p>Analytics Dashboard</p></div>
-            <div className="coming-soon-item"><span>🤖</span><p>AI Image Generator</p></div>
-            <div className="coming-soon-item"><span>📱</span><p>Mobile App</p></div>
-          </div>
-        </div>
-
         {/* FAQ */}
         <div className="pricing-faq">
           <h3>Frequently Asked Questions</h3>
