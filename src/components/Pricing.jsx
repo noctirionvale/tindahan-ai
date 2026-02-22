@@ -189,37 +189,6 @@ const Pricing = () => {
           ))}
         </div>
 
-        {/* FAQ */}
-        <div className="pricing-faq">
-          <h3>Frequently Asked Questions</h3>
-          <div className="faq-grid">
-            <div className="faq-item">
-              <h4>How many free generations do I get?</h4>
-              <p>You get 15 lifetime free product generations - no time limit! Use them whenever you want.</p>
-            </div>
-            <div className="faq-item">
-              <h4>Can I cancel anytime?</h4>
-              <p>Yes! Cancel anytime. Just email us at noctirionvale@gmail.com</p>
-            </div>
-            <div className="faq-item">
-              <h4>How do I pay?</h4>
-              <p>Filipino users can pay via GCash. International users via credit/debit card.</p>
-            </div>
-            <div className="faq-item">
-              <h4>How long before my account is upgraded?</h4>
-              <p>Within 24 hours after payment confirmation. Usually much faster!</p>
-            </div>
-            <div className="faq-item">
-              <h4>Do you offer refunds?</h4>
-              <p>Yes! 30-day money-back guarantee on all paid plans.</p>
-            </div>
-            <div className="faq-item">
-              <h4>Is my data safe?</h4>
-              <p>Yes! We use industry-standard encryption and never share your data.</p>
-            </div>
-          </div>
-        </div>
-
       </div>
 
       {/* Upgrade Modal */}
