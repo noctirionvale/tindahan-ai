@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './VideoGenerator.css';
 
@@ -10,6 +10,9 @@ const VideoGenerator = () => {
   const [error, setError] = useState('');
   const [usage, setUsage] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [prompt, setPrompt] = useState('');
+  const [activeFilter, setActiveFilter] = useState('All');
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchUsage();
@@ -53,6 +56,16 @@ const VideoGenerator = () => {
       setImagePreview(reader.result);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleChangeImage = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
+    setGeneratedVideo(null);
   };
 
   const uploadToImgur = async (file) => {
@@ -136,6 +149,8 @@ const VideoGenerator = () => {
     document.body.removeChild(link);
   };
 
+  const filters = ['All', 'Videos', 'Images', 'Filter'];
+
   return (
     <div className="gen-wrapper">
       <div className="gen-split">
@@ -149,39 +164,89 @@ const VideoGenerator = () => {
             </div>
           )}
 
-          <div className="video-upload-area">
+          {/* Enhanced Upload Section - Luma Labs Style */}
+          <div className="upload-section">
+            <div className="upload-header">
+              <h3>UPLOAD IMAGE</h3>
+              <span>PNG, JPG up to 10MB</span>
+            </div>
+            
             {!imagePreview ? (
-              <label htmlFor="video-upload" className="video-upload-label">
-                <div className="video-upload-icon">📸</div>
-                <p className="video-upload-text">UPLOAD HERE</p>
-                <span className="video-upload-hint">PNG, JPG up to 10MB</span>
-              </label>
+              <div className="upload-box" onClick={handleUploadClick}>
+                <div className="upload-content">
+                  <div className="upload-icon-wrapper">
+                    <span className="upload-icon">📁</span>
+                  </div>
+                  <h3>Choose a file or drag & drop here</h3>
+                  <p>Upload an image to generate your video</p>
+                  <button className="upload-button">
+                    <span>⬆️</span> Select File
+                  </button>
+                  <div className="upload-hint">PNG, JPG up to 10MB</div>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  style={{ display: 'none' }}
+                />
+              </div>
             ) : (
-              <div className="video-preview-img">
-                <img src={imagePreview} alt="Product" />
-                <button 
-                  onClick={() => {
-                    setSelectedFile(null);
-                    setImagePreview(null);
-                    setGeneratedVideo(null);
-                  }}
-                  className="video-change-btn"
-                >
-                  Change
-                </button>
+              <div className="image-preview">
+                <img src={imagePreview} alt="Preview" />
+                <div className="preview-overlay">
+                  <div className="preview-info">
+                    <span className="preview-badge">1 IMAGE</span>
+                    <span className="preview-badge">UPLOADED</span>
+                  </div>
+                  <div className="preview-actions">
+                    <button className="preview-btn" onClick={handleChangeImage}>✕</button>
+                  </div>
+                </div>
               </div>
             )}
+
+            {/* Ideas Bar - Like Luma Labs */}
+            <div className="ideas-bar">
+              <span className="ideas-label">IDEAS</span>
+              <div className="ideas-filters">
+                {filters.map((filter) => (
+                  <button
+                    key={filter}
+                    className={`idea-filter ${activeFilter === filter ? 'active' : ''}`}
+                    onClick={() => setActiveFilter(filter)}
+                  >
+                    {filter}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Keyframe Reference - Like Luma Labs */}
+            <div className="keyframe-reference">
+              <div className="keyframe-info">
+                <span className="keyframe-badge">KEYFRAME</span>
+                <span className="keyframe-text">REFERENCE · 1 DAY AGO</span>
+              </div>
+              <div className="keyframe-actions">
+                <button className="keyframe-btn">REFERENCE</button>
+                <button className="keyframe-btn modify">MODIFY</button>
+              </div>
+            </div>
+
+            {/* Prompt Input */}
             <input
-              id="video-upload"
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
-              style={{ display: 'none' }}
+              type="text"
+              className="prompt-input"
+              placeholder="What do you want to see..."
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
             />
           </div>
 
           {selectedFile && !generating && !generatedVideo && (
-            <button onClick={handleGenerate} className="gen-btn">
+            <button onClick={handleGenerate} className="gen-btn generate-btn">
               Generate Video 🎬
             </button>
           )}
@@ -195,6 +260,7 @@ const VideoGenerator = () => {
               )}
               <div className="loading-spinner"></div>
               <p>{error || 'Creating...'}</p>
+              <p className="generating-hint">This may take up to 60 seconds</p>
             </div>
           )}
 
@@ -215,16 +281,12 @@ const VideoGenerator = () => {
                   Your browser doesn't support video.
                 </video>
                 <div className="video-actions">
-                  <button onClick={downloadVideo} className="gen-btn">
+                  <button onClick={downloadVideo} className="gen-btn download-btn">
                     ⬇️ Download
                   </button>
                   <button 
-                    onClick={() => {
-                      setGeneratedVideo(null);
-                      setSelectedFile(null);
-                      setImagePreview(null);
-                    }}
-                    className="gen-reset"
+                    onClick={handleChangeImage}
+                    className="gen-reset generate-another-btn"
                   >
                     New Video
                   </button>
