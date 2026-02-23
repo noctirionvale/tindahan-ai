@@ -182,3 +182,285 @@
   background: rgba(0, 229, 255, 0.2);
   border-color: #00e5ff;
 }
+
+/* ===== DESCRIPTION GENERATOR - MOBILE FIXES ===== */
+/* Keep all existing styles, add these at the bottom */
+
+@media (max-width: 768px) {
+  /* Main wrapper - full width */
+  .desc-wrapper {
+    height: auto;
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  /* Split layout stacks vertically */
+  .desc-split {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+    padding: 16px !important;
+    height: auto !important;
+  }
+
+  /* Both panels take full width */
+  .desc-form-panel,
+  .desc-results-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    padding: 24px !important;
+    margin: 0 !important;
+  }
+
+  /* Title - slightly smaller but still prominent */
+  .desc-title {
+    font-size: 1.8rem !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Section headers - keep them visible */
+  .desc-section-header {
+    flex-direction: row !important; /* Keep horizontal */
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .desc-section-header h3 {
+    font-size: 1.2rem !important;
+  }
+
+  .desc-section-header span {
+    font-size: 0.8rem !important;
+  }
+
+  /* Input fields - full width */
+  .desc-input-group {
+    width: 100% !important;
+    margin-bottom: 16px !important;
+  }
+
+  .desc-input-group label {
+    font-size: 14px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .desc-input,
+  .desc-textarea {
+    width: 100% !important;
+    padding: 12px 14px !important;
+    font-size: 15px !important;
+  }
+
+  /* Platform grid - 2 columns on mobile */
+  .desc-platform-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    margin: 16px 0 !important;
+  }
+
+  .desc-platform-btn {
+    width: 100% !important;
+    padding: 12px 8px !important;
+    font-size: 13px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+  }
+
+  .desc-platform-btn span {
+    font-size: 16px !important;
+  }
+
+  /* Generate button */
+  .desc-generate-btn {
+    width: 100% !important;
+    padding: 16px !important;
+    font-size: 16px !important;
+    margin: 20px 0 !important;
+  }
+
+  /* Results panel */
+  .desc-results-header {
+    flex-direction: row !important; /* Keep horizontal */
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 0 16px 0 !important;
+    margin-bottom: 16px !important;
+  }
+
+  .desc-results-header h3 {
+    font-size: 1.2rem !important;
+  }
+
+  .desc-reset-btn {
+    width: auto !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Results scroll area */
+  .desc-results-scroll {
+    max-height: 500px !important;
+    overflow-y: auto !important;
+    padding-right: 8px !important;
+  }
+
+  /* Group titles - sticky for better UX */
+  .desc-group-title {
+    position: sticky !important;
+    top: 0 !important;
+    background: rgba(15, 23, 42, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    padding: 12px 0 !important;
+    margin: 0 0 12px 0 !important;
+    z-index: 10 !important;
+    font-size: 15px !important;
+    border-bottom: 1px solid rgba(0, 229, 255, 0.3) !important;
+  }
+
+  /* Result cards */
+  .desc-card {
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+    position: relative !important;
+  }
+
+  .desc-text {
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    padding-right: 40px !important; /* Space for copy button */
+    word-break: break-word !important;
+  }
+
+  /* Copy button - positioned correctly */
+  .desc-copy-btn {
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    font-size: 16px !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    z-index: 5 !important;
+  }
+
+  /* Empty state */
+  .desc-empty {
+    min-height: 300px !important;
+    padding: 40px 20px !important;
+  }
+
+  .desc-empty-icon {
+    font-size: 56px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .desc-empty p {
+    font-size: 15px !important;
+  }
+
+  /* Loading state */
+  .desc-generating {
+    padding: 30px 20px !important;
+  }
+
+  .desc-spinner {
+    width: 40px !important;
+    height: 40px !important;
+    border-width: 3px !important;
+  }
+
+  /* Error message */
+  .desc-error {
+    padding: 14px !important;
+    font-size: 14px !important;
+    margin-top: 16px !important;
+  }
+}
+
+/* Small phones - 480px and below */
+@media (max-width: 480px) {
+  .desc-form-panel,
+  .desc-results-panel {
+    padding: 20px !important;
+  }
+
+  .desc-title {
+    font-size: 1.5rem !important;
+  }
+
+  .desc-section-header h3 {
+    font-size: 1.1rem !important;
+  }
+
+  /* Platform grid becomes 1 column on very small screens */
+  .desc-platform-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .desc-platform-btn {
+    justify-content: flex-start !important;
+    padding: 14px !important;
+  }
+
+  .desc-results-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .desc-reset-btn {
+    width: 100% !important;
+  }
+
+  .desc-group-title {
+    font-size: 14px !important;
+  }
+
+  .desc-text {
+    font-size: 13px !important;
+    padding-right: 35px !important;
+  }
+
+  .desc-copy-btn {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* Make results scrollable for desktop too */
+.desc-results-scroll {
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Custom scrollbar */
+.desc-results-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.desc-results-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.desc-results-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.3);
+  border-radius: 3px;
+}
+
+.desc-results-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 255, 0.5);
+}

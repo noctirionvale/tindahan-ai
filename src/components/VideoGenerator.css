@@ -483,4 +483,290 @@
   .video-new-btn {
     width: 100%;
   }
+
+  /* ===== VIDEO GENERATOR - MOBILE FIXES ===== */
+/* Add at the bottom of your VideoGenerator.css */
+
+@media (max-width: 768px) {
+  /* Main wrapper */
+  .video-wrapper {
+    height: auto;
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  /* Split layout stacks vertically */
+  .video-split {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+    padding: 16px !important;
+    height: auto !important;
+  }
+
+  /* Both panels take full width */
+  .video-form-panel,
+  .video-results-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    padding: 24px !important;
+    margin: 0 !important;
+  }
+
+  /* Title */
+  .video-title {
+    font-size: 1.8rem !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Usage badge */
+  .video-usage {
+    font-size: 13px !important;
+    padding: 6px 16px !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Upload section header */
+  .video-upload-header {
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .video-upload-header h3 {
+    font-size: 1.2rem !important;
+  }
+
+  .video-upload-header span {
+    font-size: 0.8rem !important;
+  }
+
+  /* Upload box */
+  .video-upload-box {
+    padding: 32px 20px !important;
+    min-height: auto !important;
+  }
+
+  .video-upload-icon {
+    font-size: 48px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .video-upload-box h4 {
+    font-size: 16px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .video-upload-box p {
+    font-size: 13px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .video-select-btn {
+    padding: 10px 20px !important;
+    font-size: 13px !important;
+  }
+
+  .video-upload-hint {
+    font-size: 11px !important;
+    margin-top: 12px !important;
+  }
+
+  /* Image preview */
+  .video-preview-container {
+    width: 100% !important;
+  }
+
+  .video-preview-container img {
+    max-height: 250px !important;
+    width: 100% !important;
+    object-fit: contain !important;
+  }
+
+  .video-preview-overlay {
+    padding: 12px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  .video-preview-overlay span {
+    font-size: 13px !important;
+  }
+
+  .video-change-btn {
+    padding: 6px 14px !important;
+    font-size: 12px !important;
+  }
+
+  /* Generate button */
+  .video-generate-btn {
+    width: 100% !important;
+    padding: 16px !important;
+    font-size: 16px !important;
+    margin: 20px 0 !important;
+  }
+
+  /* Generating state */
+  .video-generating {
+    padding: 30px 20px !important;
+  }
+
+  .video-progress {
+    margin: 16px 0 !important;
+  }
+
+  .video-spinner {
+    width: 40px !important;
+    height: 40px !important;
+    border-width: 3px !important;
+  }
+
+  .video-generating p {
+    font-size: 15px !important;
+  }
+
+  .video-hint {
+    font-size: 12px !important;
+  }
+
+  /* Results panel */
+  .video-results-header {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 0 16px 0 !important;
+    margin-bottom: 16px !important;
+  }
+
+  .video-results-header h3 {
+    font-size: 1.2rem !important;
+  }
+
+  /* Video player */
+  .video-result-container {
+    width: 100% !important;
+  }
+
+  .video-player-wrapper {
+    padding: 16px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .video-player {
+    width: 100% !important;
+    max-height: 300px !important;
+    object-fit: contain !important;
+  }
+
+  /* Action buttons */
+  .video-action-buttons {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .video-download-btn,
+  .video-new-btn {
+    width: 100% !important;
+    padding: 14px !important;
+    font-size: 15px !important;
+  }
+
+  /* Empty state */
+  .video-empty {
+    min-height: 300px !important;
+    padding: 40px 20px !important;
+  }
+
+  .video-empty-icon {
+    font-size: 56px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .video-empty p {
+    font-size: 15px !important;
+  }
+
+  /* Error message */
+  .video-error {
+    padding: 14px !important;
+    font-size: 14px !important;
+    margin-top: 16px !important;
+  }
+
+  .video-upgrade-link {
+    font-size: 14px !important;
+  }
 }
+
+/* Small phones - 480px and below */
+@media (max-width: 480px) {
+  .video-form-panel,
+  .video-results-panel {
+    padding: 20px !important;
+  }
+
+  .video-title {
+    font-size: 1.5rem !important;
+  }
+
+  .video-upload-header h3 {
+    font-size: 1.1rem !important;
+  }
+
+  .video-upload-box {
+    padding: 24px 16px !important;
+  }
+
+  .video-upload-icon {
+    font-size: 40px !important;
+  }
+
+  .video-upload-box h4 {
+    font-size: 15px !important;
+  }
+
+  .video-preview-container img {
+    max-height: 200px !important;
+  }
+
+  .video-preview-overlay {
+    flex-direction: column !important;
+    gap: 10px !important;
+    align-items: flex-start !important;
+  }
+
+  .video-change-btn {
+    width: 100% !important;
+  }
+
+  .video-results-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .video-player-wrapper {
+    padding: 12px !important;
+  }
+
+  .video-player {
+    max-height: 250px !important;
+  }
+
+  .video-empty-icon {
+    font-size: 48px !important;
+  }
+}
+
+/* Make video player responsive on desktop too */
+.video-player {
+  width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+  border-radius: 12px;
+}
+}
+
