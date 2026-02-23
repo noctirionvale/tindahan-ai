@@ -110,13 +110,15 @@ const VoiceGenerator = () => {
       console.log('Server response:', response.data);
 
       // Check if the server returns a URL
-      if (response.data.success && response.data.audioUrl) {
-        // Server returns a URL to the audio file
-        setGeneratedAudio({
-          url: response.data.audioUrl,
-          mimeType: 'audio/mpeg',
-          ext: 'mp3'
-        });
+      // When setting generatedAudio from server response
+if (response.data.success && response.data.audioUrl) {
+  // Store the URL but don't create blob yet
+  setGeneratedAudio({
+    url: response.data.audioUrl,  // Keep original URL
+    mimeType: 'audio/mpeg',
+    ext: 'mp3'
+  });
+}
 
         if (usage) {
           setUsage({
@@ -174,37 +176,37 @@ const VoiceGenerator = () => {
   };
 
   const handleDownload = async () => {
-    if (!generatedAudio) return;
+  if (!generatedAudio) return;
+  
+  try {
+    // Show downloading feedback
+    setError('Preparing download...');
     
-    // If it's a blob URL, download directly
-    if (generatedAudio.url.startsWith('blob:')) {
-      const link = document.createElement('a');
-      link.href = generatedAudio.url;
-      link.download = `tindahan-voice-${Date.now()}.${generatedAudio.ext}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } 
-    // If it's a remote URL, fetch and download
-    else {
-      try {
-        const response = await fetch(generatedAudio.url);
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `tindahan-voice-${Date.now()}.${generatedAudio.ext}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(url), 100);
-      } catch (err) {
-        console.error('Download failed:', err);
-        // Fallback: open in new tab
-        window.open(generatedAudio.url, '_blank');
-      }
-    }
-  };
+    // Fetch the audio file from the URL
+    const response = await fetch(generatedAudio.url);
+    const blob = await response.blob();
+    
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `tindahan-voice-${Date.now()}.mp3`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Cleanup
+    window.URL.revokeObjectURL(url);
+    setError(''); // Clear downloading message
+    
+  } catch (err) {
+    console.error('Download failed:', err);
+    setError('Download failed. Try right-click and "Save Audio As..."');
+    
+    // Fallback: open in new tab
+    window.open(generatedAudio.url, '_blank');
+  }
+};
 
   const handleReset = () => {
     if (generatedAudio?.url?.startsWith('blob:')) {
