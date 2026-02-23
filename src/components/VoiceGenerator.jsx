@@ -9,27 +9,24 @@ const VoiceGenerator = () => {
   const [language, setLanguage] = useState('en-US');
   const [gender, setGender] = useState('FEMALE');
   const [generating, setGenerating] = useState(false);
-  const [generatedAudio, setGeneratedAudio] = useState(null); // { url, mimeType, ext }
+  const [generatedAudio, setGeneratedAudio] = useState(null);
   const [error, setError] = useState('');
   const [usage, setUsage] = useState(null);
   const [scriptGenerating, setScriptGenerating] = useState(false);
+  const [debugInfo, setDebugInfo] = useState('');
   const audioRef = useRef(null);
 
   useEffect(() => {
     fetchUsage();
   }, []);
 
-  // When generatedAudio changes, force the audio element to reload and play
   useEffect(() => {
     if (generatedAudio && audioRef.current) {
       audioRef.current.load();
-      audioRef.current.play().catch(() => {
-        // Autoplay blocked by browser — that's fine, user can press play
-      });
+      audioRef.current.play().catch(() => {});
     }
   }, [generatedAudio]);
 
-  // Clean up blob URL on unmount or replacement
   useEffect(() => {
     return () => {
       if (generatedAudio?.url?.startsWith('blob:')) {
@@ -58,10 +55,8 @@ const VoiceGenerator = () => {
       setError('Please enter a product name');
       return;
     }
-
     setScriptGenerating(true);
     setError('');
-
     try {
       const token = localStorage.getItem('tindahan_token');
       const response = await axios.post(
@@ -73,7 +68,6 @@ const VoiceGenerator = () => {
         },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
-
       if (response.data.success) {
         setScript(response.data.script);
       }
@@ -84,35 +78,59 @@ const VoiceGenerator = () => {
     }
   };
 
-  // Detect real MIME type from the blob's first bytes
+  /**
+   * Reads magic bytes from blob to detect true audio format.
+   * Logs hex bytes to console for debugging.
+   */
   const detectAudioType = async (blob) => {
-    const buffer = await blob.slice(0, 12).arrayBuffer();
+    const buffer = await blob.slice(0, 16).arrayBuffer();
     const bytes = new Uint8Array(buffer);
+    const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join(' ');
 
-    // OGG: starts with OggS
+    console.log('🔍 Audio blob — size:', blob.size, 'bytes | MIME from server:', blob.type);
+    console.log('🔍 First 16 bytes (hex):', hex);
+    setDebugInfo(`Size: ${blob.size}B | Server MIME: "${blob.type}" | Bytes: ${hex}`);
+
+    // Trust server MIME if it's valid
+    if (blob.type === 'audio/mpeg')  return { mimeType: 'audio/mpeg', ext: 'mp3' };
+    if (blob.type === 'audio/mp3')   return { mimeType: 'audio/mpeg', ext: 'mp3' };
+    if (blob.type === 'audio/ogg')   return { mimeType: 'audio/ogg',  ext: 'ogg' };
+    if (blob.type === 'audio/wav')   return { mimeType: 'audio/wav',  ext: 'wav' };
+    if (blob.type === 'audio/mp4')   return { mimeType: 'audio/mp4',  ext: 'm4a' };
+    if (blob.type === 'audio/aac')   return { mimeType: 'audio/aac',  ext: 'aac' };
+    if (blob.type === 'audio/webm')  return { mimeType: 'audio/webm', ext: 'webm' };
+
+    // Detect from magic bytes
+    // OGG: "OggS"
     if (bytes[0] === 0x4F && bytes[1] === 0x67 && bytes[2] === 0x67 && bytes[3] === 0x53) {
-      return { mimeType: 'audio/ogg', ext: 'ogg' };
+      console.log('✅ Detected: OGG'); return { mimeType: 'audio/ogg', ext: 'ogg' };
     }
-    // MP3: ID3 tag or sync bytes
+    // MP3: ID3 tag
     if (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) {
-      return { mimeType: 'audio/mpeg', ext: 'mp3' };
+      console.log('✅ Detected: MP3 (ID3)'); return { mimeType: 'audio/mpeg', ext: 'mp3' };
     }
-    if (bytes[0] === 0xFF && (bytes[1] === 0xFB || bytes[1] === 0xF3 || bytes[1] === 0xF2)) {
-      return { mimeType: 'audio/mpeg', ext: 'mp3' };
+    // MP3: raw sync bytes
+    if (bytes[0] === 0xFF && (bytes[1] & 0xE0) === 0xE0) {
+      console.log('✅ Detected: MP3 (sync)'); return { mimeType: 'audio/mpeg', ext: 'mp3' };
     }
-    // WAV: RIFF....WAVE
+    // WAV: "RIFF"
     if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46) {
-      return { mimeType: 'audio/wav', ext: 'wav' };
+      console.log('✅ Detected: WAV'); return { mimeType: 'audio/wav', ext: 'wav' };
     }
-    // AAC / M4A: ftyp box or ADTS sync
+    // M4A/MP4: "ftyp" at offset 4
     if (bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70) {
-      return { mimeType: 'audio/mp4', ext: 'm4a' };
+      console.log('✅ Detected: M4A/MP4'); return { mimeType: 'audio/mp4', ext: 'm4a' };
     }
-    if (bytes[0] === 0xFF && (bytes[1] & 0xF0) === 0xF0) {
-      return { mimeType: 'audio/aac', ext: 'aac' };
+    // WEBM: 0x1A 0x45 0xDF 0xA3
+    if (bytes[0] === 0x1A && bytes[1] === 0x45 && bytes[2] === 0xDF && bytes[3] === 0xA3) {
+      console.log('✅ Detected: WebM'); return { mimeType: 'audio/webm', ext: 'webm' };
+    }
+    // AAC: ADTS sync
+    if (bytes[0] === 0xFF && (bytes[1] === 0xF1 || bytes[1] === 0xF9)) {
+      console.log('✅ Detected: AAC'); return { mimeType: 'audio/aac', ext: 'aac' };
     }
 
-    // Fallback — try ogg since Google TTS often returns ogg
+    console.warn('⚠️ Unknown format — defaulting to OGG');
     return { mimeType: 'audio/ogg', ext: 'ogg' };
   };
 
@@ -124,8 +142,8 @@ const VoiceGenerator = () => {
 
     setGenerating(true);
     setError('');
+    setDebugInfo('');
 
-    // Revoke old blob URL
     if (generatedAudio?.url?.startsWith('blob:')) {
       URL.revokeObjectURL(generatedAudio.url);
     }
@@ -146,14 +164,11 @@ const VoiceGenerator = () => {
         }
       );
 
-      if (!(response.data instanceof Blob)) {
-        throw new Error('Invalid response format');
+      if (!(response.data instanceof Blob) || response.data.size === 0) {
+        throw new Error('Empty or invalid audio response from server');
       }
 
-      // Detect real audio type from magic bytes
       const { mimeType, ext } = await detectAudioType(response.data);
-
-      // Re-wrap blob with correct MIME type so the browser plays it correctly
       const correctedBlob = new Blob([response.data], { type: mimeType });
       const url = URL.createObjectURL(correctedBlob);
 
@@ -182,7 +197,7 @@ const VoiceGenerator = () => {
       } else if (err.response?.status === 429) {
         setError('Limit reached! Upgrade your plan.');
       } else {
-        setError('Failed to generate voice. Please try again.');
+        setError(err.message || 'Failed to generate voice. Please try again.');
       }
     } finally {
       setGenerating(false);
@@ -193,7 +208,6 @@ const VoiceGenerator = () => {
     if (!generatedAudio) return;
     const link = document.createElement('a');
     link.href = generatedAudio.url;
-    // Use the correct extension so the OS opens it properly
     link.download = `tindahan-voice-${Date.now()}.${generatedAudio.ext}`;
     document.body.appendChild(link);
     link.click();
@@ -209,6 +223,7 @@ const VoiceGenerator = () => {
     setProductName('');
     setFeatures('');
     setError('');
+    setDebugInfo('');
   };
 
   return (
@@ -224,7 +239,6 @@ const VoiceGenerator = () => {
             </div>
           )}
 
-          {/* Product Details Section */}
           <div className="voice-section">
             <div className="voice-section-header">
               <h3>PRODUCT DETAILS</h3>
@@ -262,13 +276,11 @@ const VoiceGenerator = () => {
             </button>
           </div>
 
-          {/* Script Section */}
           <div className="voice-section">
             <div className="voice-section-header">
               <h3>VOICE SCRIPT</h3>
               <span>{script.length} / 5000 characters</span>
             </div>
-
             <textarea
               value={script}
               onChange={(e) => setScript(e.target.value)}
@@ -278,27 +290,17 @@ const VoiceGenerator = () => {
             />
           </div>
 
-          {/* Voice Options */}
           <div className="voice-options-grid">
             <div className="voice-option">
               <label>Language</label>
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="voice-select"
-              >
+              <select value={language} onChange={(e) => setLanguage(e.target.value)} className="voice-select">
                 <option value="en-US">🇺🇸 English (US)</option>
                 <option value="fil-PH">🇵🇭 Tagalog (Filipino)</option>
               </select>
             </div>
-
             <div className="voice-option">
               <label>Voice Style</label>
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className="voice-select"
-              >
+              <select value={gender} onChange={(e) => setGender(e.target.value)} className="voice-select">
                 <optgroup label="🇺🇸 English Voices">
                   <option value="FEMALE">Female (Warm)</option>
                   <option value="MALE">Male (Professional)</option>
@@ -311,14 +313,12 @@ const VoiceGenerator = () => {
             </div>
           </div>
 
-          {/* Generate Button */}
           {script && !generating && !generatedAudio && (
             <button onClick={handleGenerateVoice} className="voice-generate-btn">
               Generate Voice 🎤
             </button>
           )}
 
-          {/* Generating State */}
           {generating && (
             <div className="voice-generating">
               <div className="voice-spinner"></div>
@@ -327,13 +327,25 @@ const VoiceGenerator = () => {
             </div>
           )}
 
-          {/* Error Message */}
           {error && !generating && (
             <div className="voice-error">
               {error}
               {error.includes('limit') && (
                 <a href="#pricing" className="voice-upgrade-link">Upgrade Now →</a>
               )}
+            </div>
+          )}
+
+          {/* Debug panel — remove after confirming format */}
+          {debugInfo && (
+            <div style={{
+              marginTop: '10px', padding: '8px',
+              background: '#111', borderRadius: '6px',
+              fontSize: '11px', color: '#aaa',
+              fontFamily: 'monospace', wordBreak: 'break-all',
+              border: '1px solid #333'
+            }}>
+              🔍 DEBUG: {debugInfo}
             </div>
           )}
         </div>
@@ -351,14 +363,12 @@ const VoiceGenerator = () => {
             <>
               <div className="voice-results-header">
                 <h3>Your Voiceover</h3>
+                <span style={{ fontSize: '12px', color: '#888' }}>
+                  {generatedAudio.mimeType} · .{generatedAudio.ext}
+                </span>
               </div>
               <div className="voice-result-container">
                 <div className="voice-player-wrapper">
-                  {/*
-                    KEY FIX: Use ref + src directly on <audio> (not <source>).
-                    The ref lets us call .load()/.play() imperatively when the URL changes.
-                    Setting src directly (not via <source>) is more reliable across browsers.
-                  */}
                   <audio
                     ref={audioRef}
                     controls
@@ -369,7 +379,7 @@ const VoiceGenerator = () => {
 
                 <div className="voice-action-buttons">
                   <button onClick={handleDownload} className="voice-download-btn">
-                    ⬇️ Download Audio
+                    ⬇️ Download {generatedAudio.ext.toUpperCase()}
                   </button>
                   <button onClick={handleReset} className="voice-new-btn">
                     New Voiceover
