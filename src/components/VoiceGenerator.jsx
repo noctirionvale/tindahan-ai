@@ -13,7 +13,6 @@ const VoiceGenerator = () => {
   const [error, setError] = useState('');
   const [usage, setUsage] = useState(null);
   const [scriptGenerating, setScriptGenerating] = useState(false);
-  const [debugInfo, setDebugInfo] = useState('');
   const audioRef = useRef(null);
 
   useEffect(() => {
@@ -21,9 +20,8 @@ const VoiceGenerator = () => {
   }, []);
 
   useEffect(() => {
-    if (generatedAudio && audioRef.current) {
+    if (generatedAudio?.url && audioRef.current) {
       audioRef.current.load();
-      audioRef.current.play().catch(() => {});
     }
   }, [generatedAudio]);
 
@@ -78,62 +76,6 @@ const VoiceGenerator = () => {
     }
   };
 
-  /**
-   * Reads magic bytes from blob to detect true audio format.
-   * Logs hex bytes to console for debugging.
-   */
-  const detectAudioType = async (blob) => {
-    const buffer = await blob.slice(0, 16).arrayBuffer();
-    const bytes = new Uint8Array(buffer);
-    const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join(' ');
-
-    console.log('🔍 Audio blob — size:', blob.size, 'bytes | MIME from server:', blob.type);
-    console.log('🔍 First 16 bytes (hex):', hex);
-    setDebugInfo(`Size: ${blob.size}B | Server MIME: "${blob.type}" | Bytes: ${hex}`);
-
-    // Trust server MIME if it's valid
-    if (blob.type === 'audio/mpeg')  return { mimeType: 'audio/mpeg', ext: 'mp3' };
-    if (blob.type === 'audio/mp3')   return { mimeType: 'audio/mpeg', ext: 'mp3' };
-    if (blob.type === 'audio/ogg')   return { mimeType: 'audio/ogg',  ext: 'ogg' };
-    if (blob.type === 'audio/wav')   return { mimeType: 'audio/wav',  ext: 'wav' };
-    if (blob.type === 'audio/mp4')   return { mimeType: 'audio/mp4',  ext: 'm4a' };
-    if (blob.type === 'audio/aac')   return { mimeType: 'audio/aac',  ext: 'aac' };
-    if (blob.type === 'audio/webm')  return { mimeType: 'audio/webm', ext: 'webm' };
-
-    // Detect from magic bytes
-    // OGG: "OggS"
-    if (bytes[0] === 0x4F && bytes[1] === 0x67 && bytes[2] === 0x67 && bytes[3] === 0x53) {
-      console.log('✅ Detected: OGG'); return { mimeType: 'audio/ogg', ext: 'ogg' };
-    }
-    // MP3: ID3 tag
-    if (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) {
-      console.log('✅ Detected: MP3 (ID3)'); return { mimeType: 'audio/mpeg', ext: 'mp3' };
-    }
-    // MP3: raw sync bytes
-    if (bytes[0] === 0xFF && (bytes[1] & 0xE0) === 0xE0) {
-      console.log('✅ Detected: MP3 (sync)'); return { mimeType: 'audio/mpeg', ext: 'mp3' };
-    }
-    // WAV: "RIFF"
-    if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46) {
-      console.log('✅ Detected: WAV'); return { mimeType: 'audio/wav', ext: 'wav' };
-    }
-    // M4A/MP4: "ftyp" at offset 4
-    if (bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70) {
-      console.log('✅ Detected: M4A/MP4'); return { mimeType: 'audio/mp4', ext: 'm4a' };
-    }
-    // WEBM: 0x1A 0x45 0xDF 0xA3
-    if (bytes[0] === 0x1A && bytes[1] === 0x45 && bytes[2] === 0xDF && bytes[3] === 0xA3) {
-      console.log('✅ Detected: WebM'); return { mimeType: 'audio/webm', ext: 'webm' };
-    }
-    // AAC: ADTS sync
-    if (bytes[0] === 0xFF && (bytes[1] === 0xF1 || bytes[1] === 0xF9)) {
-      console.log('✅ Detected: AAC'); return { mimeType: 'audio/aac', ext: 'aac' };
-    }
-
-    console.warn('⚠️ Unknown format — defaulting to OGG');
-    return { mimeType: 'audio/ogg', ext: 'ogg' };
-  };
-
   const handleGenerateVoice = async () => {
     if (!script.trim()) {
       setError('Please write or generate a script first');
@@ -142,7 +84,6 @@ const VoiceGenerator = () => {
 
     setGenerating(true);
     setError('');
-    setDebugInfo('');
 
     if (generatedAudio?.url?.startsWith('blob:')) {
       URL.revokeObjectURL(generatedAudio.url);
@@ -151,6 +92,8 @@ const VoiceGenerator = () => {
 
     try {
       const token = localStorage.getItem('tindahan_token');
+      
+      // First, try to get the audio URL from the response
       const response = await axios.post(
         'https://tindahan-ai-production.up.railway.app/api/voice/generate',
         { text: script, language, gender },
@@ -159,43 +102,69 @@ const VoiceGenerator = () => {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          timeout: 30000,
-          responseType: 'blob'
+          timeout: 30000
+          // REMOVED responseType: 'blob' - let's see what the server returns
         }
       );
 
-      if (!(response.data instanceof Blob) || response.data.size === 0) {
-        throw new Error('Empty or invalid audio response from server');
-      }
+      console.log('Server response:', response.data);
 
-      const { mimeType, ext } = await detectAudioType(response.data);
-      const correctedBlob = new Blob([response.data], { type: mimeType });
-      const url = URL.createObjectURL(correctedBlob);
-
-      setGeneratedAudio({ url, mimeType, ext });
-
-      if (usage) {
-        setUsage({
-          ...usage,
-          remaining: usage.remaining - 1,
-          today: (usage.today || 0) + 1,
-          total: (usage.total || 0) + 1
+      // Check if the server returns a URL
+      if (response.data.success && response.data.audioUrl) {
+        // Server returns a URL to the audio file
+        setGeneratedAudio({
+          url: response.data.audioUrl,
+          mimeType: 'audio/mpeg',
+          ext: 'mp3'
         });
+
+        if (usage) {
+          setUsage({
+            ...usage,
+            remaining: usage.remaining - 1,
+            today: (usage.today || 0) + 1,
+            total: (usage.total || 0) + 1
+          });
+        }
+      } 
+      // If it returns base64 audio data
+      else if (response.data.success && response.data.audio) {
+        // Convert base64 to blob
+        const byteCharacters = atob(response.data.audio);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'audio/mpeg' });
+        const url = URL.createObjectURL(blob);
+        
+        setGeneratedAudio({
+          url: url,
+          mimeType: 'audio/mpeg',
+          ext: 'mp3'
+        });
+
+        if (usage) {
+          setUsage({
+            ...usage,
+            remaining: usage.remaining - 1,
+            today: (usage.today || 0) + 1,
+            total: (usage.total || 0) + 1
+          });
+        }
+      }
+      else {
+        throw new Error(response.data.message || 'Invalid response from server');
       }
 
     } catch (err) {
       console.error('Generation error:', err);
 
-      if (err.response?.data instanceof Blob) {
-        const text = await err.response.data.text();
-        try {
-          const errorData = JSON.parse(text);
-          setError(errorData.message || 'Failed to generate voice');
-        } catch {
-          setError('Failed to generate voice. Please try again.');
-        }
-      } else if (err.response?.status === 429) {
+      if (err.response?.status === 429) {
         setError('Limit reached! Upgrade your plan.');
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
       } else {
         setError(err.message || 'Failed to generate voice. Please try again.');
       }
@@ -204,14 +173,37 @@ const VoiceGenerator = () => {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!generatedAudio) return;
-    const link = document.createElement('a');
-    link.href = generatedAudio.url;
-    link.download = `tindahan-voice-${Date.now()}.${generatedAudio.ext}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    
+    // If it's a blob URL, download directly
+    if (generatedAudio.url.startsWith('blob:')) {
+      const link = document.createElement('a');
+      link.href = generatedAudio.url;
+      link.download = `tindahan-voice-${Date.now()}.${generatedAudio.ext}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } 
+    // If it's a remote URL, fetch and download
+    else {
+      try {
+        const response = await fetch(generatedAudio.url);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `tindahan-voice-${Date.now()}.${generatedAudio.ext}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+      } catch (err) {
+        console.error('Download failed:', err);
+        // Fallback: open in new tab
+        window.open(generatedAudio.url, '_blank');
+      }
+    }
   };
 
   const handleReset = () => {
@@ -223,7 +215,6 @@ const VoiceGenerator = () => {
     setProductName('');
     setFeatures('');
     setError('');
-    setDebugInfo('');
   };
 
   return (
@@ -335,19 +326,6 @@ const VoiceGenerator = () => {
               )}
             </div>
           )}
-
-          {/* Debug panel — remove after confirming format */}
-          {debugInfo && (
-            <div style={{
-              marginTop: '10px', padding: '8px',
-              background: '#111', borderRadius: '6px',
-              fontSize: '11px', color: '#aaa',
-              fontFamily: 'monospace', wordBreak: 'break-all',
-              border: '1px solid #333'
-            }}>
-              🔍 DEBUG: {debugInfo}
-            </div>
-          )}
         </div>
 
         {/* RIGHT: Results Panel */}
@@ -363,9 +341,6 @@ const VoiceGenerator = () => {
             <>
               <div className="voice-results-header">
                 <h3>Your Voiceover</h3>
-                <span style={{ fontSize: '12px', color: '#888' }}>
-                  {generatedAudio.mimeType} · .{generatedAudio.ext}
-                </span>
               </div>
               <div className="voice-result-container">
                 <div className="voice-player-wrapper">
@@ -379,7 +354,7 @@ const VoiceGenerator = () => {
 
                 <div className="voice-action-buttons">
                   <button onClick={handleDownload} className="voice-download-btn">
-                    ⬇️ Download {generatedAudio.ext.toUpperCase()}
+                    ⬇️ Download MP3
                   </button>
                   <button onClick={handleReset} className="voice-new-btn">
                     New Voiceover
