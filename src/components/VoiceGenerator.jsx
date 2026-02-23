@@ -21,7 +21,11 @@ const VoiceGenerator = () => {
 
   useEffect(() => {
     if (generatedAudio && audioRef.current) {
-      audioRef.current.play().catch(() => {});
+      // Force reload the audio element
+      audioRef.current.load();
+      audioRef.current.play().catch(err => {
+        console.log('Autoplay prevented:', err);
+      });
     }
   }, [generatedAudio]);
 
@@ -80,6 +84,7 @@ const VoiceGenerator = () => {
     try {
       const token = localStorage.getItem('tindahan_token');
       
+      // Backend returns JSON with base64 audioUrl
       const response = await axios.post(
         'https://tindahan-ai-production.up.railway.app/api/voice/generate',
         { text: script, language, gender },
@@ -88,22 +93,24 @@ const VoiceGenerator = () => {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          timeout: 30000,
-          responseType: 'blob'
+          timeout: 30000
+          // Don't use responseType: 'blob' - backend sends JSON with base64
         }
       );
 
-      // Create blob URL for instant playback
-      const url = URL.createObjectURL(response.data);
-      setGeneratedAudio(url);
+      if (response.data.success && response.data.audioUrl) {
+        // audioUrl is already a data URI: "data:audio/mpeg;base64,..."
+        // Use it directly - HTML5 audio supports data URIs
+        setGeneratedAudio(response.data.audioUrl);
 
-      if (usage) {
-        setUsage({
-          ...usage,
-          remaining: usage.remaining - 1,
-          today: (usage.today || 0) + 1,
-          total: (usage.total || 0) + 1
-        });
+        if (response.data.usage) {
+          setUsage({
+            ...usage,
+            remaining: response.data.usage.remaining,
+            today: (usage?.today || 0) + 1,
+            total: (usage?.total || 0) + 1
+          });
+        }
       }
 
     } catch (err) {
@@ -121,6 +128,7 @@ const VoiceGenerator = () => {
   const handleDownload = () => {
     if (!generatedAudio) return;
     
+    // For data URI, we need to convert to blob for download
     const link = document.createElement('a');
     link.href = generatedAudio;
     link.download = `tindahan-voice-${Date.now()}.mp3`;
@@ -130,6 +138,7 @@ const VoiceGenerator = () => {
   };
 
   const handleReset = () => {
+    // Clean up if using blob URL
     if (generatedAudio?.startsWith('blob:')) {
       URL.revokeObjectURL(generatedAudio);
     }
@@ -141,147 +150,126 @@ const VoiceGenerator = () => {
   };
 
   return (
-    <div className="voice-wrapper">
-      <div className="voice-split">
+    <div className="gen-wrapper">
+      <div className="gen-split">
         {/* LEFT: Form Panel */}
-        <div className="voice-form-panel">
-          <h2 className="voice-title">🎙️ Generate Voice</h2>
+        <div className="gen-form-panel">
+          <h2 className="gen-title">🎙️ Generate Voice</h2>
+          <p className="gen-subtitle">Create professional voiceovers</p>
 
           {usage && (
-            <div className="voice-usage">
+            <div className="gen-usage">
               🎤 {usage.remaining}/{usage.limit} left today
             </div>
           )}
 
-          <div className="voice-section">
-            <div className="voice-section-header">
-              <h3>PRODUCT DETAILS</h3>
-              <span>Required for script generation</span>
-            </div>
+          <input
+            type="text"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+            placeholder="Product name..."
+            className="gen-input"
+          />
 
-            <div className="voice-input-group">
-              <label>Product Name *</label>
-              <input
-                type="text"
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                placeholder="e.g., Wireless Bluetooth Earbuds"
-                className="voice-input"
-              />
-            </div>
+          <textarea
+            value={features}
+            onChange={(e) => setFeatures(e.target.value)}
+            placeholder="Features (optional)..."
+            className="gen-textarea"
+            rows="2"
+          />
 
-            <div className="voice-input-group">
-              <label>Features (Optional)</label>
-              <textarea
-                value={features}
-                onChange={(e) => setFeatures(e.target.value)}
-                placeholder="e.g., Noise cancellation, 20-hour battery, waterproof..."
-                className="voice-textarea"
-                rows="3"
-              />
-            </div>
+          <button
+            onClick={handleGenerateScript}
+            disabled={scriptGenerating || !productName}
+            className="gen-btn"
+          >
+            {scriptGenerating ? 'Generating...' : '✨ Auto-Generate Script'}
+          </button>
 
-            <button
-              onClick={handleGenerateScript}
-              disabled={scriptGenerating || !productName}
-              className="voice-script-btn"
-            >
-              {scriptGenerating ? 'Generating Script...' : '✨ Auto-Generate Script'}
-            </button>
+          <textarea
+            value={script}
+            onChange={(e) => setScript(e.target.value)}
+            placeholder="Your script or generate one..."
+            className="gen-textarea"
+            rows="4"
+          />
+          <div style={{ textAlign: 'right', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
+            {script.length} / 5000
           </div>
 
-          <div className="voice-section">
-            <div className="voice-section-header">
-              <h3>VOICE SCRIPT</h3>
-              <span>{script.length} / 5000 characters</span>
-            </div>
-            <textarea
-              value={script}
-              onChange={(e) => setScript(e.target.value)}
-              placeholder="Write your voiceover script here or generate one automatically..."
-              className="voice-script-textarea"
-              rows="6"
-            />
-          </div>
-
-          <div className="voice-options-grid">
-            <div className="voice-option">
-              <label>Language</label>
-              <select value={language} onChange={(e) => setLanguage(e.target.value)} className="voice-select">
-                <option value="en-US">🇺🇸 English (US)</option>
-                <option value="fil-PH">🇵🇭 Tagalog (Filipino)</option>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.9)' }}>Language</label>
+              <select value={language} onChange={(e) => setLanguage(e.target.value)} className="gen-input" style={{ cursor: 'pointer' }}>
+                <option value="en-US">🇺🇸 English</option>
+                <option value="fil-PH">🇵🇭 Tagalog</option>
               </select>
             </div>
-            <div className="voice-option">
-              <label>Voice Style</label>
-              <select value={gender} onChange={(e) => setGender(e.target.value)} className="voice-select">
-                <optgroup label="🇺🇸 English Voices">
-                  <option value="FEMALE">Female (Warm)</option>
-                  <option value="MALE">Male (Professional)</option>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.9)' }}>Voice</label>
+              <select value={gender} onChange={(e) => setGender(e.target.value)} className="gen-input" style={{ cursor: 'pointer' }}>
+                <optgroup label="English">
+                  <option value="FEMALE">Female</option>
+                  <option value="MALE">Male</option>
                 </optgroup>
-                <optgroup label="🇵🇭 Tagalog Voices">
-                  <option value="FIL-FEMALE">Babae (Female)</option>
-                  <option value="FIL-MALE">Lalaki (Male)</option>
+                <optgroup label="Tagalog">
+                  <option value="FIL-FEMALE">Babae</option>
+                  <option value="FIL-MALE">Lalaki</option>
                 </optgroup>
               </select>
             </div>
           </div>
 
           {script && !generating && !generatedAudio && (
-            <button onClick={handleGenerateVoice} className="voice-generate-btn">
+            <button onClick={handleGenerateVoice} className="gen-btn" style={{ background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)' }}>
               Generate Voice 🎤
             </button>
           )}
 
           {generating && (
-            <div className="voice-generating">
-              <div className="voice-spinner"></div>
-              <p>Creating your voiceover...</p>
-              <p className="voice-hint">This may take up to 30 seconds</p>
+            <div className="gen-loading">
+              <div className="loading-spinner"></div>
+              <p>Creating voiceover...</p>
             </div>
           )}
 
           {error && !generating && (
-            <div className="voice-error">
+            <div className="gen-error">
               {error}
-              {error.includes('limit') && (
-                <a href="#pricing" className="voice-upgrade-link">Upgrade Now →</a>
-              )}
+              {error.includes('limit') && <a href="#pricing" style={{ marginLeft: '0.5rem', color: '#10b981' }}>Upgrade →</a>}
             </div>
           )}
         </div>
 
         {/* RIGHT: Results Panel */}
-        <div className="voice-results-panel">
+        <div className="gen-results-panel">
           {!generating && !generatedAudio && (
-            <div className="voice-empty">
-              <div className="voice-empty-icon">🎤</div>
+            <div className="gen-empty">
+              <div className="gen-empty-icon">🎤</div>
               <p>Your voiceover will appear here</p>
             </div>
           )}
 
           {generatedAudio && !generating && (
             <>
-              <div className="voice-results-header">
+              <div className="gen-results-header">
                 <h3>Your Voiceover</h3>
               </div>
-              <div className="voice-result-container">
-                <div className="voice-player-wrapper">
-                  <audio
-                    ref={audioRef}
-                    controls
-                    src={generatedAudio}
-                    className="voice-player"
-                    autoPlay
-                  />
-                </div>
+              <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                <audio
+                  ref={audioRef}
+                  controls
+                  src={generatedAudio}
+                  style={{ width: '100%', maxWidth: '500px', borderRadius: '12px' }}
+                />
 
-                <div className="voice-action-buttons">
-                  <button onClick={handleDownload} className="voice-download-btn">
-                    ⬇️ Download MP3
+                <div style={{ display: 'flex', gap: '1rem', width: '100%', maxWidth: '500px' }}>
+                  <button onClick={handleDownload} className="gen-btn" style={{ flex: 1 }}>
+                    ⬇️ Download
                   </button>
-                  <button onClick={handleReset} className="voice-new-btn">
-                    New Voiceover
+                  <button onClick={handleReset} className="gen-reset" style={{ flex: 1 }}>
+                    New Voice
                   </button>
                 </div>
               </div>
