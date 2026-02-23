@@ -10,6 +10,7 @@ const VoiceGenerator = () => {
   const [gender, setGender] = useState('FEMALE');
   const [generating, setGenerating] = useState(false);
   const [generatedAudio, setGeneratedAudio] = useState(null);
+  const [audioBlobUrl, setAudioBlobUrl] = useState(null);
   const [error, setError] = useState('');
   const [usage, setUsage] = useState(null);
   const [scriptGenerating, setScriptGenerating] = useState(false);
@@ -19,14 +20,24 @@ const VoiceGenerator = () => {
     fetchUsage();
   }, []);
 
+  // Clean up blob URL when component unmounts or new audio is generated
   useEffect(() => {
-    if (generatedAudio && audioRef.current) {
+    return () => {
+      if (audioBlobUrl && audioBlobUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(audioBlobUrl);
+      }
+    };
+  }, [audioBlobUrl]);
+
+  // Auto-play when audio is ready
+  useEffect(() => {
+    if (audioBlobUrl && audioRef.current) {
       audioRef.current.load();
       audioRef.current.play().catch(err => {
         console.log('Autoplay prevented:', err);
       });
     }
-  }, [generatedAudio]);
+  }, [audioBlobUrl]);
 
   const fetchUsage = async () => {
     try {
@@ -80,6 +91,13 @@ const VoiceGenerator = () => {
     setGenerating(true);
     setError('');
 
+    // Clean up previous blob URL
+    if (audioBlobUrl && audioBlobUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(audioBlobUrl);
+    }
+    setAudioBlobUrl(null);
+    setGeneratedAudio(null);
+
     try {
       const token = localStorage.getItem('tindahan_token');
       
@@ -96,7 +114,20 @@ const VoiceGenerator = () => {
       );
 
       if (response.data.success && response.data.audioUrl) {
+        // response.data.audioUrl is a data URI: "data:audio/mpeg;base64,AAA..."
         setGeneratedAudio(response.data.audioUrl);
+        
+        // Convert data URI to blob URL for reliable playback
+        const base64Data = response.data.audioUrl.split(',')[1];
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'audio/mpeg' });
+        const blobUrl = URL.createObjectURL(blob);
+        setAudioBlobUrl(blobUrl);
 
         if (response.data.usage) {
           setUsage({
@@ -124,7 +155,7 @@ const VoiceGenerator = () => {
     if (!generatedAudio) return;
     
     const link = document.createElement('a');
-    link.href = generatedAudio;
+    link.href = generatedAudio; // Use data URI directly for download
     link.download = `tindahan-voice-${Date.now()}.mp3`;
     document.body.appendChild(link);
     link.click();
@@ -132,6 +163,10 @@ const VoiceGenerator = () => {
   };
 
   const handleReset = () => {
+    if (audioBlobUrl && audioBlobUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(audioBlobUrl);
+    }
+    setAudioBlobUrl(null);
     setGeneratedAudio(null);
     setScript('');
     setProductName('');
@@ -240,7 +275,7 @@ const VoiceGenerator = () => {
           </div>
 
           {/* Generate Button */}
-          {script && !generating && !generatedAudio && (
+          {script && !generating && !audioBlobUrl && (
             <button onClick={handleGenerateVoice} className="voice-generate-btn">
               Generate Voice 🎤
             </button>
@@ -268,14 +303,14 @@ const VoiceGenerator = () => {
 
         {/* RIGHT: Results Panel - Premium Design with Working Audio */}
         <div className="voice-results-panel">
-          {!generating && !generatedAudio && (
+          {!generating && !audioBlobUrl && (
             <div className="voice-empty">
               <div className="voice-empty-icon">🎤</div>
               <p>Your voiceover will appear here</p>
             </div>
           )}
 
-          {generatedAudio && !generating && (
+          {audioBlobUrl && !generating && (
             <>
               <div className="voice-results-header">
                 <h3>Your Voiceover</h3>
@@ -285,7 +320,7 @@ const VoiceGenerator = () => {
                   <audio
                     ref={audioRef}
                     controls
-                    src={generatedAudio}
+                    src={audioBlobUrl}
                     className="voice-player"
                   />
                 </div>
