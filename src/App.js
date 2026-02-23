@@ -174,15 +174,58 @@ function App() {
                   </div>
                   
                   <div className="footer-social">
-  <a href="https://twitter.com/tindahanai" target="_blank" rel="noopener noreferrer" className="social-icon" title="Twitter">𝕏</a>
-  <a href="https://facebook.com/tindahanai" target="_blank" rel="noopener noreferrer" className="social-icon" title="Facebook">f</a>
-  <a href="https://tiktok.com/@tindahanai" target="_blank" rel="noopener noreferrer" className="social-icon" title="TikTok">♪</a>
-</div>
+                    <a href="https://twitter.com/tindahanai" target="_blank" rel="noopener noreferrer" className="social-icon" title="Twitter">𝕏</a>
+                    <a href="https://facebook.com/tindahanai" target="_blank" rel="noopener noreferrer" className="social-icon" title="Facebook">f</a>
+                    <a href="https://tiktok.com/@tindahanai" target="_blank" rel="noopener noreferrer" className="social-icon" title="TikTok">♪</a>
+                  </div>
                 </div>
               </div>
             </footer>
           )}
         </main>
+      </div>
+
+      {/* ===== MOBILE BOTTOM NAVIGATION WITH FOOTER ===== */}
+      <div className="mobile-bottom-nav">
+        <div className="mobile-nav-items">
+          <button
+            className={`mobile-nav-item ${activeTab === 'description' ? 'active' : ''}`}
+            onClick={() => setActiveTab('description')}
+          >
+            <span>📝</span>
+            <span>Desc</span>
+          </button>
+          
+          <button
+            className={`mobile-nav-item ${activeTab === 'video' ? 'active' : ''}`}
+            onClick={() => setActiveTab('video')}
+          >
+            <span>🎬</span>
+            <span>Video</span>
+          </button>
+          
+          <button
+            className={`mobile-nav-item ${activeTab === 'voice' ? 'active' : ''}`}
+            onClick={() => setActiveTab('voice')}
+          >
+            <span>🎙️</span>
+            <span>Voice</span>
+          </button>
+          
+          <button
+            className={`mobile-nav-item ${activeTab === 'pricing' ? 'active' : ''}`}
+            onClick={() => setActiveTab('pricing')}
+          >
+            <span>💳</span>
+            <span>Price</span>
+          </button>
+        </div>
+        
+        {/* Mobile Footer inside bottom nav */}
+        <div className="mobile-footer-text">
+          <p>🇵🇭 Your PINOY AI Content Assistant</p>
+          <p>© 2026 Made with 💚 in PH</p>
+        </div>
       </div>
 
       {/* Floating FAQ Button */}
