@@ -10,7 +10,6 @@ const VoiceGenerator = () => {
   const [gender, setGender] = useState('FEMALE');
   const [generating, setGenerating] = useState(false);
   const [generatedAudio, setGeneratedAudio] = useState(null);
-  const [audioUrl, setAudioUrl] = useState(null);
   const [error, setError] = useState('');
   const [usage, setUsage] = useState(null);
   const [scriptGenerating, setScriptGenerating] = useState(false);
@@ -19,14 +18,14 @@ const VoiceGenerator = () => {
     fetchUsage();
   }, []);
 
-  // Clean up audio URL when component unmounts
+  // Clean up audio URL when component unmounts or new audio is generated
   useEffect(() => {
     return () => {
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
+      if (generatedAudio && generatedAudio.startsWith('blob:')) {
+        URL.revokeObjectURL(generatedAudio);
       }
     };
-  }, [audioUrl]);
+  }, [generatedAudio]);
 
   const fetchUsage = async () => {
     try {
@@ -85,34 +84,58 @@ const VoiceGenerator = () => {
 
     try {
       const token = localStorage.getItem('tindahan_token');
+      
+      // Make sure we're sending the right request
       const response = await axios.post(
         'https://tindahan-ai-production.up.railway.app/api/voice/generate',
-        { text: script, language, gender },
         { 
-          headers: { 'Authorization': `Bearer ${token}` },
+          text: script, 
+          language, 
+          gender 
+        },
+        { 
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
           timeout: 30000,
-          responseType: 'blob'
+          responseType: 'blob' // Important: Get blob response
         }
       );
 
-      // Create a blob URL for the audio
-      const audioBlob = new Blob([response.data], { type: 'audio/mpeg' });
-      const url = URL.createObjectURL(audioBlob);
-      
-      setAudioUrl(url);
-      setGeneratedAudio(url);
-      
-      setUsage({
-        ...usage,
-        remaining: usage?.remaining ? usage.remaining - 1 : 0,
-        today: (usage?.today || 0) + 1,
-        total: (usage?.total || 0) + 1
-      });
+      // Check if response is actually an audio blob
+      if (response.data instanceof Blob) {
+        // Create blob URL
+        const url = URL.createObjectURL(response.data);
+        setGeneratedAudio(url);
+        
+        // Update usage if needed
+        if (usage) {
+          setUsage({
+            ...usage,
+            remaining: usage.remaining - 1,
+            today: (usage.today || 0) + 1,
+            total: (usage.total || 0) + 1
+          });
+        }
+      } else {
+        throw new Error('Invalid response format');
+      }
 
     } catch (err) {
       console.error('Generation error:', err);
-      if (err.response?.status === 429) {
-        setError(err.response.data.message || 'Limit reached! Upgrade your plan.');
+      
+      // Try to get error message if it's JSON
+      if (err.response?.data instanceof Blob) {
+        const text = await err.response.data.text();
+        try {
+          const errorData = JSON.parse(text);
+          setError(errorData.message || 'Failed to generate voice');
+        } catch {
+          setError('Failed to generate voice. Please try again.');
+        }
+      } else if (err.response?.status === 429) {
+        setError('Limit reached! Upgrade your plan.');
       } else {
         setError('Failed to generate voice. Please try again.');
       }
@@ -122,14 +145,26 @@ const VoiceGenerator = () => {
   };
 
   const handleDownload = () => {
-    if (!audioUrl) return;
+    if (!generatedAudio) return;
     
     const link = document.createElement('a');
-    link.href = audioUrl;
+    link.href = generatedAudio;
     link.download = `tindahan-voice-${Date.now()}.mp3`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleReset = () => {
+    // Clean up blob URL
+    if (generatedAudio && generatedAudio.startsWith('blob:')) {
+      URL.revokeObjectURL(generatedAudio);
+    }
+    setGeneratedAudio(null);
+    setScript('');
+    setProductName('');
+    setFeatures('');
+    setError('');
   };
 
   return (
@@ -261,13 +296,6 @@ const VoiceGenerator = () => {
 
         {/* RIGHT: Results Panel */}
         <div className="voice-results-panel">
-          {generating && (
-            <div className="voice-empty">
-              <div className="voice-spinner"></div>
-              <p>Generating your voiceover...</p>
-            </div>
-          )}
-
           {!generating && !generatedAudio && (
             <div className="voice-empty">
               <div className="voice-empty-icon">🎤</div>
@@ -283,21 +311,12 @@ const VoiceGenerator = () => {
               <div className="voice-result-container">
                 <div className="voice-player-wrapper">
                   <audio 
-                    controls 
-                    autoPlay 
+                    controls
                     className="voice-player"
                   >
                     <source src={generatedAudio} type="audio/mpeg" />
                     Your browser does not support the audio element.
                   </audio>
-                </div>
-                
-                <div className="voice-waveform">
-                  <div className="waveform-bar"></div>
-                  <div className="waveform-bar"></div>
-                  <div className="waveform-bar"></div>
-                  <div className="waveform-bar"></div>
-                  <div className="waveform-bar"></div>
                 </div>
 
                 <div className="voice-action-buttons">
@@ -308,21 +327,11 @@ const VoiceGenerator = () => {
                     ⬇️ Download MP3
                   </button>
                   <button 
-                    onClick={() => {
-                      setGeneratedAudio(null);
-                      setAudioUrl(null);
-                      setScript('');
-                      setProductName('');
-                      setFeatures('');
-                    }}
+                    onClick={handleReset}
                     className="voice-new-btn"
                   >
                     New Voiceover
                   </button>
-                </div>
-
-                <div className="voice-info">
-                  <p>✓ Ready to play • Click download to save</p>
                 </div>
               </div>
             </>
