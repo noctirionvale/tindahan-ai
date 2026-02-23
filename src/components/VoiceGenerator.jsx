@@ -9,30 +9,21 @@ const VoiceGenerator = () => {
   const [language, setLanguage] = useState('en-US');
   const [gender, setGender] = useState('FEMALE');
   const [generating, setGenerating] = useState(false);
-  const [audioBlobUrl, setAudioBlobUrl] = useState(null); // always a blob: URL we own
+  const [generatedAudio, setGeneratedAudio] = useState(null);
   const [error, setError] = useState('');
   const [usage, setUsage] = useState(null);
   const [scriptGenerating, setScriptGenerating] = useState(false);
   const audioRef = useRef(null);
 
-  useEffect(() => { fetchUsage(); }, []);
-
-  // Reload + play the audio element whenever we get a new blob URL
   useEffect(() => {
-    if (audioBlobUrl && audioRef.current) {
-      audioRef.current.load();
-      audioRef.current.play().catch(() => {
-        // Browser may block autoplay — user can press play manually
-      });
+    fetchUsage();
+  }, []);
+
+  useEffect(() => {
+    if (generatedAudio && audioRef.current) {
+      audioRef.current.play().catch(() => {});
     }
-  }, [audioBlobUrl]);
-
-  // Clean up blob URL on change or unmount to avoid memory leaks
-  useEffect(() => {
-    return () => {
-      if (audioBlobUrl) URL.revokeObjectURL(audioBlobUrl);
-    };
-  }, [audioBlobUrl]);
+  }, [generatedAudio]);
 
   const fetchUsage = async () => {
     try {
@@ -41,24 +32,35 @@ const VoiceGenerator = () => {
         'https://tindahan-ai-production.up.railway.app/api/voice/usage',
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
-      if (response.data.success) setUsage(response.data.usage);
+      if (response.data.success) {
+        setUsage(response.data.usage);
+      }
     } catch (err) {
       console.error('Failed to fetch voice usage:', err);
     }
   };
 
   const handleGenerateScript = async () => {
-    if (!productName.trim()) { setError('Please enter a product name'); return; }
+    if (!productName.trim()) {
+      setError('Please enter a product name');
+      return;
+    }
     setScriptGenerating(true);
     setError('');
     try {
       const token = localStorage.getItem('tindahan_token');
       const response = await axios.post(
         'https://tindahan-ai-production.up.railway.app/api/voice/generate-script',
-        { productName, features, language: language.startsWith('fil') ? 'fil' : 'en' },
+        {
+          productName,
+          features,
+          language: language.startsWith('fil') ? 'fil' : 'en'
+        },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
-      if (response.data.success) setScript(response.data.script);
+      if (response.data.success) {
+        setScript(response.data.script);
+      }
     } catch (err) {
       setError('Failed to generate script. Please try again.');
     } finally {
@@ -66,55 +68,18 @@ const VoiceGenerator = () => {
     }
   };
 
-  /**
-   * Always converts server response into a local Blob,
-   * regardless of whether server returns a URL, base64, or raw binary.
-   * A local blob: URL is the only way to guarantee:
-   *   - <audio> can play it without CORS issues
-   *   - Download saves a file instead of opening a browser tab
-   */
-  const buildBlobUrl = async (responseData) => {
-    let blob = null;
-
-    // Case A: server returned a remote URL → fetch it into a blob
-    if (responseData?.audioUrl) {
-      const res = await fetch(responseData.audioUrl);
-      if (!res.ok) throw new Error('Could not fetch audio from server URL');
-      blob = await res.blob();
-    }
-    // Case B: server returned base64 string → decode into blob
-    else if (responseData?.audio) {
-      const binary = atob(responseData.audio);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      blob = new Blob([bytes], { type: 'audio/mpeg' });
-    }
-    // Case C: raw binary blob (in case server ever changes to binary response)
-    else if (responseData instanceof Blob && responseData.size > 0) {
-      blob = new Blob([responseData], { type: 'audio/mpeg' });
-    }
-    else {
-      throw new Error(responseData?.message || 'Unexpected response from server');
-    }
-
-    // Always return a blob: URL we own — never a remote https: URL
-    return URL.createObjectURL(blob);
-  };
-
   const handleGenerateVoice = async () => {
-    if (!script.trim()) { setError('Please write or generate a script first'); return; }
+    if (!script.trim()) {
+      setError('Please write or generate a script first');
+      return;
+    }
 
     setGenerating(true);
     setError('');
 
-    // Revoke previous blob URL before replacing it
-    if (audioBlobUrl) {
-      URL.revokeObjectURL(audioBlobUrl);
-      setAudioBlobUrl(null);
-    }
-
     try {
       const token = localStorage.getItem('tindahan_token');
+      
       const response = await axios.post(
         'https://tindahan-ai-production.up.railway.app/api/voice/generate',
         { text: script, language, gender },
@@ -123,13 +88,14 @@ const VoiceGenerator = () => {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          timeout: 30000
-          // No responseType: 'blob' — let axios parse JSON response normally
+          timeout: 30000,
+          responseType: 'blob'
         }
       );
 
-      const blobUrl = await buildBlobUrl(response.data);
-      setAudioBlobUrl(blobUrl);
+      // Create blob URL for instant playback
+      const url = URL.createObjectURL(response.data);
+      setGeneratedAudio(url);
 
       if (usage) {
         setUsage({
@@ -144,42 +110,30 @@ const VoiceGenerator = () => {
       console.error('Generation error:', err);
       if (err.response?.status === 429) {
         setError('Limit reached! Upgrade your plan.');
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message);
       } else {
-        setError(err.message || 'Failed to generate voice. Please try again.');
+        setError('Failed to generate voice. Please try again.');
       }
     } finally {
       setGenerating(false);
     }
   };
 
-  /**
-   * Download the audio as a file.
-   *
-   * Because audioBlobUrl is always a blob: URL (never https:), the browser
-   * will ALWAYS treat this as a file download — it will never open a new tab
-   * or redirect. This is the key difference from using a remote URL.
-   */
   const handleDownload = () => {
-    if (!audioBlobUrl) return;
-
+    if (!generatedAudio) return;
+    
     const link = document.createElement('a');
-    link.href = audioBlobUrl;
+    link.href = generatedAudio;
     link.download = `tindahan-voice-${Date.now()}.mp3`;
-
-    // Must be in the DOM for Firefox compatibility
-    link.style.display = 'none';
     document.body.appendChild(link);
     link.click();
-
-    // Small delay before removing so the click registers
-    setTimeout(() => document.body.removeChild(link), 100);
+    document.body.removeChild(link);
   };
 
   const handleReset = () => {
-    if (audioBlobUrl) URL.revokeObjectURL(audioBlobUrl);
-    setAudioBlobUrl(null);
+    if (generatedAudio?.startsWith('blob:')) {
+      URL.revokeObjectURL(generatedAudio);
+    }
+    setGeneratedAudio(null);
     setScript('');
     setProductName('');
     setFeatures('');
@@ -189,8 +143,7 @@ const VoiceGenerator = () => {
   return (
     <div className="voice-wrapper">
       <div className="voice-split">
-
-        {/* ── LEFT: Form Panel ── */}
+        {/* LEFT: Form Panel */}
         <div className="voice-form-panel">
           <h2 className="voice-title">🎙️ Generate Voice</h2>
 
@@ -274,7 +227,7 @@ const VoiceGenerator = () => {
             </div>
           </div>
 
-          {script && !generating && !audioBlobUrl && (
+          {script && !generating && !generatedAudio && (
             <button onClick={handleGenerateVoice} className="voice-generate-btn">
               Generate Voice 🎤
             </button>
@@ -298,16 +251,16 @@ const VoiceGenerator = () => {
           )}
         </div>
 
-        {/* ── RIGHT: Results Panel ── */}
+        {/* RIGHT: Results Panel */}
         <div className="voice-results-panel">
-          {!generating && !audioBlobUrl && (
+          {!generating && !generatedAudio && (
             <div className="voice-empty">
               <div className="voice-empty-icon">🎤</div>
               <p>Your voiceover will appear here</p>
             </div>
           )}
 
-          {audioBlobUrl && !generating && (
+          {generatedAudio && !generating && (
             <>
               <div className="voice-results-header">
                 <h3>Your Voiceover</h3>
@@ -317,8 +270,9 @@ const VoiceGenerator = () => {
                   <audio
                     ref={audioRef}
                     controls
-                    src={audioBlobUrl}
+                    src={generatedAudio}
                     className="voice-player"
+                    autoPlay
                   />
                 </div>
 
@@ -334,7 +288,6 @@ const VoiceGenerator = () => {
             </>
           )}
         </div>
-
       </div>
     </div>
   );
