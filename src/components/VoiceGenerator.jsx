@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './VoiceGenerator.css';
 
@@ -9,20 +9,31 @@ const VoiceGenerator = () => {
   const [language, setLanguage] = useState('en-US');
   const [gender, setGender] = useState('FEMALE');
   const [generating, setGenerating] = useState(false);
-  const [generatedAudio, setGeneratedAudio] = useState(null);
+  const [generatedAudio, setGeneratedAudio] = useState(null); // { url, mimeType, ext }
   const [error, setError] = useState('');
   const [usage, setUsage] = useState(null);
   const [scriptGenerating, setScriptGenerating] = useState(false);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     fetchUsage();
   }, []);
 
-  // Clean up audio URL when component unmounts or new audio is generated
+  // When generatedAudio changes, force the audio element to reload and play
+  useEffect(() => {
+    if (generatedAudio && audioRef.current) {
+      audioRef.current.load();
+      audioRef.current.play().catch(() => {
+        // Autoplay blocked by browser — that's fine, user can press play
+      });
+    }
+  }, [generatedAudio]);
+
+  // Clean up blob URL on unmount or replacement
   useEffect(() => {
     return () => {
-      if (generatedAudio && generatedAudio.startsWith('blob:')) {
-        URL.revokeObjectURL(generatedAudio);
+      if (generatedAudio?.url?.startsWith('blob:')) {
+        URL.revokeObjectURL(generatedAudio.url);
       }
     };
   }, [generatedAudio]);
@@ -73,6 +84,38 @@ const VoiceGenerator = () => {
     }
   };
 
+  // Detect real MIME type from the blob's first bytes
+  const detectAudioType = async (blob) => {
+    const buffer = await blob.slice(0, 12).arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+
+    // OGG: starts with OggS
+    if (bytes[0] === 0x4F && bytes[1] === 0x67 && bytes[2] === 0x67 && bytes[3] === 0x53) {
+      return { mimeType: 'audio/ogg', ext: 'ogg' };
+    }
+    // MP3: ID3 tag or sync bytes
+    if (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) {
+      return { mimeType: 'audio/mpeg', ext: 'mp3' };
+    }
+    if (bytes[0] === 0xFF && (bytes[1] === 0xFB || bytes[1] === 0xF3 || bytes[1] === 0xF2)) {
+      return { mimeType: 'audio/mpeg', ext: 'mp3' };
+    }
+    // WAV: RIFF....WAVE
+    if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46) {
+      return { mimeType: 'audio/wav', ext: 'wav' };
+    }
+    // AAC / M4A: ftyp box or ADTS sync
+    if (bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70) {
+      return { mimeType: 'audio/mp4', ext: 'm4a' };
+    }
+    if (bytes[0] === 0xFF && (bytes[1] & 0xF0) === 0xF0) {
+      return { mimeType: 'audio/aac', ext: 'aac' };
+    }
+
+    // Fallback — try ogg since Google TTS often returns ogg
+    return { mimeType: 'audio/ogg', ext: 'ogg' };
+  };
+
   const handleGenerateVoice = async () => {
     if (!script.trim()) {
       setError('Please write or generate a script first');
@@ -82,50 +125,52 @@ const VoiceGenerator = () => {
     setGenerating(true);
     setError('');
 
+    // Revoke old blob URL
+    if (generatedAudio?.url?.startsWith('blob:')) {
+      URL.revokeObjectURL(generatedAudio.url);
+    }
+    setGeneratedAudio(null);
+
     try {
       const token = localStorage.getItem('tindahan_token');
-      
-      // Make sure we're sending the right request
       const response = await axios.post(
         'https://tindahan-ai-production.up.railway.app/api/voice/generate',
-        { 
-          text: script, 
-          language, 
-          gender 
-        },
-        { 
-          headers: { 
+        { text: script, language, gender },
+        {
+          headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
           timeout: 30000,
-          responseType: 'blob' // Important: Get blob response
+          responseType: 'blob'
         }
       );
 
-      // Check if response is actually an audio blob
-      if (response.data instanceof Blob) {
-        // Create blob URL
-        const url = URL.createObjectURL(response.data);
-        setGeneratedAudio(url);
-        
-        // Update usage if needed
-        if (usage) {
-          setUsage({
-            ...usage,
-            remaining: usage.remaining - 1,
-            today: (usage.today || 0) + 1,
-            total: (usage.total || 0) + 1
-          });
-        }
-      } else {
+      if (!(response.data instanceof Blob)) {
         throw new Error('Invalid response format');
+      }
+
+      // Detect real audio type from magic bytes
+      const { mimeType, ext } = await detectAudioType(response.data);
+
+      // Re-wrap blob with correct MIME type so the browser plays it correctly
+      const correctedBlob = new Blob([response.data], { type: mimeType });
+      const url = URL.createObjectURL(correctedBlob);
+
+      setGeneratedAudio({ url, mimeType, ext });
+
+      if (usage) {
+        setUsage({
+          ...usage,
+          remaining: usage.remaining - 1,
+          today: (usage.today || 0) + 1,
+          total: (usage.total || 0) + 1
+        });
       }
 
     } catch (err) {
       console.error('Generation error:', err);
-      
-      // Try to get error message if it's JSON
+
       if (err.response?.data instanceof Blob) {
         const text = await err.response.data.text();
         try {
@@ -146,19 +191,18 @@ const VoiceGenerator = () => {
 
   const handleDownload = () => {
     if (!generatedAudio) return;
-    
     const link = document.createElement('a');
-    link.href = generatedAudio;
-    link.download = `tindahan-voice-${Date.now()}.mp3`;
+    link.href = generatedAudio.url;
+    // Use the correct extension so the OS opens it properly
+    link.download = `tindahan-voice-${Date.now()}.${generatedAudio.ext}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   const handleReset = () => {
-    // Clean up blob URL
-    if (generatedAudio && generatedAudio.startsWith('blob:')) {
-      URL.revokeObjectURL(generatedAudio);
+    if (generatedAudio?.url?.startsWith('blob:')) {
+      URL.revokeObjectURL(generatedAudio.url);
     }
     setGeneratedAudio(null);
     setScript('');
@@ -173,7 +217,7 @@ const VoiceGenerator = () => {
         {/* LEFT: Form Panel */}
         <div className="voice-form-panel">
           <h2 className="voice-title">🎙️ Generate Voice</h2>
-          
+
           {usage && (
             <div className="voice-usage">
               🎤 {usage.remaining}/{usage.limit} left today
@@ -209,7 +253,7 @@ const VoiceGenerator = () => {
               />
             </div>
 
-            <button 
+            <button
               onClick={handleGenerateScript}
               disabled={scriptGenerating || !productName}
               className="voice-script-btn"
@@ -224,7 +268,7 @@ const VoiceGenerator = () => {
               <h3>VOICE SCRIPT</h3>
               <span>{script.length} / 5000 characters</span>
             </div>
-            
+
             <textarea
               value={script}
               onChange={(e) => setScript(e.target.value)}
@@ -238,8 +282,8 @@ const VoiceGenerator = () => {
           <div className="voice-options-grid">
             <div className="voice-option">
               <label>Language</label>
-              <select 
-                value={language} 
+              <select
+                value={language}
                 onChange={(e) => setLanguage(e.target.value)}
                 className="voice-select"
               >
@@ -250,8 +294,8 @@ const VoiceGenerator = () => {
 
             <div className="voice-option">
               <label>Voice Style</label>
-              <select 
-                value={gender} 
+              <select
+                value={gender}
                 onChange={(e) => setGender(e.target.value)}
                 className="voice-select"
               >
@@ -310,26 +354,24 @@ const VoiceGenerator = () => {
               </div>
               <div className="voice-result-container">
                 <div className="voice-player-wrapper">
-                  <audio 
+                  {/*
+                    KEY FIX: Use ref + src directly on <audio> (not <source>).
+                    The ref lets us call .load()/.play() imperatively when the URL changes.
+                    Setting src directly (not via <source>) is more reliable across browsers.
+                  */}
+                  <audio
+                    ref={audioRef}
                     controls
+                    src={generatedAudio.url}
                     className="voice-player"
-                  >
-                    <source src={generatedAudio} type="audio/mpeg" />
-                    Your browser does not support the audio element.
-                  </audio>
+                  />
                 </div>
 
                 <div className="voice-action-buttons">
-                  <button 
-                    onClick={handleDownload} 
-                    className="voice-download-btn"
-                  >
-                    ⬇️ Download MP3
+                  <button onClick={handleDownload} className="voice-download-btn">
+                    ⬇️ Download Audio
                   </button>
-                  <button 
-                    onClick={handleReset}
-                    className="voice-new-btn"
-                  >
+                  <button onClick={handleReset} className="voice-new-btn">
                     New Voiceover
                   </button>
                 </div>
