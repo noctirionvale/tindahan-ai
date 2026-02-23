@@ -1325,3 +1325,79 @@ body::after {
   }
 }
 
+/* ===== FIX NEWSLETTER BOX WIDTH ===== */
+.footer-newsletter {
+  max-width: 400px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+}
+
+.newsletter-form {
+  display: flex !important;
+  gap: 10px !important;
+  width: 100% !important;
+  max-width: 400px !important;
+  margin: 0 auto !important;
+}
+
+.newsletter-input {
+  flex: 1 !important;
+  min-width: 0 !important; /* Prevents flex overflow */
+  width: auto !important;
+  max-width: 280px !important;
+  padding: 12px 16px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 2px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  color: #fff !important;
+  font-size: 14px !important;
+}
+
+.newsletter-btn {
+  width: auto !important;
+  min-width: 100px !important;
+  padding: 12px 20px !important;
+  background: linear-gradient(135deg, #00e5ff, #6a5cff) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .footer-newsletter {
+    max-width: 100% !important;
+    padding: 0 16px !important;
+  }
+
+  .newsletter-form {
+    flex-direction: column !important;
+    gap: 12px !important;
+    max-width: 100% !important;
+  }
+
+  .newsletter-input {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .newsletter-btn {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .newsletter-input {
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+  }
+
+  .newsletter-btn {
+    padding: 10px 16px !important;
+    font-size: 14px !important;
+  }
+}

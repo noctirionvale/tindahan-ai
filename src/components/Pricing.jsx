@@ -215,10 +215,10 @@ const Pricing = () => {
               <div className="payment-steps">
                 <div className="step">Email proof of payment + your account email to:</div>
                 <a
-                  href={`mailto:spawntaneousbulb@gmail.com?subject=Tindahan.AI ${selectedPlan.name} Upgrade&body=Hi! I just paid for the ${selectedPlan.name} plan (₱${selectedPlan.phpPrice}/month). My Tindahan.AI account email is: [YOUR EMAIL HERE]. Please upgrade my account. Thank you!`}
+                  href={`mailto:noctirionvale@gmail.com?subject=Tindahan.AI ${selectedPlan.name} Upgrade&body=Hi! I just paid for the ${selectedPlan.name} plan (₱${selectedPlan.phpPrice}/month). My Tindahan.AI account email is: [YOUR EMAIL HERE]. Please upgrade my account. Thank you!`}
                   className="email-button"
                 >
-                  📧 spawntaneousbulb@gmail.com
+                  📧 noctirionvale@gmail.com
                 </a>
                 <p className="upgrade-note">⏱️ Account upgraded within 24 hours!</p>
               </div>

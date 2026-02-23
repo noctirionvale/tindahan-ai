@@ -10,6 +10,7 @@ const VoiceGenerator = () => {
   const [gender, setGender] = useState('FEMALE');
   const [generating, setGenerating] = useState(false);
   const [generatedAudio, setGeneratedAudio] = useState(null);
+  const [audioUrl, setAudioUrl] = useState(null);
   const [error, setError] = useState('');
   const [usage, setUsage] = useState(null);
   const [scriptGenerating, setScriptGenerating] = useState(false);
@@ -17,6 +18,15 @@ const VoiceGenerator = () => {
   useEffect(() => {
     fetchUsage();
   }, []);
+
+  // Clean up audio URL when component unmounts
+  useEffect(() => {
+    return () => {
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
+    };
+  }, [audioUrl]);
 
   const fetchUsage = async () => {
     try {
@@ -80,20 +90,27 @@ const VoiceGenerator = () => {
         { text: script, language, gender },
         { 
           headers: { 'Authorization': `Bearer ${token}` },
-          timeout: 30000
+          timeout: 30000,
+          responseType: 'blob'
         }
       );
 
-      if (response.data.success) {
-        setGeneratedAudio(response.data.audioUrl);
-        setUsage({
-          ...usage,
-          remaining: response.data.usage.remaining,
-          today: (usage?.today || 0) + 1,
-          total: (usage?.total || 0) + 1
-        });
-      }
+      // Create a blob URL for the audio
+      const audioBlob = new Blob([response.data], { type: 'audio/mpeg' });
+      const url = URL.createObjectURL(audioBlob);
+      
+      setAudioUrl(url);
+      setGeneratedAudio(url);
+      
+      setUsage({
+        ...usage,
+        remaining: usage?.remaining ? usage.remaining - 1 : 0,
+        today: (usage?.today || 0) + 1,
+        total: (usage?.total || 0) + 1
+      });
+
     } catch (err) {
+      console.error('Generation error:', err);
       if (err.response?.status === 429) {
         setError(err.response.data.message || 'Limit reached! Upgrade your plan.');
       } else {
@@ -104,10 +121,11 @@ const VoiceGenerator = () => {
     }
   };
 
-  const downloadAudio = () => {
-    if (!generatedAudio) return;
+  const handleDownload = () => {
+    if (!audioUrl) return;
+    
     const link = document.createElement('a');
-    link.href = generatedAudio;
+    link.href = audioUrl;
     link.download = `tindahan-voice-${Date.now()}.mp3`;
     document.body.appendChild(link);
     link.click();
@@ -243,38 +261,71 @@ const VoiceGenerator = () => {
 
         {/* RIGHT: Results Panel */}
         <div className="voice-results-panel">
-          {generatedAudio ? (
+          {generating && (
+            <div className="voice-empty">
+              <div className="voice-spinner"></div>
+              <p>Generating your voiceover...</p>
+            </div>
+          )}
+
+          {!generating && !generatedAudio && (
+            <div className="voice-empty">
+              <div className="voice-empty-icon">🎤</div>
+              <p>Your voiceover will appear here</p>
+            </div>
+          )}
+
+          {generatedAudio && !generating && (
             <>
               <div className="voice-results-header">
                 <h3>Your Voiceover</h3>
               </div>
               <div className="voice-result-container">
                 <div className="voice-player-wrapper">
-                  <audio src={generatedAudio} controls className="voice-player" />
+                  <audio 
+                    controls 
+                    autoPlay 
+                    className="voice-player"
+                  >
+                    <source src={generatedAudio} type="audio/mpeg" />
+                    Your browser does not support the audio element.
+                  </audio>
                 </div>
+                
+                <div className="voice-waveform">
+                  <div className="waveform-bar"></div>
+                  <div className="waveform-bar"></div>
+                  <div className="waveform-bar"></div>
+                  <div className="waveform-bar"></div>
+                  <div className="waveform-bar"></div>
+                </div>
+
                 <div className="voice-action-buttons">
-                  <button onClick={downloadAudio} className="voice-download-btn">
-                    ⬇️ Download
+                  <button 
+                    onClick={handleDownload} 
+                    className="voice-download-btn"
+                  >
+                    ⬇️ Download MP3
                   </button>
                   <button 
                     onClick={() => {
                       setGeneratedAudio(null);
+                      setAudioUrl(null);
                       setScript('');
                       setProductName('');
                       setFeatures('');
                     }}
                     className="voice-new-btn"
                   >
-                    New Voice
+                    New Voiceover
                   </button>
+                </div>
+
+                <div className="voice-info">
+                  <p>✓ Ready to play • Click download to save</p>
                 </div>
               </div>
             </>
-          ) : (
-            <div className="voice-empty">
-              <div className="voice-empty-icon">🎤</div>
-              <p>Your voiceover will appear here</p>
-            </div>
           )}
         </div>
       </div>
