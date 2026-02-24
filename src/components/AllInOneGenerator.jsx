@@ -184,42 +184,78 @@ const AllInOneGenerator = () => {
 
   // ===== GENERATION FUNCTIONS =====
   const generateDescriptions = async (token) => {
-    const descResults = [];
-    
-    for (const platform of platforms) {
-      let prompt = '';
+  const descResults = [];
+  
+  for (const platform of platforms) {
+    // Create a prompt that asks for 3 different styles
+    const prompt = `Write 3 different product descriptions for ${platform} platform.
+Product: ${productName}
+Features: ${features || 'High quality'}
 
-      if (platform === 'shopee') {
-        prompt = `You are a Shopee Philippines product copywriter. Output ONLY the description. Style: Professional Taglish. Format: Product Name + Bullet points. Product: ${productName}. Features: ${features || 'High quality'}`;
-      } else if (platform === 'lazada') {
-        prompt = `You are a Lazada official copywriter. Style: Corporate English/Taglish. Format: Specs + Benefits. Product: ${productName}. Features: ${features || 'Safe and reliable'}`;
-      } else if (platform === 'tiktok') {
-        prompt = `You are a TikTok Shop caption writer. Style: Casual/Viral. Product: ${productName}. Features: ${features || 'Trending item'}`;
-      } else if (platform === 'amazon') {
-        prompt = `You are an Amazon listing expert. Output ONLY the listing. Style: Professional English. Format: Title + 5 bullet points + short description. SEO optimized. Product: ${productName}. Features: ${features || 'High quality product'}`;
-      } else if (platform === 'facebook') {
-        prompt = `You are a Facebook seller. Output ONLY the listing. Style: Warm, conversational. Format: Catchy title + description. Product: ${productName}. Features: ${features || 'Great item'}`;
-      } else if (platform === 'ebay') {
-        prompt = `You are an eBay listing expert. Output ONLY the listing. Style: Clear, factual, buyer-focused English. Format: Title + condition + description + why buy from us. Product: ${productName}. Features: ${features || 'Quality item'}`;
+Format your response exactly like this:
+
+STYLE 1: ANALYTICAL
+[Technical, feature-heavy description]
+
+STYLE 2: SIMPLIFIED
+[Casual, easy-to-read description]
+
+STYLE 3: CRITICAL
+[Persuasive, hard-selling description]
+
+Make each style distinct and appropriate for ${platform}.`;
+
+    const response = await axios.post(
+      'https://tindahan-ai-production.up.railway.app/api/compare',
+      { question: prompt },
+      { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+
+    // Parse the response to extract the 3 styles
+    const fullText = response.data.data;
+    
+    // Extract styles using regex
+    const analyticalMatch = fullText.match(/STYLE 1: ANALYTICAL\s*([\s\S]*?)(?=STYLE 2:|$)/i);
+    const simplifiedMatch = fullText.match(/STYLE 2: SIMPLIFIED\s*([\s\S]*?)(?=STYLE 3:|$)/i);
+    const criticalMatch = fullText.match(/STYLE 3: CRITICAL\s*([\s\S]*?)(?=$)/i);
+
+    const clean = (str) => str ? str.trim().replace(/\*\*/g, '') : '';
+
+    const styles = [
+      {
+        style: "ANALYTICAL",
+        title: "Technical & Detailed",
+        text: clean(analyticalMatch ? analyticalMatch[1] : fullText),
+        icon: "📊",
+        color: "#8b5cf6"
+      },
+      {
+        style: "SIMPLIFIED",
+        title: "Casual & Friendly",
+        text: clean(simplifiedMatch ? simplifiedMatch[1] : ""),
+        icon: "💡",
+        color: "#10b981"
+      },
+      {
+        style: "CRITICAL",
+        title: "Persuasive & Viral",
+        text: clean(criticalMatch ? criticalMatch[1] : ""),
+        icon: "🔥",
+        color: "#f43f5e"
       }
+    ];
 
-      const response = await axios.post(
-        'https://tindahan-ai-production.up.railway.app/api/compare',
-        { question: prompt },
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-
-      descResults.push({
-        platform,
-        text: response.data.data,
-        icon: platformInfo[platform].icon,
-        color: platformInfo[platform].color,
-        name: platformInfo[platform].name
-      });
-    }
-    
-    setDescriptions(descResults);
-  };
+    descResults.push({
+      platform,
+      styles: styles,
+      icon: platformInfo[platform].icon,
+      color: platformInfo[platform].color,
+      name: platformInfo[platform].name
+    });
+  }
+  
+  setDescriptions(descResults);
+};
 
   const generateVideo = async (token) => {
     const imageUrl = await uploadToImgur(selectedFile);
@@ -639,22 +675,52 @@ const AllInOneGenerator = () => {
                 {descriptions.length > 0 && (
                   <div className="package-result-group">
                     <h4 className="package-result-title">
-                      <span>📝</span> Descriptions ({descriptions.length} platforms)
+                      <span>📝</span> Platform Descriptions
                     </h4>
                     <div className="package-description-list">
                       {descriptions.map((desc, i) => (
                         <div key={i} className="package-description-card">
-                          <div className="package-description-header">
-                            <span>{desc.icon}</span>
-                            <span className="package-description-platform">{desc.name}</span>
-                          </div>
-                          <p className="package-description-text">{desc.text}</p>
-                          <button 
-                            onClick={() => handleCopy(desc.text, i)}
-                            className="package-copy-btn"
+                          <div 
+                            className="package-description-header" 
+                            style={{ 
+                              background: `${desc.color}20`, 
+                              borderLeft: `4px solid ${desc.color}` 
+                            }}
                           >
-                            {copiedIndex === i ? '✓' : '📋'}
-                          </button>
+                            <span className="package-description-platform">
+                              {desc.icon} {desc.name}
+                            </span>
+                          </div>
+                          
+                          {/* Show all 3 description styles if available */}
+                          {desc.styles ? (
+                            <div className="package-description-styles">
+                              {desc.styles.map((style, styleIndex) => (
+                                <div key={styleIndex} className="package-description-style">
+                                  <div className="package-style-header" style={{ color: style.color }}>
+                                    {style.icon} {style.title}
+                                  </div>
+                                  <p className="package-description-text">{style.text}</p>
+                                  <button 
+                                    onClick={() => handleCopy(style.text, `${i}-${styleIndex}`)}
+                                    className="package-copy-btn-small"
+                                  >
+                                    {copiedIndex === `${i}-${styleIndex}` ? '✓' : '📋'}
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="package-description-single">
+                              <p className="package-description-text">{desc.text}</p>
+                              <button 
+                                onClick={() => handleCopy(desc.text, i)}
+                                className="package-copy-btn"
+                              >
+                                {copiedIndex === i ? '✓' : '📋'}
+                              </button>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -677,29 +743,30 @@ const AllInOneGenerator = () => {
                 )}
 
                 {/* Voice Results */}
-                {audioBlobUrl && (
-                  <div className="package-result-group">
-                    <h4 className="package-result-title">
-                      <span>🎙️</span> Voiceover
-                    </h4>
-                    <div className="package-audio-wrapper">
-                      <audio
-                        ref={audioRef}
-                        controls
-                        src={audioBlobUrl}
-                        className="package-audio"
-                      />
-                      <button onClick={downloadAudio} className="package-download-btn">
-                        ⬇️ Download MP3
-                      </button>
-                      {script && (
-                        <div className="package-script-preview">
-                          <p><strong>Script:</strong> "{script.substring(0, 150)}..."</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+{audioBlobUrl && (
+  <div className="package-result-group">
+    <h4 className="package-result-title">
+      <span>🎙️</span> Voiceover
+    </h4>
+    <div className="package-audio-wrapper">
+      <audio
+        ref={audioRef}
+        controls
+        src={audioBlobUrl}
+        className="package-audio"
+      />
+      <button onClick={downloadAudio} className="package-download-btn">
+        ⬇️ Download MP3
+      </button>
+      {script && (
+        <div className="package-script-full">
+          <p><strong>Script:</strong></p>
+          <p className="package-script-text">{script}</p>
+        </div>
+      )}
+    </div>
+  </div>
+)}
               </div>
             </>
           )}

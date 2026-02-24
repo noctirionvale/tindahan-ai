@@ -576,3 +576,30 @@ app.get('/api/voice/usage', authenticateToken, async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server on ${PORT}`));
+
+// Update user avatar
+app.put('/api/user/avatar', authenticateToken, async (req, res) => {
+  try {
+    const { avatarUrl } = req.body;
+    const userId = req.user.id;
+
+    const result = await pool.query(
+      'UPDATE users SET avatar_url = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id, name, email, avatar_url',
+      [avatarUrl, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Avatar updated successfully',
+      user: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Avatar update error:', error);
+    res.status(500).json({ message: 'Failed to update avatar' });
+  }
+});

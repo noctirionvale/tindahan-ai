@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import ProfilePictureUpload from './ProfilePictureUpload'; // ✨ Added this import!
 import './ProfileModal.css';
 
-const ProfileModal = ({ user, onClose, onLogout }) => {
+// ✨ Added setUser right here in the props!
+const ProfileModal = ({ user, setUser, onClose, onLogout }) => {
   const [activeTab, setActiveTab] = useState('profile');
   const [usage, setUsage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -104,11 +106,9 @@ const ProfileModal = ({ user, onClose, onLogout }) => {
       <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
         <button className="profile-close" onClick={onClose}>×</button>
 
-        {/* Header */}
+        {/* Header - ✨ Removed the duplicate one and kept the correct one */}
         <div className="profile-header">
-          <div className="profile-header-avatar">
-            {user?.name?.charAt(0).toUpperCase()}
-          </div>
+          <ProfilePictureUpload user={user} onUpdate={(updated) => setUser(updated)} />
           <div className="profile-header-info">
             <h2>{user?.name}</h2>
             <p>{user?.email}</p>
