@@ -1,5 +1,5 @@
 // ============================================
-// TINDAHAN.AI - Unified Backend Server
+// TINDAHAN.AI - Unified Backend Server (UPDATED)
 // ============================================
 
 const textToSpeech = require('@google-cloud/text-to-speech');
@@ -53,6 +53,7 @@ const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON |
 const ttsClient = new textToSpeech.TextToSpeechClient({
   credentials: credentials
 });
+
 // ============================================
 // MIDDLEWARE & HELPERS
 // ============================================
@@ -73,8 +74,6 @@ const authenticateToken = (req, res, next) => {
 // ============================================
 // FIX: Add Owner Bypass to checkAndIncrementUsage
 // ============================================
-
-// Replace your existing checkAndIncrementUsage function with this:
 
 async function checkAndIncrementUsage(userId, type) {
   const result = await pool.query(
@@ -191,27 +190,216 @@ async function checkAndIncrementUsage(userId, type) {
 // ROUTES
 // ============================================
 
-// --- AUTH ROUTES ---
+// --- AUTH ROUTES (UPDATED) ---
 app.post('/api/auth/signup', async (req, res) => {
   const { email, password, name } = req.body;
   const hash = await bcrypt.hash(password, 10);
   try {
     const newUser = await pool.query(
-      'INSERT INTO users (email, password_hash, name) VALUES ($1, $2, $3) RETURNING id, email, name',
-      [email.toLowerCase(), hash, name]
+      'INSERT INTO users (email, password_hash, name, plan_type) VALUES ($1, $2, $3, $4) RETURNING id, email, name, plan_type',
+      [email.toLowerCase(), hash, name, 'free']
     );
     const token = jwt.sign({ id: newUser.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.status(201).json({ success: true, token, user: newUser.rows[0] });
-  } catch (e) { res.status(400).json({ error: 'Email already exists' }); }
+    res.status(201).json({ 
+      success: true, 
+      token, 
+      user: { 
+        id: newUser.rows[0].id, 
+        name: newUser.rows[0].name,
+        email: newUser.rows[0].email,
+        plan: newUser.rows[0].plan_type || 'free'
+      } 
+    });
+  } catch (e) { 
+    res.status(400).json({ error: 'Email already exists' }); 
+  }
 });
 
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   const result = await pool.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
+  
   if (result.rows.length && await bcrypt.compare(password, result.rows[0].password_hash)) {
     const token = jwt.sign({ id: result.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ success: true, token, user: { id: result.rows[0].id, name: result.rows[0].name } });
-  } else { res.status(400).json({ error: 'Invalid credentials' }); }
+    
+    res.json({ 
+      success: true, 
+      token, 
+      user: { 
+        id: result.rows[0].id, 
+        name: result.rows[0].name,
+        email: result.rows[0].email,
+        plan: result.rows[0].plan_type || 'free'
+      } 
+    });
+  } else { 
+    res.status(400).json({ error: 'Invalid credentials' }); 
+  }
+});
+
+// ============================================
+// PROFILE MANAGEMENT ROUTES (NEW)
+// ============================================
+
+// Get user usage statistics
+app.get('/api/user/usage', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT plan_type, generations_today, video_generations_today, voice_generations_today, total_generations, total_video_generations, total_voice_generations FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = result.rows[0];
+    const plan = user.plan_type || 'free';
+
+    res.json({
+      success: true,
+      usage: {
+        plan: plan,
+        descriptions: {
+          used: user.generations_today || 0,
+          limit: PLAN_LIMITS[plan]?.descriptions || 15,
+          total: user.total_generations || 0
+        },
+        videos: {
+          used: user.video_generations_today || 0,
+          limit: PLAN_LIMITS[plan]?.videos || 1,
+          total: user.total_video_generations || 0
+        },
+        voices: {
+          used: user.voice_generations_today || 0,
+          limit: PLAN_LIMITS[plan]?.voices || 1,
+          total: user.total_voice_generations || 0
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Usage fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch usage' });
+  }
+});
+
+// Update user profile (name only)
+app.put('/api/user/profile', authenticateToken, async (req, res) => {
+  try {
+    const { name } = req.body;
+    const userId = req.user.id;
+
+    // Validation
+    if (!name || name.trim().length < 2) {
+      return res.status(400).json({ 
+        message: 'Name must be at least 2 characters long' 
+      });
+    }
+
+    // Update user profile
+    const result = await pool.query(
+      'UPDATE users SET name = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id, name, email, plan_type',
+      [name.trim(), userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Name updated successfully',
+      user: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({ message: 'Failed to update profile' });
+  }
+});
+
+// Update password
+app.put('/api/user/password', authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    // Validation
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    }
+
+    // Get user's current password hash
+    const result = await pool.query(
+      'SELECT password_hash FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const user = result.rows[0];
+
+    // Verify current password
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isValidPassword) {
+      return res.status(401).json({ message: 'Current password is incorrect' });
+    }
+
+    // Prevent using the same password
+    const isSamePassword = await bcrypt.compare(newPassword, user.password_hash);
+    if (isSamePassword) {
+      return res.status(400).json({ message: 'New password must be different from current password' });
+    }
+
+    // Hash new password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update password in database
+    await pool.query(
+      'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+      [hashedPassword, userId]
+    );
+
+    res.json({ 
+      success: true, 
+      message: 'Password updated successfully' 
+    });
+
+  } catch (error) {
+    console.error('Password update error:', error);
+    res.status(500).json({ message: 'Failed to update password' });
+  }
+});
+
+// Get user profile
+app.get('/api/user/profile', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, name, email, plan_type, created_at FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ 
+      success: true, 
+      user: result.rows[0] 
+    });
+
+  } catch (error) {
+    console.error('Profile fetch error:', error);
+    res.status(500).json({ message: 'Failed to fetch profile' });
+  }
 });
 
 // --- AI GENERATION ---
@@ -250,20 +438,6 @@ app.post('/api/video/generate', authenticateToken, async (req, res) => {
   );
 
   res.json({ success: true, videoUrl: output, usage });
-});
-
-// --- USAGE STATS ---
-app.get('/api/usage', authenticateToken, async (req, res) => {
-  const result = await pool.query('SELECT plan_type, generations_today, video_generations_today, total_generations, total_video_generations FROM users WHERE id = $1', [req.user.id]);
-  const user = result.rows[0];
-  res.json({
-    success: true,
-    usage: {
-      plan: user.plan_type,
-      descriptions: { today: user.generations_today, limit: PLAN_LIMITS[user.plan_type].descriptions },
-      videos: { today: user.video_generations_today, limit: PLAN_LIMITS[user.plan_type].videos }
-    }
-  });
 });
 
 // --- VOICE GENERATION ROUTES ---

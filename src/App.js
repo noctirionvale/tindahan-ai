@@ -210,69 +210,64 @@ function App() {
       </div>
 
       {/* ===== MOBILE BOTTOM NAVIGATION WITH FOOTER ===== */}
-      <div className="mobile-bottom-nav">
-        <div className="mobile-nav-items">
-<div className="mobile-nav-items">
-  {/* ... existing buttons ... */}
-  
-  {/* PROFILE BUTTON FOR MOBILE */}
-  <button
-    className="mobile-nav-item"
-    onClick={() => setShowProfile(true)}
-  >
-    <span>👤</span>
-    <span>Profile</span>
-  </button>
-  
-  {/* ... pricing button ... */}
-</div>
-           <button
-            className={`mobile-nav-item ${activeTab === 'description' ? 'active' : ''}`}
-            onClick={() => setActiveTab('description')}
-          >
-            <span>📝</span>
-            <span>Desc</span>
-          </button>
-          
-          <button
-            className={`mobile-nav-item ${activeTab === 'video' ? 'active' : ''}`}
-            onClick={() => setActiveTab('video')}
-          >
-            <span>🎬</span>
-            <span>Video</span>
-          </button>
-          
-          <button
-            className={`mobile-nav-item ${activeTab === 'voice' ? 'active' : ''}`}
-            onClick={() => setActiveTab('voice')}
-          >
-            <span>🎙️</span>
-            <span>Voice</span>
-          </button>
+<div className="mobile-bottom-nav">
+  <div className="mobile-nav-items">
+    <button
+      className={`mobile-nav-item ${activeTab === 'description' ? 'active' : ''}`}
+      onClick={() => setActiveTab('description')}
+    >
+      <span className="nav-icon">📝</span>
+      <span className="nav-label">Desc</span>
+    </button>
+    
+    <button
+      className={`mobile-nav-item ${activeTab === 'video' ? 'active' : ''}`}
+      onClick={() => setActiveTab('video')}
+    >
+      <span className="nav-icon">🎬</span>
+      <span className="nav-label">Video</span>
+    </button>
+    
+    <button
+      className={`mobile-nav-item ${activeTab === 'voice' ? 'active' : ''}`}
+      onClick={() => setActiveTab('voice')}
+    >
+      <span className="nav-icon">🎙️</span>
+      <span className="nav-label">Voice</span>
+    </button>
 
-          <button
-            className={`mobile-nav-item ${activeTab === 'package' ? 'active' : ''}`}
-            onClick={() => setActiveTab('package')}
-          >
-            <span>📦</span>
-            <span>Pack</span>
-          </button>
-          
-          <button
-            className={`mobile-nav-item ${activeTab === 'pricing' ? 'active' : ''}`}
-            onClick={() => setActiveTab('pricing')}
-          >
-            <span>💳</span>
-            <span>Price</span>
-          </button>
-        </div>
-        
-        {/* Mobile Footer inside bottom nav */}
-        <div className="mobile-footer-text">
-          <p>🇵🇭 Your PINOY AI Content Assistant</p>
-          <p>© 2026 Made with 💚 in PH</p>
-        </div>
-      </div>
+    <button
+      className={`mobile-nav-item ${activeTab === 'package' ? 'active' : ''}`}
+      onClick={() => setActiveTab('package')}
+    >
+      <span className="nav-icon">📦</span>
+      <span className="nav-label">Pack</span>
+    </button>
+    
+    <button
+      className={`mobile-nav-item ${activeTab === 'pricing' ? 'active' : ''}`}
+      onClick={() => setActiveTab('pricing')}
+    >
+      <span className="nav-icon">💳</span>
+      <span className="nav-label">Price</span>
+    </button>
+
+    {/* PROFILE BUTTON FOR MOBILE - Now properly placed */}
+    <button
+      className="mobile-nav-item profile-nav"
+      onClick={() => setShowProfile(true)}
+    >
+      <span className="nav-icon">👤</span>
+      <span className="nav-label">Profile</span>
+    </button>
+  </div>
+  
+  {/* Mobile Footer inside bottom nav */}
+  <div className="mobile-footer-text">
+    <p>🇵🇭 Your PINOY AI Content Assistant</p>
+    <p>© 2026 Made with 💚 in PH</p>
+  </div>
+</div>
 
       {/* Floating FAQ Button */}
       <button 

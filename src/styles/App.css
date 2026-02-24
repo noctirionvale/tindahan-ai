@@ -1537,3 +1537,100 @@ body::after {
     height: 32px !important;
   }
 }
+/* Mobile Bottom Navigation Fix */
+.mobile-nav-items {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  padding: 8px 4px;
+  gap: 2px;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 0;
+  flex: 1;
+  min-width: 0; /* Prevents flex items from overflowing */
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.mobile-nav-item .nav-icon {
+  font-size: 20px;
+  margin-bottom: 2px;
+}
+
+.mobile-nav-item .nav-label {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.mobile-nav-item.active {
+  color: #ff6b35;
+  background: rgba(255, 107, 53, 0.1);
+}
+
+.mobile-nav-item.profile-nav {
+  color: #8b5cf6;
+}
+
+.mobile-nav-item.profile-nav.active {
+  color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+/* For very small screens */
+@media (max-width: 380px) {
+  .mobile-nav-item .nav-label {
+    font-size: 10px;
+  }
+  
+  .mobile-nav-item .nav-icon {
+    font-size: 18px;
+  }
+}
+
+/* Ensure bottom nav is sticky */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(26, 26, 46, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  z-index: 100;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-footer-text {
+  padding: 8px 0;
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mobile-footer-text p {
+  margin: 2px 0;
+}
+
+/* Hide mobile nav on desktop */
+@media (min-width: 769px) {
+  .mobile-bottom-nav {
+    display: none;
+  }
+}

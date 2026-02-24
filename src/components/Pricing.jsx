@@ -178,8 +178,8 @@ const Pricing = () => {
 
               <button
                 onClick={() => handleUpgradeClick(plan)}
-                className={`plan-cta ${plan.popular ? 'primary' : 'secondary'}`}
-                style={plan.popular ? { background: `linear-gradient(135deg, ${plan.color}, #ff8c42)` } : {}}
+                className={`plan-cta ${plan.phpPrice > 0 ? 'primary' : 'secondary'}`}
+                style={plan.phpPrice > 0 ? { background: `linear-gradient(135deg, ${plan.color}, #ff8c42)` } : {}}
               >
                 {plan.cta}
               </button>
