@@ -988,10 +988,10 @@ body::after {
     font-weight: 500;
   }
   
-  /* Adjust main content padding */
-  .main-content {
-    padding-bottom: 100px !important; /* Extra space for taller bottom nav */
-  }
+  /* Adjust main content padding - FIXED */
+.main-content {
+  padding: 16px 16px 120px 16px !important; /* Added top padding to fix gap */
+}
 
   /* Update mobile bottom nav with footer */
 @media (max-width: 768px) {
@@ -1055,11 +1055,11 @@ body::after {
 @media (max-width: 768px) {
   /* Only apply to generator tabs, not pricing */
   .main-content:not(.pricing-active) {
-    height: 100vh !important;
-    overflow-y: auto !important;
-    padding-bottom: 120px !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
+  height: 100vh !important;
+  overflow-y: auto !important;
+  padding: 16px 16px 120px 16px !important; /* Added top padding */
+  -webkit-overflow-scrolling: touch !important;
+}
   
   .generator-container:not(.pricing-container) {
     height: auto !important;
@@ -1399,5 +1399,141 @@ body::after {
   .newsletter-btn {
     padding: 10px 16px !important;
     font-size: 14px !important;
+  }
+}
+
+/* ===== FIX BOTTOM NAV LABELS POSITION ===== */
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    padding: 8px 16px 16px !important; /* Increase horizontal padding */
+  }
+  
+  .mobile-nav-items {
+    display: flex;
+    justify-content: space-between !important; /* Better spacing */
+    align-items: center;
+    width: 100%;
+    gap: 2px; /* Minimal gap, let justify-content handle spacing */
+    padding: 0 4px; /* Add some internal padding */
+  }
+  
+  .mobile-nav-item {
+    padding: 8px 0 !important; /* Remove horizontal padding, let parent handle */
+    min-width: 50px !important; /* Slightly smaller min-width */
+    margin: 0 2px !important; /* Small margin between items */
+  }
+  
+  .mobile-nav-item span:first-child {
+    font-size: 20px !important;
+    margin-bottom: 2px;
+  }
+  
+  .mobile-nav-item span:last-child {
+    font-size: 10px !important;
+    white-space: nowrap;
+  }
+}
+
+/* Even smaller screens */
+@media (max-width: 400px) {
+  .mobile-nav-items {
+    padding: 0 2px;
+  }
+  
+  .mobile-nav-item {
+    min-width: 45px !important;
+  }
+  
+  .mobile-nav-item span:first-child {
+    font-size: 18px !important;
+  }
+  
+  .mobile-nav-item span:last-child {
+    font-size: 9px !important;
+  }
+}
+
+/* ===== FIX PROFILE SPACING ON MOBILE ===== */
+@media (max-width: 768px) {
+  /* Adjust top bar to be more compact */
+  .top-bar {
+    padding: 8px 16px !important;
+    height: 56px !important; /* Slightly smaller */
+  }
+  
+  .top-bar-left {
+    gap: 8px !important;
+  }
+  
+  .top-logo {
+    height: 32px !important; /* Smaller logo */
+  }
+  
+  .top-brand {
+    font-size: 1rem !important;
+  }
+  
+  /* Fix the welcome text/profile button */
+  .welcome-text.mobile-only {
+    font-size: 0.85rem !important;
+    padding: 4px 10px !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    background: rgba(0, 229, 255, 0.1) !important;
+    border-radius: 30px !important;
+    height: 36px !important;
+  }
+  
+  /* Remove any extra gaps in main content */
+  .main-content {
+    padding-top: 8px !important; /* Minimal top padding */
+    margin-top: 0 !important;
+  }
+  
+  /* First generator panel should have no extra top margin */
+  .generator-container > div:first-child {
+    margin-top: 0 !important;
+  }
+  
+  /* Fix any weird spacing in the generator itself */
+  .video-form-panel:first-child,
+  .voice-form-panel:first-child,
+  .desc-form-panel:first-child,
+  .package-form-panel:first-child {
+    margin-top: 0 !important;
+    padding-top: 20px !important; /* Consistent padding */
+  }
+  
+  /* Ensure title isn't too far from top */
+  .video-title,
+  .voice-title,
+  .desc-title,
+  .package-title {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+}
+
+/* Even smaller screens */
+@media (max-width: 480px) {
+  .top-bar {
+    padding: 6px 12px !important;
+    height: 52px !important;
+  }
+  
+  .top-logo {
+    height: 28px !important;
+  }
+  
+  .top-brand {
+    font-size: 0.9rem !important;
+  }
+  
+  .welcome-text.mobile-only {
+    font-size: 0.8rem !important;
+    padding: 4px 8px !important;
+    height: 32px !important;
   }
 }

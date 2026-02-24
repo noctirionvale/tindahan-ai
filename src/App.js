@@ -5,6 +5,8 @@ import ProductDescriptionGenerator from './components/ProductDescriptionGenerato
 import VideoGenerator from './components/VideoGenerator';
 import VoiceGenerator from './components/VoiceGenerator';
 import Pricing from './components/Pricing';
+import AllInOneGenerator from './components/AllInOneGenerator';
+import ProfileModal from './components/ProfileModal'; // NEW IMPORT
 import './styles/App.css';
 import './styles/Sidebar.css';
 
@@ -14,6 +16,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('description');
   const [showFAQ, setShowFAQ] = useState(false);
+  const [showProfile, setShowProfile] = useState(false); // NEW STATE
 
   useEffect(() => {
     const token = localStorage.getItem('tindahan_token');
@@ -37,6 +40,7 @@ function App() {
     localStorage.removeItem('tindahan_token');
     localStorage.removeItem('tindahan_user');
     setUser(null);
+    setShowProfile(false);
   };
 
   if (loading) {
@@ -68,17 +72,17 @@ function App() {
 
   return (
     <div className="dashboard-wrapper">
-      {/* Top Bar */}
+      {/* Top Bar - Just welcome message, not clickable */}
       <div className="top-bar">
         <div className="top-bar-left">
           <img src="pointingai.png" alt="Tindahan.AI" className="top-logo" />
           <span className="top-brand">TINDAHAN.AI</span>
         </div>
         <div className="top-bar-right">
-          <span className="welcome-text">Welcome, {user.name}! 👋</span>
-          <button onClick={handleLogout} className="logout-btn-top">
-            Logout
-          </button>
+          <span className="welcome-text">
+            👤 Welcome, {user.name}!
+          </span>
+          {/* Logout button removed - now in profile modal */}
         </div>
       </div>
 
@@ -116,6 +120,14 @@ function App() {
             </button>
 
             <button
+              className={`sidebar-tab ${activeTab === 'package' ? 'active' : ''}`}
+              onClick={() => setActiveTab('package')}
+            >
+              <span className="tab-icon">📦</span>
+              <span className="tab-label">Package</span>
+            </button>
+
+            <button
               className={`sidebar-tab ${activeTab === 'pricing' ? 'active' : ''}`}
               onClick={() => setActiveTab('pricing')}
             >
@@ -123,6 +135,17 @@ function App() {
               <span className="tab-label">Pricing</span>
             </button>
           </nav>
+
+          {/* Profile Section in Sidebar - NEW */}
+          <div className="sidebar-profile" onClick={() => setShowProfile(true)}>
+            <div className="profile-avatar">
+              {user?.name?.charAt(0).toUpperCase()}
+            </div>
+            <div className="profile-info">
+              <h4>{user?.name}</h4>
+              <span className="plan-badge">Free Plan</span>
+            </div>
+          </div>
 
           {/* Tagline at bottom of sidebar */}
           <div className="sidebar-footer">
@@ -141,6 +164,7 @@ function App() {
             {activeTab === 'description' && <ProductDescriptionGenerator />}
             {activeTab === 'video' && <VideoGenerator />}
             {activeTab === 'voice' && <VoiceGenerator />}
+            {activeTab === 'package' && <AllInOneGenerator />}
             {activeTab === 'pricing' && <Pricing />}
           </div>
 
@@ -188,7 +212,21 @@ function App() {
       {/* ===== MOBILE BOTTOM NAVIGATION WITH FOOTER ===== */}
       <div className="mobile-bottom-nav">
         <div className="mobile-nav-items">
-          <button
+<div className="mobile-nav-items">
+  {/* ... existing buttons ... */}
+  
+  {/* PROFILE BUTTON FOR MOBILE */}
+  <button
+    className="mobile-nav-item"
+    onClick={() => setShowProfile(true)}
+  >
+    <span>👤</span>
+    <span>Profile</span>
+  </button>
+  
+  {/* ... pricing button ... */}
+</div>
+           <button
             className={`mobile-nav-item ${activeTab === 'description' ? 'active' : ''}`}
             onClick={() => setActiveTab('description')}
           >
@@ -210,6 +248,14 @@ function App() {
           >
             <span>🎙️</span>
             <span>Voice</span>
+          </button>
+
+          <button
+            className={`mobile-nav-item ${activeTab === 'package' ? 'active' : ''}`}
+            onClick={() => setActiveTab('package')}
+          >
+            <span>📦</span>
+            <span>Pack</span>
           </button>
           
           <button
@@ -278,6 +324,15 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Profile Modal */}
+      {showProfile && (
+        <ProfileModal 
+          user={user}
+          onClose={() => setShowProfile(false)}
+          onLogout={handleLogout}
+        />
       )}
     </div>
   );
