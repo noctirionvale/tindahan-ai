@@ -84,7 +84,7 @@ const ProfileModal = ({ user, setUser, onClose, onLogout }) => {
   };
 
   const tabs = [
-    { id: 'profile', label: '👤 Profile', icon: '👤' },
+    { id: 'profile', label: '🧑 Profile', icon: '🙎‍♂️' },
     { id: 'usage', label: '📊 Usage', icon: '📊' },
     { id: 'settings', label: '⚙️ Settings', icon: '⚙️' },
     { id: 'billing', label: '💳 Billing', icon: '💳' }

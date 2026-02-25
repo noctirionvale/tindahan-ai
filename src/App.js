@@ -20,17 +20,58 @@ function App() {
 
   useEffect(() => {
     const token = localStorage.getItem('tindahan_token');
-    const savedUser = localStorage.getItem('tindahan_user');
-    if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
+    if (!token) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    // ✅ Always fetch fresh profile from server on load — keeps all devices in sync
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch(
+          'https://tindahan-ai-production.up.railway.app/api/user/profile',
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const freshUser = {
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            plan: data.user.plan_type || 'free',
+            avatar_url: data.user.avatar_url || null
+          };
+          setUser(freshUser);
+          localStorage.setItem('tindahan_user', JSON.stringify(freshUser));
+        } else {
+          // Token expired or invalid — clear and show login
+          localStorage.removeItem('tindahan_token');
+          localStorage.removeItem('tindahan_user');
+        }
+      } catch (err) {
+        // Network error — fall back to cached localStorage data
+        console.warn('Could not fetch profile, using cached data:', err);
+        const savedUser = localStorage.getItem('tindahan_user');
+        if (savedUser) setUser(JSON.parse(savedUser));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
   }, []);
 
-  const handleLoginSuccess = (userData) => setUser(userData);
-  const handleSignupSuccess = (userData) => setUser(userData);
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
+    localStorage.setItem('tindahan_user', JSON.stringify(userData));
+  };
 
-  // ✅ FIX: persist user update to localStorage AND state
+  const handleSignupSuccess = (userData) => {
+    setUser(userData);
+    localStorage.setItem('tindahan_user', JSON.stringify(userData));
+  };
+
   const handleUserUpdate = (updatedUser) => {
     setUser(updatedUser);
     localStorage.setItem('tindahan_user', JSON.stringify(updatedUser));
