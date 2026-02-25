@@ -2,6 +2,7 @@
 // TINDAHAN.AI - Unified Backend Server (UPDATED)
 // ============================================
 
+
 const textToSpeech = require('@google-cloud/text-to-speech');
 const Replicate = require('replicate');
 const express = require('express');
@@ -10,9 +11,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Pool } = require('pg');
 const OpenAI = require('openai');
-const multer = require('multer');       // ✅ MOVED TO TOP
-const FormData = require('form-data');  // ✅ MOVED TO TOP
-const fetch = require('node-fetch');    // ✅ MOVED TO TOP
+const multer = require('multer');
+const fetch = require('node-fetch');    // must be node-fetch@2 (v3 is ESM-only)
 require('dotenv').config();
 
 const app = express();
@@ -319,7 +319,7 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
 });
 
 // ============================================
-// AVATAR UPLOAD ROUTE - Proxies to Imgur
+// AVATAR UPLOAD ROUTE - Stores as base64 data URL (no third-party needed)
 // ============================================
 app.post('/api/user/avatar/upload', authenticateToken, upload.single('image'), async (req, res) => {
   try {
@@ -327,33 +327,18 @@ app.post('/api/user/avatar/upload', authenticateToken, upload.single('image'), a
       return res.status(400).json({ message: 'No image file provided' });
     }
 
-    const formData = new FormData();
-    formData.append('image', req.file.buffer.toString('base64'));
-    formData.append('type', 'base64');
+    console.log(`📸 Processing avatar: ${req.file.mimetype}, ${req.file.size} bytes`);
 
-    const imgurResponse = await fetch('https://api.imgur.com/3/image', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Client-ID 4e960e7a2894a93',
-        ...formData.getHeaders()
-      },
-      body: formData
-    });
-
-    const imgurData = await imgurResponse.json();
-
-    if (!imgurData.success) {
-      console.error('Imgur error:', imgurData);
-      return res.status(500).json({ message: 'Imgur upload failed', details: imgurData });
-    }
-
-    const imageUrl = imgurData.data.link;
+    // Convert to base64 data URL and store directly in DB
+    const base64Image = req.file.buffer.toString('base64');
+    const imageUrl = `data:${req.file.mimetype};base64,${base64Image}`;
 
     const result = await pool.query(
       'UPDATE users SET avatar_url = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id, name, email, avatar_url, plan_type',
       [imageUrl, req.user.id]
     );
 
+    console.log('✅ Avatar saved successfully');
     res.json({ success: true, message: 'Avatar updated successfully', user: result.rows[0] });
 
   } catch (error) {
