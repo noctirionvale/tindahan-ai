@@ -9,11 +9,12 @@
                  script-src 'self' 'unsafe-eval' 'unsafe-inline' https:;
                  style-src 'self' 'unsafe-inline' https:;
                  font-src 'self' https:;
+                 img-src 'self' blob: data: https:;
                  connect-src 'self' http://localhost:5000 https://tindahan-ai-production.up.railway.app https://api.deepseek.com https://api.web3forms.com https://api.imgur.com">
-                 
-    
+
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#ff6b35" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Tindahan.AI" />
@@ -61,7 +62,6 @@
             .then((registration) => {
               console.log('✅ Service Worker registered:', registration);
               
-              // Check for updates
               registration.addEventListener('updatefound', () => {
                 const newWorker = registration.installing;
                 newWorker.addEventListener('statechange', () => {
@@ -83,9 +83,6 @@
         e.preventDefault();
         deferredPrompt = e;
         console.log('💾 Install prompt ready');
-        
-        // You can show your custom install button here
-        // Example: document.getElementById('installButton').style.display = 'block';
       });
 
       window.addEventListener('appinstalled', () => {

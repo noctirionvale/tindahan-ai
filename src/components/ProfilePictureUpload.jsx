@@ -4,7 +4,7 @@ import './ProfilePictureUpload.css';
 
 const ProfilePictureUpload = ({ user, onUpdate }) => {
   const [uploading, setUploading] = useState(false);
-  const [preview, setPreview] = useState(user?.avatar || null);
+  const [preview, setPreview] = useState(user?.avatar_url || null);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
@@ -14,13 +14,11 @@ const ProfilePictureUpload = ({ user, onUpdate }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate format
     if (!SUPPORTED_FORMATS.includes(file.type)) {
       setError('Please use JPG, PNG, GIF, or WebP');
       return;
     }
 
-    // Validate size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
       setError('Image must be less than 5MB');
       return;
@@ -28,52 +26,52 @@ const ProfilePictureUpload = ({ user, onUpdate }) => {
 
     setError('');
 
-    // Create preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target.result);
-      uploadToImgur(file);
-    };
-    reader.readAsDataURL(file);
+    // Use blob URL for preview — avoids the data: URI CSP violation
+    const blobUrl = URL.createObjectURL(file);
+    setPreview(blobUrl);
+
+    uploadAvatar(file);
   };
 
-  const uploadToImgur = async (file) => {
+  const uploadAvatar = async (file) => {
     setUploading(true);
-    
+
     try {
+      const token = localStorage.getItem('tindahan_token');
+
+      // Single call to your backend — it handles Imgur server-side (no CORS issue)
       const formData = new FormData();
       formData.append('image', file);
 
       const response = await axios.post(
-        'https://api.imgur.com/3/image',
+        'https://tindahan-ai-production.up.railway.app/api/user/avatar/upload',
         formData,
         {
-          headers: { 'Authorization': 'Client-ID 4e960e7a2894a93' }
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
         }
       );
 
-      const imageUrl = response.data.data.link;
-      
-      // Save to your backend
-      const token = localStorage.getItem('tindahan_token');
-      await axios.put(
-        'https://tindahan-ai-production.up.railway.app/api/user/avatar',
-        { avatarUrl: imageUrl },
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
+      const { user: updatedUser } = response.data;
 
-      // Update local storage
-      const updatedUser = { ...user, avatar: imageUrl };
-      localStorage.setItem('tindahan_user', JSON.stringify(updatedUser));
-      
-      // Notify parent
+      // Swap blob preview for the real Imgur URL
+      setPreview(updatedUser.avatar_url);
+
+      // Persist to localStorage
+      const stored = JSON.parse(localStorage.getItem('tindahan_user') || '{}');
+      const merged = { ...stored, avatar_url: updatedUser.avatar_url };
+      localStorage.setItem('tindahan_user', JSON.stringify(merged));
+
       if (onUpdate) {
-        onUpdate(updatedUser);
+        onUpdate(merged);
       }
 
     } catch (err) {
-      setError('Failed to upload image');
-      console.error(err);
+      setError('Failed to upload image. Please try again.');
+      setPreview(user?.avatar_url || null); // revert on failure
+      console.error('Upload error:', err);
     } finally {
       setUploading(false);
     }
@@ -81,7 +79,7 @@ const ProfilePictureUpload = ({ user, onUpdate }) => {
 
   return (
     <div className="profile-picture-upload">
-      <div 
+      <div
         className="profile-avatar-large"
         onClick={() => fileInputRef.current.click()}
         style={{ cursor: 'pointer' }}
@@ -91,22 +89,22 @@ const ProfilePictureUpload = ({ user, onUpdate }) => {
         ) : (
           <span>{user?.name?.charAt(0).toUpperCase()}</span>
         )}
-        
+
         {uploading && (
           <div className="profile-avatar-overlay">
             <div className="spinner-small"></div>
           </div>
         )}
       </div>
-      
-      <button 
+
+      <button
         className="change-photo-btn"
         onClick={() => fileInputRef.current.click()}
         disabled={uploading}
       >
         {uploading ? 'Uploading...' : 'Change Photo'}
       </button>
-      
+
       <input
         ref={fileInputRef}
         type="file"
@@ -114,7 +112,7 @@ const ProfilePictureUpload = ({ user, onUpdate }) => {
         onChange={handleFileSelect}
         style={{ display: 'none' }}
       />
-      
+
       {error && <p className="profile-error">{error}</p>}
     </div>
   );
