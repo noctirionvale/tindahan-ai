@@ -240,40 +240,53 @@ const VoiceGenerator = () => {
               rows="6"
             />
           </div>
+{/* Voice Options */}
+<div className="voice-options-grid">
+  <div className="voice-option">
+    <label>Language</label>
+    <select 
+      value={language} 
+      onChange={(e) => setLanguage(e.target.value)}
+      className="voice-select"
+    >
+      <option value="en-US">🇺🇸 English (US)</option>
+      <option value="fil-PH">🇵🇭 Tagalog (Filipino)</option>
+    </select>
+  </div>
 
-          {/* Voice Options */}
-          <div className="voice-options-grid">
-            <div className="voice-option">
-              <label>Language</label>
-              <select 
-                value={language} 
-                onChange={(e) => setLanguage(e.target.value)}
-                className="voice-select"
-              >
-                <option value="en-US">🇺🇸 English (US)</option>
-                <option value="fil-PH">🇵🇭 Tagalog (Filipino)</option>
-              </select>
-            </div>
-
-            <div className="voice-option">
-              <label>Voice Style</label>
-              <select 
-                value={gender} 
-                onChange={(e) => setGender(e.target.value)}
-                className="voice-select"
-              >
-                <optgroup label="🇺🇸 English Voices">
-                  <option value="FEMALE">Female (Warm)</option>
-                  <option value="MALE">Male (Professional)</option>
-                </optgroup>
-                <optgroup label="🇵🇭 Tagalog Voices">
-                  <option value="FIL-FEMALE">Babae (Female)</option>
-                  <option value="FIL-MALE">Lalaki (Male)</option>
-                </optgroup>
-              </select>
-            </div>
-          </div>
-
+  <div className="voice-option">
+    <label>Voice Style</label>
+    <select 
+      value={gender} 
+      onChange={(e) => setGender(e.target.value)}
+      className="voice-select"
+    >
+      {language === 'en-US' ? (
+        // English voices - rendered as array
+        [
+          <option key="fem" value="FEMALE">Female (Warm)</option>,
+          <option key="male" value="MALE">Male (Professional)</option>,
+          <option key="fem-casual" value="FEMALE-CASUAL">Female (Casual)</option>,
+          <option key="male-casual" value="MALE-CASUAL">Male (Casual)</option>,
+          <option key="fem-calm" value="FEMALE-CALM">Female (Calm)</option>,
+          <option key="fem-cheerful" value="FEMALE-CHEERFUL">Female (Cheerful)</option>,
+          <option key="male-deep" value="MALE-DEEP">Male (Deep)</option>,
+          <option key="male-narration" value="MALE-NARRATION">Male (Narration)</option>,
+          <option key="fem-studio" value="FEMALE-STUDIO">Female (Studio - Premium)</option>,
+          <option key="male-studio" value="MALE-STUDIO">Male (Studio - Premium)</option>,
+          <option key="fem-newscast" value="FEMALE-NEWSCAST">Female (Newscast)</option>,
+          <option key="male-newscast" value="MALE-NEWSCAST">Male (Newscast)</option>
+        ]
+      ) : (
+        // Filipino voices - rendered as array
+        [
+          <option key="fil-fem" value="FIL-FEMALE">Babae (Female)</option>,
+          <option key="fil-male" value="FIL-MALE">Lalaki (Male)</option>
+        ]
+      )}
+    </select>
+  </div>
+</div>
           {/* Generate Button */}
           {script && !generating && !audioBlobUrl && (
             <button onClick={handleGenerateVoice} className="voice-generate-btn">

@@ -403,13 +403,30 @@ app.post('/api/voice/generate', authenticateToken, async (req, res) => {
     if (!usage.allowed) return res.status(429).json({ error: usage.message });
 
     const voiceMap = {
-      'FEMALE': { name: 'en-US-Neural2-F', languageCode: 'en-US' },
-      'MALE': { name: 'en-US-Neural2-D', languageCode: 'en-US' },
-      'FEMALE-CASUAL': { name: 'en-US-Neural2-C', languageCode: 'en-US' },
-      'MALE-CASUAL': { name: 'en-US-Neural2-A', languageCode: 'en-US' },
-      'FIL-FEMALE': { name: 'fil-PH-Wavenet-A', languageCode: 'fil-PH' },
-      'FIL-MALE': { name: 'fil-PH-Wavenet-C', languageCode: 'fil-PH' }
-    };
+  // Basic voices
+  'FEMALE': { name: 'en-US-Neural2-F', languageCode: 'en-US' },
+  'MALE': { name: 'en-US-Neural2-D', languageCode: 'en-US' },
+  'FEMALE-CASUAL': { name: 'en-US-Neural2-C', languageCode: 'en-US' },
+  'MALE-CASUAL': { name: 'en-US-Neural2-A', languageCode: 'en-US' },
+  
+  // Additional English voices
+  'FEMALE-CALM': { name: 'en-US-Neural2-G', languageCode: 'en-US' },
+  'FEMALE-CHEERFUL': { name: 'en-US-Neural2-H', languageCode: 'en-US' },
+  'MALE-DEEP': { name: 'en-US-Neural2-I', languageCode: 'en-US' },
+  'MALE-NARRATION': { name: 'en-US-Neural2-J', languageCode: 'en-US' },
+  
+  // Premium Studio voices (higher quality)
+  'FEMALE-STUDIO': { name: 'en-US-Studio-O', languageCode: 'en-US' },
+  'MALE-STUDIO': { name: 'en-US-Studio-Q', languageCode: 'en-US' },
+  
+  // Newscast voices
+  'FEMALE-NEWSCAST': { name: 'en-US-News-N', languageCode: 'en-US' },
+  'MALE-NEWSCAST': { name: 'en-US-News-M', languageCode: 'en-US' },
+  
+  // Filipino voices
+  'FIL-FEMALE': { name: 'fil-PH-Wavenet-A', languageCode: 'fil-PH' },
+  'FIL-MALE': { name: 'fil-PH-Wavenet-C', languageCode: 'fil-PH' }
+};
 
     const selectedVoice = voiceMap[gender] || voiceMap['FEMALE'];
 
