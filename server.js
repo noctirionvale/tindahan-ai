@@ -171,6 +171,91 @@ async function checkAndIncrementUsage(userId, type) {
 // ROUTES
 // ============================================
 
+// ============================================
+// SOCIAL AUTH - Add to TOP of server.js (with other requires)
+// Run first: npm install firebase-admin
+// ============================================
+
+const admin = require('firebase-admin');
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+    })
+  });
+}
+
+// ============================================
+// SOCIAL AUTH ROUTE - Add after /api/auth/login
+// ============================================
+app.post('/api/auth/social', async (req, res) => {
+  try {
+    const { firebaseToken, name, email, avatar_url, provider } = req.body;
+
+    if (!firebaseToken) {
+      return res.status(400).json({ error: 'Firebase token required' });
+    }
+
+    // Verify token is legitimate (prevents fake requests)
+    const decodedToken = await admin.auth().verifyIdToken(firebaseToken);
+
+    const userEmail = (decodedToken.email || email || '').toLowerCase();
+    if (!userEmail) return res.status(400).json({ error: 'Email is required' });
+
+    const userName = name || decodedToken.name || userEmail.split('@')[0];
+    const userAvatar = avatar_url || decodedToken.picture || null;
+
+    // Check if user exists
+    let result = await pool.query('SELECT * FROM users WHERE email = $1', [userEmail]);
+    let user;
+
+    if (result.rows.length > 0) {
+      // Existing user — update avatar if missing
+      user = result.rows[0];
+      if (!user.avatar_url && userAvatar) {
+        await pool.query(
+          'UPDATE users SET avatar_url = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+          [userAvatar, user.id]
+        );
+        user.avatar_url = userAvatar;
+      }
+    } else {
+      // New social user — create account without password
+      const newUser = await pool.query(
+        `INSERT INTO users (email, name, avatar_url, plan_type, password_hash)
+         VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+        [userEmail, userName, userAvatar, 'free', 'SOCIAL_LOGIN']
+      );
+      user = newUser.rows[0];
+    }
+
+    // Issue your app JWT
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        plan: user.plan_type || 'free',
+        avatar_url: user.avatar_url || null
+      }
+    });
+
+  } catch (error) {
+    console.error('Social auth error:', error);
+    if (error.code === 'auth/id-token-expired') {
+      return res.status(401).json({ error: 'Session expired. Please try again.' });
+    }
+    res.status(500).json({ error: 'Social login failed' });
+  }
+});
+
 // --- AUTH ROUTES ---
 app.post('/api/auth/signup', async (req, res) => {
   const { email, password, name } = req.body;
