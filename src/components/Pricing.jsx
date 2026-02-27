@@ -1,26 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './Pricing.css';
 
-const EXCHANGE_RATES = {
-  PHP: 1,
-  USD: 0.017,
-  CNY: 0.12,
-  NGN: 27.5
-};
+const API = 'https://tindahan-ai-production.up.railway.app';
 
-const CURRENCY_SYMBOLS = {
-  PHP: '₱',
-  USD: '$',
-  CNY: '¥',
-  NGN: '₦'
-};
+const EXCHANGE_RATES = { PHP: 1, USD: 0.017, CNY: 0.12, NGN: 27.5 };
+const CURRENCY_SYMBOLS = { PHP: '₱', USD: '$', CNY: '¥', NGN: '₦' };
 
 const Pricing = () => {
   const [currency, setCurrency] = useState('PHP');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [loading, setLoading] = useState('');
+  const [error, setError] = useState('');
 
-  // Auto-detect currency based on browser language
   useEffect(() => {
     const lang = navigator.language || 'en-PH';
     if (lang.includes('zh')) setCurrency('CNY');
@@ -39,90 +32,122 @@ const Pricing = () => {
     return `${converted.toFixed(2)}`;
   };
 
- const plans = [
-  {
-    name: 'Free',
-    phpPrice: 0,
-    period: 'forever',
-    description: 'Try Tindahan.AI - no credit card needed!',
-    features: [
-      '15 lifetime description generations',
-      '1 lifetime video generation',
-      '1 lifetime voice generation',
-      'All 6 platform formats',
-      'Copy to clipboard',
-      'Basic support'
-    ],
-    cta: 'Start Free',
-    popular: false,
-    color: '#64748b',
-    planKey: 'free'
-  },
-  {
-    name: 'Starter',
-    phpPrice: 299,
-    period: 'per month',
-    description: 'For small sellers testing video ads',
-    features: [
-      '100 description generations/month',
-      '10 video generations/month',
-      '10 voice generations/month',
-      'All 6 platform formats',
-      'Generation history',
-      'Priority support'
-    ],
-    cta: 'Upgrade Now',
-    popular: true,
-    color: '#ff6b35',
-    planKey: 'starter'
-  },
-  {
-    name: 'Pro',
-    phpPrice: 599,
-    period: 'per month',
-    description: 'For active sellers & affiliates',
-    features: [
-      '300 description generations/month',
-      '30 video generations/month',
-      '30 voice generations/month',
-      'All 6 platform formats',
-      'Analytics dashboard',
-      'Export to CSV',
-      'Priority support'
-    ],
-    cta: 'Upgrade Now',
-    popular: false,
-    color: '#8b5cf6',
-    planKey: 'pro'
-  },
-  {
-    name: 'Business',
-    phpPrice: 999,
-    period: 'per month',
-    description: 'For power sellers & growing shops',
-    features: [
-      '800 description generations/month',
-      '80 video generations/month',
-      '80 voice generations/month',
-      'All 6 platform formats',
-      'Bulk generation',
-      'Analytics dashboard',
-      'Custom templates',
-      'Priority support'
-    ],
-    cta: 'Upgrade Now',
-    popular: false,
-    color: '#22c55e',
-    planKey: 'business'
-  }
-];
+  const plans = [
+    {
+      name: 'Free',
+      phpPrice: 0,
+      period: 'forever',
+      description: 'Try Tindahan.AI - no credit card needed!',
+      features: [
+        '15 lifetime description generations',
+        '1 lifetime video generation',
+        '1 lifetime voice generation',
+        'All 6 platform formats',
+        'Copy to clipboard',
+        'Basic support'
+      ],
+      cta: 'Start Free',
+      popular: false,
+      color: '#64748b',
+      planKey: 'free'
+    },
+    {
+      name: 'Starter',
+      phpPrice: 299,
+      period: 'per month',
+      description: 'For small sellers testing video ads',
+      features: [
+        '100 description generations/month',
+        '10 video generations/month',
+        '10 voice generations/month',
+        'All 6 platform formats',
+        'Generation history',
+        'Priority support'
+      ],
+      cta: 'Upgrade Now',
+      popular: true,
+      color: '#ff6b35',
+      planKey: 'starter'
+    },
+    {
+      name: 'Pro',
+      phpPrice: 599,
+      period: 'per month',
+      description: 'For active sellers & affiliates',
+      features: [
+        '300 description generations/month',
+        '30 video generations/month',
+        '30 voice generations/month',
+        'All 6 platform formats',
+        'Analytics dashboard',
+        'Export to CSV',
+        'Priority support'
+      ],
+      cta: 'Upgrade Now',
+      popular: false,
+      color: '#8b5cf6',
+      planKey: 'pro'
+    },
+    {
+      name: 'Business',
+      phpPrice: 999,
+      period: 'per month',
+      description: 'For power sellers & growing shops',
+      features: [
+        '800 description generations/month',
+        '80 video generations/month',
+        '80 voice generations/month',
+        'All 6 platform formats',
+        'Bulk generation',
+        'Analytics dashboard',
+        'Custom templates',
+        'Priority support'
+      ],
+      cta: 'Upgrade Now',
+      popular: false,
+      color: '#22c55e',
+      planKey: 'business'
+    }
+  ];
+
   const handleUpgradeClick = (plan) => {
     if (plan.planKey === 'free') {
       window.location.href = '#product-generator';
       return;
     }
+    setError('');
     setSelectedPlan(plan);
     setShowUpgradeModal(true);
+  };
+
+  // ✅ PayMongo checkout — creates link and redirects user
+  const handlePayMongoCheckout = async () => {
+    setLoading('paymongo');
+    setError('');
+    try {
+      const token = localStorage.getItem('tindahan_token');
+      if (!token) {
+        setError('Please log in to upgrade your plan.');
+        return;
+      }
+
+      const response = await axios.post(
+        `${API}/api/payment/create-link`,
+        { planKey: selectedPlan.planKey },
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        // Redirect to PayMongo checkout page
+        // Supports GCash, Maya, credit/debit cards
+        window.location.href = response.data.checkoutUrl;
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to create payment. Please try again.');
+      console.error('Payment error:', err);
+    } finally {
+      setLoading('');
+    }
   };
 
   return (
@@ -133,7 +158,6 @@ const Pricing = () => {
           <h2>Simple, Transparent Pricing</h2>
           <p>Start free. Scale as you grow. Cancel anytime.</p>
 
-          {/* Currency Switcher */}
           <div className="currency-switcher">
             <span className="currency-label">💱 Currency:</span>
             {Object.keys(EXCHANGE_RATES).map((curr) => (
@@ -206,38 +230,50 @@ const Pricing = () => {
               )}
             </div>
 
-            {/* Filipino Payment */}
-            <div className="payment-section ph-payment">
-              <p>Scan the QR code below with your GCash app:</p>
-              <div className="gcash-qr-wrapper">
-              <img src="/gcash-qr.jpg" alt="GCash QR Code" className="gcash-qr" />
+            {error && (
+              <div className="payment-error">⚠️ {error}</div>
+            )}
+
+            {/* ✅ PayMongo Checkout Button */}
+            <div className="payment-section">
+              <p className="payment-desc">
+                Pay securely via <strong>GCash</strong>, <strong>Maya</strong>, or <strong>Credit/Debit Card</strong>
+              </p>
+
+              <div className="payment-logos">
+                <span className="payment-logo">💙 GCash</span>
+                <span className="payment-logo">💚 Maya</span>
+                <span className="payment-logo">💳 Card</span>
               </div>
-              <div className="payment-steps">
-                <div className="step">Email proof of payment + your account email to:</div>
-                <a
-                  href={`mailto:noctirionvale@gmail.com?subject=Tindahan.AI ${selectedPlan.name} Upgrade&body=Hi! I just paid for the ${selectedPlan.name} plan (₱${selectedPlan.phpPrice}/month). My Tindahan.AI account email is: [YOUR EMAIL HERE]. Please upgrade my account. Thank you!`}
-                  className="email-button"
-                >
-                  📧 noctirionvale@gmail.com
-                </a>
-                <p className="upgrade-note">⏱️ Account upgraded within 24 hours!</p>
-              </div>
+
+              <button
+                className="paymongo-btn"
+                onClick={handlePayMongoCheckout}
+                disabled={loading === 'paymongo'}
+              >
+                {loading === 'paymongo' ? (
+                  '⏳ Creating payment link...'
+                ) : (
+                  <>💳 Pay ₱{selectedPlan.phpPrice.toLocaleString()}/month</>
+                )}
+              </button>
+
+              <p className="payment-note">
+                🔒 Secured by PayMongo · Your plan activates automatically after payment
+              </p>
             </div>
 
             {/* Divider */}
-            <div className="payment-divider">
-              <span>OR</span>
-            </div>
+            <div className="payment-divider"><span>Need help?</span></div>
 
-            {/* International Payment */}
-            <div className="payment-section intl-payment">
-              <h3>🌍 International Users</h3>
-              <p>Card payment coming soon! For now, please contact us:</p>
+            {/* Contact fallback */}
+            <div className="payment-section contact-section">
+              <p>Having trouble paying? Contact us:</p>
               <a
-                href={`mailto:spawntaneousbulb@gmail.com?subject=Tindahan.AI ${selectedPlan.name} Upgrade (International)&body=Hi! I want to upgrade to the ${selectedPlan.name} plan. My account email is: [YOUR EMAIL HERE]. Please send payment instructions. Thank you!`}
-                className="email-button intl"
+                href={`mailto:noctirionvale@gmail.com?subject=Tindahan.AI ${selectedPlan.name} Upgrade&body=Hi! I want to upgrade to the ${selectedPlan.name} plan (₱${selectedPlan.phpPrice}/month). My account email is: [YOUR EMAIL]. Thank you!`}
+                className="email-button"
               >
-                📧 Contact Us to Upgrade
+                📧 noctirionvale@gmail.com
               </a>
             </div>
 
