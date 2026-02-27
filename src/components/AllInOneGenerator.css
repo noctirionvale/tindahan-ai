@@ -848,4 +848,325 @@
   }
 }
 
+/* ===== FIX PACKAGE GENERATOR MOBILE CUTOFF ===== */
+@media (max-width: 768px) {
+  /* Main wrapper - allow scrolling */
+  .package-wrapper {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-y: visible !important;
+  }
 
+  /* Split layout - stack vertically */
+  .package-split {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    height: auto !important;
+    padding: 0 !important;
+  }
+
+  /* Form panel - normal flow */
+  .package-form-panel {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* Results panel - critical fix for cutoff */
+  .package-results-panel {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+    margin-bottom: 140px !important; /* Extra space for bottom nav */
+    padding-bottom: 20px !important;
+  }
+
+  /* Results scroll container - allow natural height */
+  .package-results-scroll {
+    max-height: none !important;
+    overflow-y: visible !important;
+    padding-bottom: 30px !important;
+  }
+
+  /* Description cards stack */
+  .package-description-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .package-description-card {
+    width: 100% !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Description styles stack */
+  .package-description-styles {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .package-description-style {
+    width: 100% !important;
+    padding: 16px !important;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    position: relative;
+    margin-bottom: 12px;
+  }
+
+  /* Style header */
+  .package-style-header {
+    font-size: 1rem !important;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Description text */
+  .package-description-text {
+    font-size: 0.95rem !important;
+    line-height: 1.6 !important;
+    margin-bottom: 40px !important; /* Space for copy button */
+    word-wrap: break-word;
+  }
+
+  /* Copy button positioning */
+  .package-copy-btn-small {
+    position: absolute !important;
+    bottom: 12px !important;
+    right: 12px !important;
+    width: 36px !important;
+    height: 36px !important;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  /* Video and audio wrappers */
+  .package-video-wrapper,
+  .package-audio-wrapper {
+    width: 100% !important;
+    padding: 16px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .package-video,
+  .package-audio {
+    width: 100% !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Download buttons */
+  .package-download-btn {
+    width: 100% !important;
+    padding: 14px !important;
+    margin-top: 10px !important;
+  }
+
+  /* Script text */
+  .package-script-full {
+    margin-top: 20px !important;
+    padding: 16px !important;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+  }
+
+  .package-script-text {
+    font-size: 0.9rem !important;
+    line-height: 1.6 !important;
+    max-height: 200px !important;
+    overflow-y: auto !important;
+    padding-right: 8px;
+  }
+
+  /* Last element gets extra bottom margin */
+  .package-results-panel > div:last-child {
+    margin-bottom: 30px !important;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .package-description-style {
+    padding: 14px !important;
+  }
+
+  .package-description-text {
+    font-size: 0.9rem !important;
+    margin-bottom: 45px !important;
+  }
+
+  .package-copy-btn-small {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .package-results-panel {
+    margin-bottom: 120px !important;
+  }
+}
+
+/* Safe area support for notched phones */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  @media (max-width: 768px) {
+    .package-results-panel {
+      margin-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
+    }
+  }
+}
+
+/* ===== FIX PACKAGE GENERATOR BOTTOM CUTOFF ===== */
+@media (max-width: 768px) {
+  /* Main container - allow full scrolling */
+  .package-wrapper {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-y: visible !important;
+    display: block !important;
+  }
+
+  /* Split layout - stack vertically */
+  .package-split {
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+    gap: 20px !important;
+  }
+
+  /* Form panel - normal height */
+  .package-form-panel {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* RESULTS PANEL - THIS IS THE KEY FIX */
+  .package-results-panel {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+    margin-bottom: 140px !important; /* Space for bottom nav */
+    padding-bottom: 30px !important;
+    display: block !important;
+  }
+
+  /* Results scroll container - allow natural height */
+  .package-results-scroll {
+    max-height: none !important;
+    overflow-y: visible !important;
+    padding-bottom: 20px !important;
+  }
+
+  /* Description cards stack properly */
+  .package-description-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .package-description-card {
+    width: 100% !important;
+    margin-bottom: 16px !important;
+    height: auto !important;
+  }
+
+  /* Style containers stack */
+  .package-description-styles {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .package-description-style {
+    width: 100% !important;
+    padding: 16px !important;
+    margin-bottom: 16px !important;
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* Ensure text doesn't overflow */
+  .package-description-text {
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    margin-bottom: 45px !important; /* Space for copy button */
+    padding-right: 8px;
+  }
+
+  /* Copy button positioning */
+  .package-copy-btn-small {
+    position: absolute !important;
+    bottom: 12px !important;
+    right: 12px !important;
+    width: 36px !important;
+    height: 36px !important;
+    z-index: 10 !important;
+  }
+
+  /* Video and audio sections */
+  .package-video-wrapper,
+  .package-audio-wrapper {
+    width: 100% !important;
+    padding: 16px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .package-video,
+  .package-audio {
+    width: 100% !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* Download buttons full width */
+  .package-download-btn {
+    width: 100% !important;
+    padding: 14px !important;
+  }
+
+  /* Ensure last element has space */
+  .package-results-panel > div:last-child {
+    margin-bottom: 30px !important;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .package-results-panel {
+    margin-bottom: 130px !important;
+    padding-bottom: 20px !important;
+  }
+
+  .package-description-style {
+    padding: 14px !important;
+  }
+
+  .package-copy-btn-small {
+    width: 32px !important;
+    height: 32px !important;
+    bottom: 10px !important;
+    right: 10px !important;
+  }
+}
+
+/* Safe area support for notched phones */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  @media (max-width: 768px) {
+    .package-results-panel {
+      margin-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
+    }
+  }
+}

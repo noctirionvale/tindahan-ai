@@ -181,7 +181,7 @@ function App() {
 
         {/* Main Content */}
         <main className={`main-content ${activeTab === 'pricing' ? 'with-footer' : 'full-height'}`}>
-  <div className={`generator-container ${activeTab !== 'pricing' ? 'full-height-container' : ''}`}>
+          <div className="generator-container">
             {activeTab === 'description' && <ProductDescriptionGenerator />}
             {activeTab === 'video' && <VideoGenerator />}
             {activeTab === 'voice' && <VoiceGenerator />}
