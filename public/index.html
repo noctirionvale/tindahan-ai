@@ -5,12 +5,22 @@
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
     <meta http-equiv="Content-Security-Policy" 
-        content="default-src 'self';
-                 script-src 'self' 'unsafe-eval' 'unsafe-inline' https:;
-                 style-src 'self' 'unsafe-inline' https:;
-                 font-src 'self' https:;
-                 img-src 'self' blob: data: https:;
-                 connect-src 'self' http://localhost:5000 https://tindahan-ai-production.up.railway.app https://api.deepseek.com https://api.web3forms.com https://api.imgur.com">
+    content="default-src 'self';
+             script-src 'self' 'unsafe-eval' 'unsafe-inline' https://apis.google.com https:;
+             style-src 'self' 'unsafe-inline' https:;
+             font-src 'self' https:;
+             img-src 'self' blob: data: https:;
+             frame-src https://tindahan-web.firebaseapp.com https://accounts.google.com https:;
+             connect-src 'self' 
+               http://localhost:5000 
+               https://tindahan-ai-production.up.railway.app 
+               https://api.deepseek.com 
+               https://api.web3forms.com
+               https://identitytoolkit.googleapis.com
+               https://securetoken.googleapis.com
+               https://*.googleapis.com
+               https://*.firebaseio.com
+               https://*.firebaseapp.com;">
 
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#ff6b35" />
