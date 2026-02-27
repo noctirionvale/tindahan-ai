@@ -823,3 +823,29 @@
   display: flex;
   flex-direction: column;
 }
+/* Desktop fix - ensure package wrapper fills container */
+@media (min-width: 769px) {
+  .package-wrapper {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .package-split {
+    height: 100%;
+  }
+
+  .package-results-panel {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .package-results-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
+

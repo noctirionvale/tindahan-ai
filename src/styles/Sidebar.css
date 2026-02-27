@@ -306,15 +306,26 @@
 }
 
 /* Allow scroll when pricing is active */
-.main-content.with-footer {
-  min-height: calc(100vh - 70px);
-  overflow-y: auto;
+.main-content.full-height {
+  height: calc(100vh - 70px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .generator-container {
   flex: 1;
-  overflow-y: auto;
+  min-height: 0; /* CRITICAL - allows flex child to shrink and scroll */
+  overflow: hidden; /* Let package handle its own scroll */
   padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.generator-container > div {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
 }
 
 /* Make generators take full available height */
@@ -778,4 +789,43 @@
   .mobile-bottom-nav {
     padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
   }
+}
+
+/* =============================================
+   ADD THESE TO THE BOTTOM OF Sidebar.css
+   (or replace the existing matching selectors)
+   ============================================= */
+
+/* Height chain fix — every ancestor needs height */
+.dashboard-wrapper {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.dashboard-body {
+  height: calc(100vh - 70px);
+  overflow: hidden;
+}
+
+.main-content.full-height {
+  height: calc(100vh - 70px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.generator-container {
+  width: 100%;
+  padding: 0;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.generator-container.full-height-container {
+  height: calc(100vh - 70px);
+  overflow: hidden;
+}
+
+.generator-container > div {
+  height: 100%;
 }

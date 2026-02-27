@@ -1054,17 +1054,18 @@ body::after {
 /* ===== UNIVERSAL MOBILE FIX FOR GENERATORS ONLY ===== */
 @media (max-width: 768px) {
   /* Only apply to generator tabs, not pricing */
-  .main-content:not(.pricing-active) {
-  height: 100vh !important;
-  overflow-y: auto !important;
-  padding: 16px 16px 120px 16px !important; /* Added top padding */
-  -webkit-overflow-scrolling: touch !important;
-}
-  
-  .generator-container:not(.pricing-container) {
+ @media (max-width: 768px) {
+  .generator-container,
+  .generator-container.full-height-container {
     height: auto !important;
-    min-height: 100% !important;
+    overflow-y: visible !important;
+    padding-bottom: 120px !important;
   }
+
+  .generator-container > div {
+    height: auto !important;
+  }
+}
   
   /* Fix for video generator only */
   .video-split {
@@ -1454,183 +1455,261 @@ body::after {
 }
 
 /* ===== FIX PROFILE SPACING ON MOBILE ===== */
+/* ===== SINGLE SOURCE OF TRUTH - MOBILE STYLES ===== */
 @media (max-width: 768px) {
-  /* Adjust top bar to be more compact */
-  .top-bar {
-    padding: 8px 16px !important;
-    height: 56px !important; /* Slightly smaller */
+  /* Hide sidebar on mobile */
+  .sidebar {
+    display: none !important;
   }
   
-  .top-bar-left {
-    gap: 8px !important;
+  /* MAIN CONTENT - CRITICAL FIX */
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 16px 16px 140px 16px !important; /* TOP + BOTTOM padding */
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    height: auto !important;
+  }
+  
+  /* Generator containers */
+  .generator-container {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-y: visible !important;
+    padding: 0 !important;
+  }
+  
+  /* ALL GENERATORS - Stack vertically */
+  .video-split,
+  .voice-split,
+  .desc-split,
+  .package-split {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    height: auto !important;
+    padding: 0 !important;
+  }
+  
+  /* Generator panels - Full width */
+  .video-form-panel,
+  .video-results-panel,
+  .voice-form-panel,
+  .voice-results-panel,
+  .desc-form-panel,
+  .desc-results-panel,
+  .package-form-panel,
+  .package-results-panel {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+    margin-bottom: 16px !important;
+    padding: 20px !important;
+  }
+  
+  /* Last panel extra space */
+  .video-results-panel:last-child,
+  .voice-results-panel:last-child,
+  .desc-results-panel:last-child,
+  .package-results-panel:last-child {
+    margin-bottom: 30px !important;
+  }
+  
+  /* BOTTOM NAVIGATION - FIXED */
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 2px solid rgba(0, 229, 255, 0.3);
+    display: flex !important;
+    flex-direction: column;
+    padding: 8px 16px 20px !important;
+    z-index: 1000;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .mobile-nav-items {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    padding: 0 4px;
+  }
+  
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 11px;
+    gap: 4px;
+    padding: 8px 0;
+    min-width: 50px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .mobile-nav-item span:first-child {
+    font-size: 20px;
+  }
+  
+  .mobile-nav-item.active {
+    color: #00e5ff;
+  }
+  
+  .mobile-footer-text {
+    text-align: center;
+    padding: 8px 0 4px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 6px;
+    width: 100%;
+  }
+  
+  /* FAQ BUTTON */
+  .faq-float-btn {
+    bottom: 120px !important;
+    right: 16px !important;
+    width: 48px !important;
+    height: 48px !important;
+    z-index: 1001 !important;
+  }
+  
+  /* Top bar adjustments */
+  .top-bar {
+    padding: 8px 16px !important;
+    height: 60px !important;
   }
   
   .top-logo {
-    height: 32px !important; /* Smaller logo */
+    height: 32px !important;
   }
   
   .top-brand {
     font-size: 1rem !important;
   }
   
-  /* Fix the welcome text/profile button */
-  .welcome-text.mobile-only {
-    font-size: 0.85rem !important;
-    padding: 4px 10px !important;
-    margin: 0 !important;
-    line-height: 1 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    background: rgba(0, 229, 255, 0.1) !important;
-    border-radius: 30px !important;
-    height: 36px !important;
-  }
-  
-  /* Remove any extra gaps in main content */
-  .main-content {
-    padding-top: 8px !important; /* Minimal top padding */
-    margin-top: 0 !important;
-  }
-  
-  /* First generator panel should have no extra top margin */
-  .generator-container > div:first-child {
-    margin-top: 0 !important;
-  }
-  
-  /* Fix any weird spacing in the generator itself */
-  .video-form-panel:first-child,
-  .voice-form-panel:first-child,
-  .desc-form-panel:first-child,
-  .package-form-panel:first-child {
-    margin-top: 0 !important;
-    padding-top: 20px !important; /* Consistent padding */
-  }
-  
-  /* Ensure title isn't too far from top */
+  /* Generator titles */
   .video-title,
   .voice-title,
   .desc-title,
   .package-title {
+    font-size: 1.8rem !important;
     margin-top: 0 !important;
-    padding-top: 0 !important;
+  }
+  
+  /* Grid adjustments */
+  .voice-options-grid,
+  .video-options-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  .desc-platform-grid,
+  .package-platform-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  /* Buttons stack */
+  .video-action-buttons,
+  .voice-action-buttons,
+  .desc-action-buttons,
+  .package-action-buttons {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  
+  .video-download-btn,
+  .video-new-btn,
+  .voice-download-btn,
+  .voice-new-btn,
+  .desc-download-btn,
+  .desc-new-btn {
+    width: 100% !important;
+  }
+  
+  /* Package Generator specific */
+  .package-voice-options-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  .package-voice-option-card {
+    padding: 14px !important;
+  }
+  
+  /* Pricing grid */
+  .pricing-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    padding-bottom: 30px !important;
+  }
+  
+  /* Ensure results are scrollable */
+  .video-results-scroll,
+  .voice-results-scroll,
+  .desc-results-scroll,
+  .package-results-scroll {
+    max-height: none !important;
+    overflow-y: visible !important;
   }
 }
 
-/* Even smaller screens */
+/* Extra small devices */
 @media (max-width: 480px) {
-  .top-bar {
-    padding: 6px 12px !important;
-    height: 52px !important;
+  .main-content {
+    padding: 12px 12px 140px 12px !important;
   }
   
-  .top-logo {
-    height: 28px !important;
+  .mobile-nav-item {
+    min-width: 45px !important;
   }
   
-  .top-brand {
-    font-size: 0.9rem !important;
+  .mobile-nav-item span:first-child {
+    font-size: 18px !important;
   }
   
-  .welcome-text.mobile-only {
-    font-size: 0.8rem !important;
-    padding: 4px 8px !important;
-    height: 32px !important;
-  }
-}
-/* Mobile Bottom Navigation Fix */
-.mobile-nav-items {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  width: 100%;
-  padding: 8px 4px;
-  gap: 2px;
-}
-
-.mobile-nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 12px;
-  cursor: pointer;
-  padding: 6px 0;
-  flex: 1;
-  min-width: 0; /* Prevents flex items from overflowing */
-  transition: all 0.2s ease;
-  border-radius: 8px;
-}
-
-.mobile-nav-item .nav-icon {
-  font-size: 20px;
-  margin-bottom: 2px;
-}
-
-.mobile-nav-item .nav-label {
-  font-size: 11px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-.mobile-nav-item.active {
-  color: #ff6b35;
-  background: rgba(255, 107, 53, 0.1);
-}
-
-.mobile-nav-item.profile-nav {
-  color: #8b5cf6;
-}
-
-.mobile-nav-item.profile-nav.active {
-  color: #8b5cf6;
-  background: rgba(139, 92, 246, 0.1);
-}
-
-/* For very small screens */
-@media (max-width: 380px) {
-  .mobile-nav-item .nav-label {
-    font-size: 10px;
+  .mobile-nav-item span:last-child {
+    font-size: 10px !important;
   }
   
-  .mobile-nav-item .nav-icon {
-    font-size: 18px;
+  .video-title,
+  .voice-title,
+  .desc-title,
+  .package-title {
+    font-size: 1.5rem !important;
+  }
+  
+  .desc-platform-grid,
+  .package-platform-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .package-voice-options-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 
-/* Ensure bottom nav is sticky */
-.mobile-bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(26, 26, 46, 0.95);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: env(safe-area-inset-bottom, 0);
-  z-index: 100;
-  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
-}
-
-.mobile-footer-text {
-  padding: 8px 0;
-  text-align: center;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.4);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.mobile-footer-text p {
-  margin: 2px 0;
-}
-
-/* Hide mobile nav on desktop */
-@media (min-width: 769px) {
-  .mobile-bottom-nav {
-    display: none;
+/* Safe area support for notched phones */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  @media (max-width: 768px) {
+    .main-content {
+      padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
+    }
+    
+    .mobile-bottom-nav {
+      padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+    }
   }
 }
