@@ -243,10 +243,10 @@ app.post('/api/auth/social', async (req, res) => {
     if (!firebaseToken) return res.status(400).json({ error: 'Firebase token required' });
 
     const decodedToken = await admin.auth().verifyIdToken(firebaseToken);
-    const userEmail = (decodedToken.email || email || '').toLowerCase();
-    if (!userEmail) return res.status(400).json({ error: 'Email is required' });
+    // X/Twitter doesn't always provide email — use UID-based placeholder as fallback
+const userEmail = (decodedToken.email || email || `${decodedToken.uid}@x-social.tindahan.ai`).toLowerCase();
 
-    const userName = name || decodedToken.name || userEmail.split('@')[0];
+const userName = name || decodedToken.name || userEmail.split('@')[0];
     const userAvatar = avatar_url || decodedToken.picture || null;
 
     let result = await pool.query('SELECT * FROM users WHERE email = $1', [userEmail]);
