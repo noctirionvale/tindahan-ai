@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import ProfilePictureUpload from './ProfilePictureUpload'; // ✨ Added this import!
+import ProfilePictureUpload from './ProfilePictureUpload';
 import './ProfileModal.css';
 
-// ✨ Added setUser right here in the props!
-const ProfileModal = ({ user, setUser, onClose, onLogout }) => {
+const ProfileModal = ({ user, setUser, onClose, onLogout, onNavigateToPricing }) => {
   const [activeTab, setActiveTab] = useState('profile');
   const [usage, setUsage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(user?.name || '');
-  const [passwords, setPasswords] = useState({
-    current: '',
-    new: '',
-    confirm: ''
-  });
+  const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
@@ -29,9 +24,7 @@ const ProfileModal = ({ user, setUser, onClose, onLogout }) => {
         'https://tindahan-ai-production.up.railway.app/api/user/usage',
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
-      if (response.data.success) {
-        setUsage(response.data.usage);
-      }
+      if (response.data.success) setUsage(response.data.usage);
     } catch (err) {
       console.error('Failed to fetch usage:', err);
     }
@@ -48,7 +41,6 @@ const ProfileModal = ({ user, setUser, onClose, onLogout }) => {
       );
       setMessage({ type: 'success', text: 'Name updated successfully!' });
       setIsEditing(false);
-      // Update local storage
       const updatedUser = { ...user, name: editedName };
       localStorage.setItem('tindahan_user', JSON.stringify(updatedUser));
     } catch (err) {
@@ -68,10 +60,7 @@ const ProfileModal = ({ user, setUser, onClose, onLogout }) => {
       const token = localStorage.getItem('tindahan_token');
       await axios.put(
         'https://tindahan-ai-production.up.railway.app/api/user/password',
-        {
-          currentPassword: passwords.current,
-          newPassword: passwords.new
-        },
+        { currentPassword: passwords.current, newPassword: passwords.new },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
       setMessage({ type: 'success', text: 'Password updated successfully!' });
@@ -83,11 +72,25 @@ const ProfileModal = ({ user, setUser, onClose, onLogout }) => {
     }
   };
 
+  const handleGoToPricing = () => {
+    onClose();
+    if (onNavigateToPricing) {
+      onNavigateToPricing();
+    } else {
+      // fallback: scroll to pricing section
+      setTimeout(() => {
+        const el = document.getElementById('pricing');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+        else window.location.hash = '#pricing';
+      }, 100);
+    }
+  };
+
   const tabs = [
-    { id: 'profile', label: '🧑 Profile', icon: '🙎‍♂️' },
-    { id: 'usage', label: '📊 Usage', icon: '📊' },
-    { id: 'settings', label: '⚙️ Settings', icon: '⚙️' },
-    { id: 'billing', label: '💳 Billing', icon: '💳' }
+    { id: 'profile', label: '🧑 Profile' },
+    { id: 'usage', label: '📊 Usage' },
+    { id: 'settings', label: '⚙️ Settings' },
+    { id: 'billing', label: '💳 Billing' }
   ];
 
   const getPlanColor = (plan) => {
@@ -106,7 +109,7 @@ const ProfileModal = ({ user, setUser, onClose, onLogout }) => {
       <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
         <button className="profile-close" onClick={onClose}>×</button>
 
-        {/* Header - ✨ Removed the duplicate one and kept the correct one */}
+        {/* Header */}
         <div className="profile-header">
           <ProfilePictureUpload user={user} onUpdate={(updated) => setUser(updated)} />
           <div className="profile-header-info">
@@ -116,9 +119,9 @@ const ProfileModal = ({ user, setUser, onClose, onLogout }) => {
         </div>
 
         {/* Plan Badge */}
-        <div 
+        <div
           className="profile-plan-badge"
-          style={{ 
+          style={{
             background: getPlanColor(user?.plan) + '20',
             borderColor: getPlanColor(user?.plan),
             color: getPlanColor(user?.plan)
@@ -142,11 +145,12 @@ const ProfileModal = ({ user, setUser, onClose, onLogout }) => {
 
         {/* Content */}
         <div className="profile-content">
-          {/* Profile Tab */}
+
+          {/* ===== PROFILE TAB ===== */}
           {activeTab === 'profile' && (
             <div className="profile-section">
               <h3>Profile Information</h3>
-              
+
               {!isEditing ? (
                 <div className="profile-info-display">
                   <div className="info-row">
@@ -177,73 +181,46 @@ const ProfileModal = ({ user, setUser, onClose, onLogout }) => {
                     />
                   </div>
                   <div className="edit-actions">
-                    <button 
-                      className="save-btn" 
-                      onClick={handleUpdateName}
-                      disabled={loading}
-                    >
+                    <button className="save-btn" onClick={handleUpdateName} disabled={loading}>
                       {loading ? 'Saving...' : 'Save'}
                     </button>
-                    <button 
-                      className="cancel-btn" 
-                      onClick={() => {
-                        setIsEditing(false);
-                        setEditedName(user?.name);
-                      }}
-                    >
+                    <button className="cancel-btn" onClick={() => { setIsEditing(false); setEditedName(user?.name); }}>
                       Cancel
                     </button>
                   </div>
                 </div>
               )}
+
+              {/* Logout ONLY on Profile tab */}
+              <button className="profile-logout-btn" onClick={onLogout}>
+                🚪 Logout
+              </button>
             </div>
           )}
 
-          {/* Usage Tab */}
+          {/* ===== USAGE TAB ===== */}
           {activeTab === 'usage' && usage && (
             <div className="profile-section">
               <h3>Usage Statistics</h3>
-              
               <div className="usage-stats">
-                <div className="stat-item">
-                  <div className="stat-header">
-                    <span>📝 Descriptions</span>
-                    <span>{usage.descriptions.used} / {usage.descriptions.limit}</span>
+                {[
+                  { label: '📝 Descriptions', key: 'descriptions' },
+                  { label: '🎬 Videos', key: 'videos' },
+                  { label: '🎙️ Voices', key: 'voices' }
+                ].map(({ label, key }) => (
+                  <div className="stat-item" key={key}>
+                    <div className="stat-header">
+                      <span>{label}</span>
+                      <span>{usage[key].used} / {usage[key].limit}</span>
+                    </div>
+                    <div className="progress-bar">
+                      <div
+                        className="progress-fill"
+                        style={{ width: `${Math.min((usage[key].used / usage[key].limit) * 100, 100)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="progress-bar">
-                    <div 
-                      className="progress-fill" 
-                      style={{ width: `${(usage.descriptions.used / usage.descriptions.limit) * 100}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="stat-item">
-                  <div className="stat-header">
-                    <span>🎬 Videos</span>
-                    <span>{usage.videos.used} / {usage.videos.limit}</span>
-                  </div>
-                  <div className="progress-bar">
-                    <div 
-                      className="progress-fill" 
-                      style={{ width: `${(usage.videos.used / usage.videos.limit) * 100}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="stat-item">
-                  <div className="stat-header">
-                    <span>🎙️ Voices</span>
-                    <span>{usage.voices.used} / {usage.voices.limit}</span>
-                  </div>
-                  <div className="progress-bar">
-                    <div 
-                      className="progress-fill" 
-                      style={{ width: `${(usage.voices.used / usage.voices.limit) * 100}%` }}
-                    />
-                  </div>
-                </div>
-
+                ))}
                 <div className="usage-note">
                   <p>⏰ Resets daily at midnight</p>
                 </div>
@@ -251,48 +228,28 @@ const ProfileModal = ({ user, setUser, onClose, onLogout }) => {
             </div>
           )}
 
-          {/* Settings Tab */}
+          {/* ===== SETTINGS TAB ===== */}
           {activeTab === 'settings' && (
             <div className="profile-section">
               <h3>Change Password</h3>
-              
               <div className="password-form">
-                <div className="field">
-                  <label>Current Password</label>
-                  <input
-                    type="password"
-                    value={passwords.current}
-                    onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                    className="profile-input"
-                    placeholder="Enter current password"
-                  />
-                </div>
-                <div className="field">
-                  <label>New Password</label>
-                  <input
-                    type="password"
-                    value={passwords.new}
-                    onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-                    className="profile-input"
-                    placeholder="Enter new password"
-                  />
-                </div>
-                <div className="field">
-                  <label>Confirm New Password</label>
-                  <input
-                    type="password"
-                    value={passwords.confirm}
-                    onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                    className="profile-input"
-                    placeholder="Confirm new password"
-                  />
-                </div>
-
-                <button 
-                  className="update-btn"
-                  onClick={handleUpdatePassword}
-                  disabled={loading}
-                >
+                {[
+                  { label: 'Current Password', key: 'current', placeholder: 'Enter current password' },
+                  { label: 'New Password', key: 'new', placeholder: 'Enter new password' },
+                  { label: 'Confirm New Password', key: 'confirm', placeholder: 'Confirm new password' }
+                ].map(({ label, key, placeholder }) => (
+                  <div className="field" key={key}>
+                    <label>{label}</label>
+                    <input
+                      type="password"
+                      value={passwords[key]}
+                      onChange={(e) => setPasswords({ ...passwords, [key]: e.target.value })}
+                      className="profile-input"
+                      placeholder={placeholder}
+                    />
+                  </div>
+                ))}
+                <button className="update-btn" onClick={handleUpdatePassword} disabled={loading}>
                   {loading ? 'Updating...' : 'Update Password'}
                 </button>
               </div>
@@ -316,46 +273,32 @@ const ProfileModal = ({ user, setUser, onClose, onLogout }) => {
             </div>
           )}
 
-          {/* Billing Tab */}
+          {/* ===== BILLING TAB ===== */}
           {activeTab === 'billing' && (
             <div className="profile-section">
               <h3>Subscription</h3>
-              
               <div className="current-plan">
                 <div className="plan-name">
                   <span>Current Plan: <strong style={{ color: getPlanColor(user?.plan) }}>{user?.plan || 'Free'}</strong></span>
-                  <button className="upgrade-btn">Upgrade</button>
+                  <button className="upgrade-btn" onClick={handleGoToPricing}>Upgrade</button>
                 </div>
 
-                {user?.plan !== 'free' && (
+                {user?.plan && user.plan !== 'free' && (
                   <>
                     <div className="billing-info">
                       <div className="info-row">
                         <span>Next billing date:</span>
-                        <span>April 15, 2026</span>
-                      </div>
-                      <div className="info-row">
-                        <span>Amount:</span>
-                        <span>₱599/month</span>
+                        <span>{user?.plan_expires_at ? new Date(user.plan_expires_at).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' }) : '—'}</span>
                       </div>
                     </div>
-
-                    <div className="payment-method">
-                      <h5>Payment Method</h5>
-                      <div className="method-display">
-                        <span>💳 GCash •••• 1234</span>
-                        <button className="change-btn">Change</button>
-                      </div>
-                    </div>
-
                     <button className="cancel-subscription">Cancel Subscription</button>
                   </>
                 )}
 
-                {user?.plan === 'free' && (
+                {(!user?.plan || user.plan === 'free') && (
                   <div className="upgrade-prompt">
                     <p>Upgrade to Starter for more generations!</p>
-                    <button className="upgrade-now-btn" onClick={() => window.location.href = '#pricing'}>
+                    <button className="upgrade-now-btn" onClick={handleGoToPricing}>
                       View Plans
                     </button>
                   </div>
@@ -364,17 +307,12 @@ const ProfileModal = ({ user, setUser, onClose, onLogout }) => {
             </div>
           )}
 
-          {/* Message Display */}
+          {/* Message */}
           {message.text && (
             <div className={`profile-message ${message.type}`}>
               {message.text}
             </div>
           )}
-
-          {/* Logout Button at Bottom */}
-          <button className="profile-logout-btn" onClick={onLogout}>
-            🚪 Logout
-          </button>
         </div>
       </div>
     </div>
