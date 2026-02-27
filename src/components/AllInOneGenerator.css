@@ -396,11 +396,6 @@
   background: rgba(255, 255, 255, 0.15);
 }
 
-.package-results-scroll {
-  overflow-y: auto;
-  height: calc(100% - 60px);
-  padding-right: 8px;
-}
 
 .package-result-group {
   margin-bottom: 28px;
@@ -512,13 +507,7 @@
   }
 }
 
-/* ===== RESULTS WRAPPER PREMIUM STYLING ===== */
-.package-results-scroll {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 4px;
-}
+
 
 /* Result Group Cards */
 .package-result-group {
@@ -800,4 +789,37 @@
   background: rgba(255, 107, 53, 0.1);
   border-color: #ff6b35;
   color: #ff6b35;
+}
+
+.package-results-scroll {
+  overflow-y: auto;
+  height: calc(100% - 70px);
+  padding-right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 4px 8px 4px 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 107, 53, 0.5) rgba(255, 255, 255, 0.05);
+}
+
+.package-results-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.package-results-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+}
+
+.package-results-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 107, 53, 0.5);
+  border-radius: 4px;
+}
+
+.package-results-panel {
+  height: 100%;
+  overflow: hidden;  /* change from overflow-y: auto */
+  display: flex;
+  flex-direction: column;
 }
