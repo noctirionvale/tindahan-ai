@@ -90,16 +90,15 @@
 }
 
 /* ========== PRICING GRID — 2x2 ========== */
+/* !important needed to override App.css repeat(auto-fit, minmax(260px,1fr)) */
 .pricing-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 20px;
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
-  /* FIX 3: removed flex:1 and min-height:0 — no longer needed since the
-     parent no longer constrains height. Cards now size to their content. */
-  padding-bottom: 24px; /* breathing room at bottom on desktop */
+  padding-bottom: 60px; /* pushes footer down to natural position */
 }
 
 /* ========== PRICING CARDS ========== */

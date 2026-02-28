@@ -621,18 +621,12 @@ Make each style distinct and appropriate for ${platform}.`;
           {language === 'en-US' ? (
             // English Voices - all 12 options
             [
-              <option key="fem" value="FEMALE">Female (Warm)</option>,
               <option key="male" value="MALE">Male (Professional)</option>,
-              <option key="fem-casual" value="FEMALE-CASUAL">Female (Casual)</option>,
-              <option key="male-casual" value="MALE-CASUAL">Male (Casual)</option>,
-              <option key="fem-calm" value="FEMALE-CALM">Female (Calm)</option>,
-              <option key="fem-cheerful" value="FEMALE-CHEERFUL">Female (Cheerful)</option>,
-              <option key="male-deep" value="MALE-DEEP">Male (Deep)</option>,
-              <option key="male-narration" value="MALE-NARRATION">Male (Narration)</option>,
-              <option key="fem-studio" value="FEMALE-STUDIO">Female (Studio - Premium)</option>,
-              <option key="male-studio" value="MALE-STUDIO">Male (Studio - Premium)</option>,
-              <option key="fem-newscast" value="FEMALE-NEWSCAST">Female (Newscast)</option>,
-              <option key="male-newscast" value="MALE-NEWSCAST">Male (Newscast)</option>
+          <option key="male-casual" value="MALE-CASUAL">Male (Casual)</option>,
+          <option key="male-deep" value="MALE-DEEP">Male (Deep)</option>,
+          <option key="male-narration" value="MALE-NARRATION">Male (Narration)</option>,
+          <option key="male-studio" value="MALE-STUDIO">Male (Studio - Premium)</option>,
+          <option key="male-newscast" value="MALE-NEWSCAST">Male (Newscast)</option>
             ]
           ) : (
             // Tagalog Voices
