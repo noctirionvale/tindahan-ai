@@ -220,15 +220,8 @@ body::after {
 }
 .logout-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(249,115,22,0.5); }
 
-/* ── PRICING GRID: 2x2 ── */
-.pricing-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  padding: 1.5rem;
-  max-width: 900px;
-  margin: 0 auto;
-}
+/* ── PRICING GRID ── */
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 1.5rem; }
 
 /* ============================================
    RESPONSIVE — 1100px
@@ -262,7 +255,7 @@ body::after {
   .logout-btn { padding: 0.5rem 1.2rem; font-size: 0.85rem; }
 
   /* ── Pricing ── */
-  .pricing-grid { grid-template-columns: 1fr; gap: 14px; margin-bottom: 140px; padding: 0.75rem; }
+  .pricing-grid { grid-template-columns: 1fr; gap: 16px; margin-bottom: 140px; }
 }
 
 @media (max-width: 480px) {
