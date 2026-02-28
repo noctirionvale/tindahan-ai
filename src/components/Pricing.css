@@ -98,7 +98,7 @@
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
-  padding-bottom: 60px; /* pushes footer down to natural position */
+  padding-bottom: 16px; /* just enough breathing room before footer */
 }
 
 /* ========== PRICING CARDS ========== */
@@ -444,6 +444,36 @@
   transition: all 0.2s ease;
 }
 .email-button:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(255,107,53,0.3); }
+
+/* ========== VIDEO CREDITS CARD ========== */
+.pricing-card.credits-card {
+  border-color: rgba(0, 229, 255, 0.25);
+  background: linear-gradient(
+    145deg,
+    rgba(0, 229, 255, 0.06) 0%,
+    rgba(106, 92, 255, 0.04) 100%
+  );
+}
+
+.credits-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #00e5ff 0%, #6a5cff 100%);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-credits-note {
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  margin-top: 4px;
+}
 
 .coming-soon-tag {
   background: rgba(255,255,255,0.15);

@@ -7,6 +7,25 @@ const API = 'https://tindahan-ai-production.up.railway.app';
 const EXCHANGE_RATES = { PHP: 1, USD: 0.017, CNY: 0.12, NGN: 27.5 };
 const CURRENCY_SYMBOLS = { PHP: '₱', USD: '$', CNY: '¥', NGN: '₦' };
 
+// ── Exported so VideoGenerator (and PackageGenerator) can import and
+//    trigger the buy modal without going through the Pricing page ──
+export const VIDEO_CREDITS_PLAN = {
+  name: 'Image-Video Credits',
+  phpPrice: 199,
+  period: 'one-time',
+  description: 'Pay-as-you-go video generations. Never expires.',
+  features: [
+    '5 video generations per pack',
+    'Never expires — use anytime',
+    'Instant activation'
+  ],
+  cta: 'Buy Credits',
+  popular: false,
+  isCredits: true,           // flag used by VideoGenerator
+  color: '#00e5ff',
+  planKey: 'video_credits'
+};
+
 const Pricing = () => {
   const [currency, setCurrency] = useState('PHP');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -40,9 +59,7 @@ const Pricing = () => {
       description: 'Try Tindahan.AI - no credit card needed!',
       features: [
         '15 lifetime description generations',
-        '1 lifetime video generation',
-        '1 lifetime voice generation',
-        'All 6 platform formats',
+        '2 lifetime voice generations',
         'Copy to clipboard',
         'Basic support'
       ],
@@ -52,16 +69,16 @@ const Pricing = () => {
       planKey: 'free'
     },
     {
-      name: 'Starter',
-      phpPrice: 299,
+      name: 'Pro',
+      phpPrice: 399,
       period: 'per month',
       description: 'For small sellers testing video ads',
       features: [
-        '100 description generations/month',
-        '10 video generations/month',
-        '10 voice generations/month',
+        '200 description generations/month',
+        '30 voice generations/month',
         'All 6 platform formats',
-        'Generation history',
+        'Video credits sold separately',
+        'Flexible PAYG pricing',
         'Priority support'
       ],
       cta: 'Upgrade Now',
@@ -70,17 +87,17 @@ const Pricing = () => {
       planKey: 'starter'
     },
     {
-      name: 'Pro',
-      phpPrice: 599,
+      name: 'Business',
+      phpPrice: 699,
       period: 'per month',
       description: 'For active sellers & affiliates',
       features: [
-        '300 description generations/month',
-        '30 video generations/month',
-        '30 voice generations/month',
+        '500 description generations/month',
+        '80 voice generations/month',
         'All 6 platform formats',
         'Analytics dashboard',
-        'Export to CSV',
+        'Video credits sold separately',
+        'Flexible PAYG pricing',
         'Priority support'
       ],
       cta: 'Upgrade Now',
@@ -88,26 +105,8 @@ const Pricing = () => {
       color: '#8b5cf6',
       planKey: 'pro'
     },
-    {
-      name: 'Business',
-      phpPrice: 999,
-      period: 'per month',
-      description: 'For power sellers & growing shops',
-      features: [
-        '800 description generations/month',
-        '80 video generations/month',
-        '80 voice generations/month',
-        'All 6 platform formats',
-        'Bulk generation',
-        'Analytics dashboard',
-        'Custom templates',
-        'Priority support'
-      ],
-      cta: 'Upgrade Now',
-      popular: false,
-      color: '#22c55e',
-      planKey: 'business'
-    }
+    // 4th card — Video Credits
+    VIDEO_CREDITS_PLAN,
   ];
 
   const handleUpgradeClick = (plan) => {
@@ -120,14 +119,13 @@ const Pricing = () => {
     setShowUpgradeModal(true);
   };
 
-  // ✅ PayMongo checkout — creates link and redirects user
   const handlePayMongoCheckout = async () => {
     setLoading('paymongo');
     setError('');
     try {
       const token = localStorage.getItem('tindahan_token');
       if (!token) {
-        setError('Please log in to upgrade your plan.');
+        setError('Please log in to continue.');
         return;
       }
 
@@ -138,8 +136,6 @@ const Pricing = () => {
       );
 
       if (response.data.success) {
-        // Redirect to PayMongo checkout page
-        // Supports GCash, Maya, credit/debit cards
         window.location.href = response.data.checkoutUrl;
       }
     } catch (err) {
@@ -149,6 +145,15 @@ const Pricing = () => {
       setLoading('');
     }
   };
+
+  // ── Modal label differs for credits vs subscription plans ──
+  const modalTitle = selectedPlan?.isCredits
+    ? `Buy Video Credits 🎬`
+    : `Upgrade to ${selectedPlan?.name} 🚀`;
+
+  const modalPayLabel = selectedPlan?.isCredits
+    ? `💳 Pay ${convertPrice(selectedPlan?.phpPrice)} — Get 5 Videos`
+    : `💳 Pay ₱${selectedPlan?.phpPrice?.toLocaleString()}/month`;
 
   return (
     <section id="pricing" className="pricing-section">
@@ -174,11 +179,15 @@ const Pricing = () => {
 
         <div className="pricing-grid">
           {plans.map((plan, index) => (
-            <div key={index} className={`pricing-card ${plan.popular ? 'popular' : ''}`}>
+            <div
+              key={index}
+              className={`pricing-card ${plan.popular ? 'popular' : ''} ${plan.isCredits ? 'credits-card' : ''}`}
+            >
               {plan.popular && <div className="popular-badge">⭐ Most Popular</div>}
+              {plan.isCredits && <div className="credits-badge">🎬 Pay As You Go</div>}
 
               <div className="plan-header">
-                <h3>{plan.name}</h3>
+                <h3 style={{ color: plan.color }}>{plan.name}</h3>
                 <div className="plan-price">
                   <span className="price">
                     {plan.phpPrice === 0 ? '₱0' : convertPrice(plan.phpPrice)}
@@ -213,28 +222,28 @@ const Pricing = () => {
 
       </div>
 
-      {/* Upgrade Modal */}
+      {/* ── Upgrade / Credits Modal ── */}
       {showUpgradeModal && selectedPlan && (
         <div className="modal-overlay" onClick={() => setShowUpgradeModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setShowUpgradeModal(false)}>✕</button>
 
             <div className="modal-header">
-              <h2>Upgrade to {selectedPlan.name} 🚀</h2>
+              <h2>{modalTitle}</h2>
               <p className="modal-price">
                 {convertPrice(selectedPlan.phpPrice)}
-                <span>/month</span>
+                <span>/{selectedPlan.period}</span>
               </p>
               {currency !== 'PHP' && (
                 <p className="modal-php">≈ ₱{selectedPlan.phpPrice.toLocaleString()} PHP</p>
               )}
+              {selectedPlan.isCredits && (
+                <p className="modal-credits-note">10 video generations · never expires · stackable</p>
+              )}
             </div>
 
-            {error && (
-              <div className="payment-error">⚠️ {error}</div>
-            )}
+            {error && <div className="payment-error">⚠️ {error}</div>}
 
-            {/* ✅ PayMongo Checkout Button */}
             <div className="payment-section">
               <p className="payment-desc">
                 Pay securely via <strong>GCash</strong>, <strong>Maya</strong>, or <strong>Credit/Debit Card</strong>
@@ -251,26 +260,20 @@ const Pricing = () => {
                 onClick={handlePayMongoCheckout}
                 disabled={loading === 'paymongo'}
               >
-                {loading === 'paymongo' ? (
-                  '⏳ Creating payment link...'
-                ) : (
-                  <>💳 Pay ₱{selectedPlan.phpPrice.toLocaleString()}/month</>
-                )}
+                {loading === 'paymongo' ? '⏳ Creating payment link...' : modalPayLabel}
               </button>
 
               <p className="payment-note">
-                🔒 Secured by PayMongo · Your plan activates automatically after payment
+                🔒 Secured by PayMongo · Activates automatically after payment
               </p>
             </div>
 
-            {/* Divider */}
             <div className="payment-divider"><span>Need help?</span></div>
 
-            {/* Contact fallback */}
             <div className="payment-section contact-section">
               <p>Having trouble paying? Contact us:</p>
               <a
-                href={`mailto:noctirionvale@gmail.com?subject=Tindahan.AI ${selectedPlan.name} Upgrade&body=Hi! I want to upgrade to the ${selectedPlan.name} plan (₱${selectedPlan.phpPrice}/month). My account email is: [YOUR EMAIL]. Thank you!`}
+                href={`mailto:noctirionvale@gmail.com?subject=Tindahan.AI ${selectedPlan.name}&body=Hi! I want to get the ${selectedPlan.name} (₱${selectedPlan.phpPrice}). My account email is: [YOUR EMAIL]. Thank you!`}
                 className="email-button"
               >
                 📧 noctirionvale@gmail.com
