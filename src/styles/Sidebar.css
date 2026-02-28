@@ -59,7 +59,7 @@
 .dashboard-body {
   display: flex;
   padding-top: 70px;
-  height: 100vh; /* fills viewport */
+  height: 100vh;
   overflow: hidden;
 }
 
@@ -170,30 +170,26 @@
   flex-direction: column;
 }
 
-/* Generators: fill the remaining viewport height, no overflow */
 .main-content.full-height {
   height: calc(100vh - 70px);
   overflow: hidden;
 }
 
-/* Pricing: allow vertical scroll */
 .main-content.with-footer {
   height: calc(100vh - 70px);
   overflow-y: auto;
 }
 
 /* ── GENERATOR CONTAINER ── */
-/* Direct parent of each generator component */
 .generator-container {
   flex: 1;
-  min-height: 0; /* CRITICAL: lets flex child shrink so scroll works */
+  min-height: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   padding: 0;
 }
 
-/* Every generator root element must fill this */
 .generator-container > * {
   flex: 1;
   min-height: 0;
@@ -335,12 +331,10 @@
 }
 
 /* ══════════════════════════════════════
-   MOBILE — everything switches to
-   natural document scroll
+   MOBILE
    ══════════════════════════════════════ */
 @media (max-width: 768px) {
 
-  /* --- Layout resets --- */
   .dashboard-wrapper {
     height: auto;
     min-height: 100vh;
@@ -350,19 +344,19 @@
   .dashboard-body {
     height: auto;
     overflow: visible;
-    padding-top: 60px; /* matches mobile top-bar height */
+    padding-top: 60px;
   }
 
-  /* --- Top bar --- */
   .top-bar { height: 60px; padding: 0 1rem; }
   .top-logo { height: 32px; }
   .top-brand { font-size: 1rem; }
   .welcome-text { display: none; }
 
-  /* --- Hide desktop sidebar --- */
   .sidebar { display: none; }
 
-  /* --- Main content: full width, natural scroll, room for bottom nav --- */
+  /* FIX: was padding: 12px 12px 0 12px  ← the 0 bottom was the culprit.
+     Now padding-bottom matches the bottom nav height so content is never
+     hidden behind it. The nav is ~90px tall + safe area, so 110px is safe. */
   .main-content,
   .main-content.full-height,
   .main-content.with-footer {
@@ -371,10 +365,9 @@
     height: auto;
     min-height: calc(100vh - 60px);
     overflow-y: visible;
-    padding: 12px 12px 0 12px; /* bottom padding handled by generator wrappers */
+    padding: 12px 12px 110px 12px; /* ← was 0, now 110px */
   }
 
-  /* --- Generator container: natural height --- */
   .generator-container,
   .generator-container > * {
     height: auto;
@@ -383,7 +376,7 @@
     overflow: visible;
   }
 
-  /* --- Mobile bottom nav --- */
+  /* ── Mobile bottom nav ── */
   .mobile-bottom-nav {
     position: fixed;
     bottom: 0; left: 0; right: 0;
@@ -428,7 +421,6 @@
   }
   .mobile-footer-text p { margin: 1px 0; }
 
-  /* --- FAQ --- */
   .faq-float-btn {
     bottom: 110px; left: auto; right: 16px;
     width: 48px; height: 48px; font-size: 1.4rem; z-index: 1001;
@@ -436,7 +428,6 @@
   .faq-modal { padding: 2rem 1.5rem; margin: 1rem; }
   .faq-title { font-size: 1.5rem; }
 
-  /* --- Newsletter stacks on mobile --- */
   .newsletter-form { flex-direction: column; gap: 12px; }
   .newsletter-input, .newsletter-btn { width: 100%; max-width: 100%; }
 }
@@ -444,7 +435,7 @@
 @media (max-width: 480px) {
   .main-content,
   .main-content.full-height,
-  .main-content.with-footer { padding: 10px 10px 0 10px; }
+  .main-content.with-footer { padding: 10px 10px 110px 10px; } /* keep bottom 110px */
   .mobile-nav-item { min-width: 40px; }
   .mobile-nav-item .nav-icon,
   .mobile-nav-item span:first-child { font-size: 18px; }
@@ -456,6 +447,12 @@
   @media (max-width: 768px) {
     .mobile-bottom-nav {
       padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+    /* Also bump content padding for notched phones */
+    .main-content,
+    .main-content.full-height,
+    .main-content.with-footer {
+      padding-bottom: max(110px, calc(110px + env(safe-area-inset-bottom)));
     }
   }
 }

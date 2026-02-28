@@ -3,24 +3,29 @@
    ======================================== */
 .pricing-section {
   width: 100%;
-  height: calc(100vh - 70px); /* fits inside dashboard */
+  /* FIX 1: was height: calc(100vh - 70px) with overflow:hidden — that clipped
+     the CTA buttons at the bottom of each card on desktop.
+     Now we let it scroll naturally within its parent. */
+  height: calc(100vh - 70px);
   padding: 20px 40px;
   background: transparent;
   position: relative;
   z-index: 10;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;   /* ← was "hidden", now scrollable */
+  overflow-x: hidden;
 }
 
 .pricing-content {
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
-  height: 100%;
+  /* FIX 2: was height:100% + overflow:hidden which passed the clip down.
+     Now natural height so cards are never cropped. */
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  /* removed: height: 100%; overflow: hidden; */
 }
 
 /* ========== HEADER ========== */
@@ -92,8 +97,9 @@
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
-  flex: 1;
-  min-height: 0; /* allows grid to shrink inside flex */
+  /* FIX 3: removed flex:1 and min-height:0 — no longer needed since the
+     parent no longer constrains height. Cards now size to their content. */
+  padding-bottom: 24px; /* breathing room at bottom on desktop */
 }
 
 /* ========== PRICING CARDS ========== */
@@ -108,11 +114,10 @@
   padding: 20px 24px;
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
+  /* FIX 4: removed overflow:hidden from card — it was clipping the CTA button
+     when the card had overflow content on shorter viewport heights. */
   display: flex;
   flex-direction: column;
-  min-height: 0; /* CRITICAL: allows card to shrink inside grid */
-  /* NO max-height — was clipping card contents */
 }
 
 .pricing-card:hover {
@@ -201,15 +206,9 @@
   list-style: none;
   padding: 0;
   margin: 0 0 12px 0;
-  flex: 1;        /* takes remaining space in card */
-  min-height: 0;  /* allows list to shrink */
-  overflow-y: auto;
+  flex: 1;
+  /* FIX 5: no overflow clipping on desktop either — let card grow naturally */
 }
-
-.features-list::-webkit-scrollbar { width: 4px; }
-.features-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
-.features-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-.features-list::-webkit-scrollbar-thumb:hover { background: rgba(255, 107, 53, 0.5); }
 
 .features-list li {
   padding: 5px 0;
@@ -227,7 +226,7 @@
   flex-shrink: 0;
 }
 
-/* ========== CTA BUTTON ========== */
+/* ========== CTA BUTTON — always visible ========== */
 .plan-cta {
   display: block;
   width: 100%;
@@ -241,7 +240,7 @@
   border: 2px solid transparent;
   cursor: pointer;
   margin-top: auto;
-  flex-shrink: 0;
+  flex-shrink: 0; /* never compress the button */
 }
 
 .plan-cta.primary {
@@ -469,7 +468,6 @@
 
 /* ========== MOBILE ========== */
 @media (max-width: 768px) {
-  /* pricing-section becomes natural scroll — parent handles bottom padding */
   .pricing-section {
     height: auto;
     overflow: visible;
@@ -481,12 +479,13 @@
     overflow: visible;
   }
 
-  /* Single column on mobile */
   .pricing-grid {
     grid-template-columns: 1fr;
     gap: 16px;
-    /* bottom padding so last card clears fixed bottom nav */
-    padding-bottom: 140px;
+    /* FIX 6: this padding-bottom is what clears the fixed bottom nav bar.
+       Make sure this value matches or exceeds your bottom nav height.
+       Increase to e.g. 160px if icons are still cut off. */
+    padding-bottom: 160px;
   }
 
   .pricing-card {
@@ -497,7 +496,6 @@
   .pricing-card.popular { transform: scale(1); }
   .pricing-card.popular:hover { transform: translateY(-4px); }
 
-  /* Show all features, no scroll clipping */
   .features-list {
     overflow: visible;
     max-height: none;
@@ -506,7 +504,6 @@
   .plan-cta { padding: 12px; font-size: 0.95rem; }
   .price { font-size: 1.9rem; }
 
-  /* Modal full-width on mobile */
   .modal-card { padding: 24px 20px; border-radius: 20px; }
   .modal-header h2 { font-size: 20px; }
   .modal-price { font-size: 28px; }
