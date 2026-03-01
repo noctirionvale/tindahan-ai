@@ -7,8 +7,6 @@ const API = 'https://tindahan-ai-production.up.railway.app';
 const EXCHANGE_RATES = { PHP: 1, USD: 0.017, CNY: 0.12, NGN: 27.5 };
 const CURRENCY_SYMBOLS = { PHP: '₱', USD: '$', CNY: '¥', NGN: '₦' };
 
-// ── Exported so VideoGenerator (and PackageGenerator) can import and
-//    trigger the buy modal without going through the Pricing page ──
 export const VIDEO_CREDITS_PLAN = {
   name: 'Image-Video Credits',
   phpPrice: 199,
@@ -17,13 +15,34 @@ export const VIDEO_CREDITS_PLAN = {
   features: [
     '5 video generations per pack',
     'Never expires — use anytime',
+    'Stackable — buy multiple packs',
+    'Works with Combo Generator',
     'Instant activation'
   ],
-  cta: 'Buy Credits',
+  cta: 'Coming Soon',
   popular: false,
-  isCredits: true,           // flag used by VideoGenerator
+  isCredits: true,
+  isComingSoon: true,
   color: '#00e5ff',
   planKey: 'video_credits'
+};
+
+export const PLAN_LIMITS = {
+  free: {
+    descriptions: { count: 15, period: 'lifetime' },
+    voices: { count: 2, period: 'lifetime' },
+    video: null,
+  },
+  starter: {
+    descriptions: { count: 200, period: 'monthly' },
+    voices: { count: 30, period: 'monthly' },
+    video: null,
+  },
+  pro: {
+    descriptions: { count: 500, period: 'monthly' },
+    voices: { count: 80, period: 'monthly' },
+    video: null,
+  },
 };
 
 const Pricing = () => {
@@ -56,10 +75,12 @@ const Pricing = () => {
       name: 'Free',
       phpPrice: 0,
       period: 'forever',
-      description: 'Try Tindahan.AI - no credit card needed!',
+      description: 'Try Tindahan.AI — no credit card needed!',
       features: [
         '15 lifetime description generations',
         '2 lifetime voice generations',
+        'Video credits — coming soon',
+        'Combo Generator — coming soon',
         'Copy to clipboard',
         'Basic support'
       ],
@@ -77,8 +98,8 @@ const Pricing = () => {
         '200 description generations/month',
         '30 voice generations/month',
         'All 6 platform formats',
-        'Video credits sold separately',
-        'Flexible PAYG pricing',
+        'Video credits — coming soon (PAYG)',
+        'Combo Generator — coming soon',
         'Priority support'
       ],
       cta: 'Upgrade Now',
@@ -96,8 +117,8 @@ const Pricing = () => {
         '80 voice generations/month',
         'All 6 platform formats',
         'Analytics dashboard',
-        'Video credits sold separately',
-        'Flexible PAYG pricing',
+        'Video credits — coming soon (PAYG)',
+        'Combo Generator — coming soon',
         'Priority support'
       ],
       cta: 'Upgrade Now',
@@ -105,11 +126,11 @@ const Pricing = () => {
       color: '#8b5cf6',
       planKey: 'pro'
     },
-    // 4th card — Video Credits
     VIDEO_CREDITS_PLAN,
   ];
 
   const handleUpgradeClick = (plan) => {
+    if (plan.isComingSoon) return;
     if (plan.planKey === 'free') {
       window.location.href = '#product-generator';
       return;
@@ -128,25 +149,21 @@ const Pricing = () => {
         setError('Please log in to continue.');
         return;
       }
-
       const response = await axios.post(
         `${API}/api/payment/create-link`,
         { planKey: selectedPlan.planKey },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
-
       if (response.data.success) {
         window.location.href = response.data.checkoutUrl;
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create payment. Please try again.');
-      console.error('Payment error:', err);
     } finally {
       setLoading('');
     }
   };
 
-  // ── Modal label differs for credits vs subscription plans ──
   const modalTitle = selectedPlan?.isCredits
     ? `Buy Video Credits 🎬`
     : `Upgrade to ${selectedPlan?.name} 🚀`;
@@ -162,6 +179,14 @@ const Pricing = () => {
         <div className="pricing-header">
           <h2>Simple, Transparent Pricing</h2>
           <p>Start free. Scale as you grow. Cancel anytime.</p>
+
+          <div className="combo-callout coming-soon-callout">
+            <span className="combo-icon">🎯</span>
+            <span>
+              <strong>Combo Generator</strong> — Description + Voice + Video in one click.
+            </span>
+            <span className="coming-soon-badge">🔜 Coming Soon</span>
+          </div>
 
           <div className="currency-switcher">
             <span className="currency-label">💱 Currency:</span>
@@ -181,20 +206,22 @@ const Pricing = () => {
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`pricing-card ${plan.popular ? 'popular' : ''} ${plan.isCredits ? 'credits-card' : ''}`}
+              className={`pricing-card ${plan.popular ? 'popular' : ''} ${plan.isCredits ? 'credits-card' : ''} ${plan.isComingSoon ? 'coming-soon-card' : ''}`}
             >
               {plan.popular && <div className="popular-badge">⭐ Most Popular</div>}
-              {plan.isCredits && <div className="credits-badge">🎬 Pay As You Go</div>}
+              {plan.isComingSoon && <div className="coming-soon-card-badge">🔜 Coming Soon</div>}
 
               <div className="plan-header">
-                <h3 style={{ color: plan.color }}>{plan.name}</h3>
+                <h3 style={{ color: plan.isComingSoon ? '#64748b' : plan.color }}>
+                  {plan.name}
+                </h3>
                 <div className="plan-price">
                   <span className="price">
                     {plan.phpPrice === 0 ? '₱0' : convertPrice(plan.phpPrice)}
                   </span>
                   <span className="period">/{plan.period}</span>
                 </div>
-                {currency !== 'PHP' && plan.phpPrice > 0 && (
+                {currency !== 'PHP' && plan.phpPrice > 0 && !plan.isComingSoon && (
                   <div className="php-equivalent">≈ ₱{plan.phpPrice.toLocaleString()} PHP</div>
                 )}
                 <p className="plan-description">{plan.description}</p>
@@ -202,8 +229,10 @@ const Pricing = () => {
 
               <ul className="features-list">
                 {plan.features.map((feature, idx) => (
-                  <li key={idx}>
-                    <span className="check-icon" style={{ color: plan.color }}>✓</span>
+                  <li key={idx} className={feature.toLowerCase().includes('coming soon') ? 'feature-coming-soon' : ''}>
+                    <span className="check-icon" style={{ color: plan.isComingSoon ? '#64748b' : plan.color }}>
+                      {feature.toLowerCase().includes('coming soon') ? '🔜' : '✓'}
+                    </span>
                     {feature}
                   </li>
                 ))}
@@ -211,19 +240,49 @@ const Pricing = () => {
 
               <button
                 onClick={() => handleUpgradeClick(plan)}
-                className={`plan-cta ${plan.phpPrice > 0 ? 'primary' : 'secondary'}`}
-                style={plan.phpPrice > 0 ? { background: `linear-gradient(135deg, ${plan.color}, #ff8c42)` } : {}}
+                disabled={plan.isComingSoon}
+                className={`plan-cta ${plan.isComingSoon ? 'coming-soon-cta' : plan.phpPrice > 0 ? 'primary' : 'secondary'}`}
+                style={
+                  plan.isComingSoon
+                    ? { background: '#1e293b', color: '#64748b', cursor: 'not-allowed', border: '1px dashed #334155' }
+                    : plan.phpPrice > 0
+                    ? { background: `linear-gradient(135deg, ${plan.color}, #ff8c42)` }
+                    : {}
+                }
               >
-                {plan.cta}
+                {plan.isComingSoon ? '🔜 Coming Soon' : plan.cta}
               </button>
             </div>
           ))}
         </div>
 
+        {/* Video credits explainer — teaser */}
+        <div className="credits-explainer coming-soon-explainer">
+          <h4>🎬 Video Credits — Coming Soon</h4>
+          <p>AI-powered product video ads are on the way.</p>
+          <div className="credits-steps">
+            <div className="credit-step">
+              <span className="step-num">1</span>
+              <p>Buy a credits pack — <strong>₱199 = 5 video generations</strong></p>
+            </div>
+            <div className="credit-step">
+              <span className="step-num">2</span>
+              <p>Use for <strong>standalone video</strong> or <strong>Combo</strong> generation</p>
+            </div>
+            <div className="credit-step">
+              <span className="step-num">3</span>
+              <p>Credits <strong>never expire</strong> and are <strong>stackable</strong></p>
+            </div>
+          </div>
+          <div className="coming-soon-notify">
+            <p>🔔 Video generation is being tested — launching very soon!</p>
+          </div>
+        </div>
+
       </div>
 
-      {/* ── Upgrade / Credits Modal ── */}
-      {showUpgradeModal && selectedPlan && (
+      {/* Upgrade Modal */}
+      {showUpgradeModal && selectedPlan && !selectedPlan.isComingSoon && (
         <div className="modal-overlay" onClick={() => setShowUpgradeModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setShowUpgradeModal(false)}>✕</button>
@@ -237,9 +296,6 @@ const Pricing = () => {
               {currency !== 'PHP' && (
                 <p className="modal-php">≈ ₱{selectedPlan.phpPrice.toLocaleString()} PHP</p>
               )}
-              {selectedPlan.isCredits && (
-                <p className="modal-credits-note">10 video generations · never expires · stackable</p>
-              )}
             </div>
 
             {error && <div className="payment-error">⚠️ {error}</div>}
@@ -248,13 +304,11 @@ const Pricing = () => {
               <p className="payment-desc">
                 Pay securely via <strong>GCash</strong>, <strong>Maya</strong>, or <strong>Credit/Debit Card</strong>
               </p>
-
               <div className="payment-logos">
                 <span className="payment-logo">💙 GCash</span>
                 <span className="payment-logo">💚 Maya</span>
                 <span className="payment-logo">💳 Card</span>
               </div>
-
               <button
                 className="paymongo-btn"
                 onClick={handlePayMongoCheckout}
@@ -262,7 +316,6 @@ const Pricing = () => {
               >
                 {loading === 'paymongo' ? '⏳ Creating payment link...' : modalPayLabel}
               </button>
-
               <p className="payment-note">
                 🔒 Secured by PayMongo · Activates automatically after payment
               </p>
@@ -279,7 +332,6 @@ const Pricing = () => {
                 📧 noctirionvale@gmail.com
               </a>
             </div>
-
           </div>
         </div>
       )}
@@ -288,4 +340,5 @@ const Pricing = () => {
   );
 };
 
+export { Pricing };
 export default Pricing;

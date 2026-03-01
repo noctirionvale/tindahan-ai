@@ -20,7 +20,6 @@ const VoiceGenerator = () => {
     fetchUsage();
   }, []);
 
-  // Clean up blob URL when component unmounts or new audio is generated
   useEffect(() => {
     return () => {
       if (audioBlobUrl && audioBlobUrl.startsWith('blob:')) {
@@ -29,7 +28,6 @@ const VoiceGenerator = () => {
     };
   }, [audioBlobUrl]);
 
-  // Auto-play when audio is ready
   useEffect(() => {
     if (audioBlobUrl && audioRef.current) {
       audioRef.current.load();
@@ -38,6 +36,12 @@ const VoiceGenerator = () => {
       });
     }
   }, [audioBlobUrl]);
+
+  // Reset gender when language changes to avoid invalid voice selection
+  useEffect(() => {
+    if (language === 'en-US') setGender('FEMALE');
+    if (language === 'fil-PH') setGender('FIL-FEMALE');
+  }, [language]);
 
   const fetchUsage = async () => {
     try {
@@ -91,7 +95,6 @@ const VoiceGenerator = () => {
     setGenerating(true);
     setError('');
 
-    // Clean up previous blob URL
     if (audioBlobUrl && audioBlobUrl.startsWith('blob:')) {
       URL.revokeObjectURL(audioBlobUrl);
     }
@@ -100,7 +103,7 @@ const VoiceGenerator = () => {
 
     try {
       const token = localStorage.getItem('tindahan_token');
-      
+
       const response = await axios.post(
         'https://tindahan-ai-production.up.railway.app/api/voice/generate',
         { text: script, language, gender },
@@ -114,10 +117,8 @@ const VoiceGenerator = () => {
       );
 
       if (response.data.success && response.data.audioUrl) {
-        // response.data.audioUrl is a data URI: "data:audio/mpeg;base64,AAA..."
         setGeneratedAudio(response.data.audioUrl);
-        
-        // Convert data URI to blob URL for reliable playback
+
         const base64Data = response.data.audioUrl.split(',')[1];
         const byteCharacters = atob(base64Data);
         const byteNumbers = new Array(byteCharacters.length);
@@ -138,7 +139,6 @@ const VoiceGenerator = () => {
           });
         }
       }
-
     } catch (err) {
       console.error('Generation error:', err);
       if (err.response?.status === 429) {
@@ -153,9 +153,8 @@ const VoiceGenerator = () => {
 
   const handleDownload = () => {
     if (!generatedAudio) return;
-    
     const link = document.createElement('a');
-    link.href = generatedAudio; // Use data URI directly for download
+    link.href = generatedAudio;
     link.download = `tindahan-voice-${Date.now()}.mp3`;
     document.body.appendChild(link);
     link.click();
@@ -174,10 +173,30 @@ const VoiceGenerator = () => {
     setError('');
   };
 
+  // Voice options — confirmed working vs coming soon
+  const voiceOptions = {
+    'en-US': [
+      { value: 'MALE-CASUAL', label: 'Male (Casual)', available: true },
+      { value: 'MALE-DEEP', label: 'Male (Deep)', available: true },
+      { value: 'MALE-NARRATION', label: 'Male (Narration)', available: true },
+      { value: 'MALE-STUDIO', label: 'Male (Studio — Premium)', available: true },
+      { value: 'MALE-NEWSCAST', label: 'Male (Newscast)', available: true },
+    ],
+    'fil-PH': [
+      { value: 'FIL-FEMALE', label: 'Babae (Female)', available: true },
+      { value: 'FIL-MALE', label: 'Lalaki (Male)', available: true },
+      { value: 'FIL-FEMALE-CASUAL', label: 'Babae (Casual)', available: false },
+      { value: 'FIL-MALE-DEEP', label: 'Lalaki (Deep)', available: false },
+    ]
+  };
+
+  const currentVoices = voiceOptions[language] || voiceOptions['en-US'];
+  const availableVoices = currentVoices.filter(v => v.available);
+
   return (
     <div className="voice-wrapper">
       <div className="voice-split">
-        {/* LEFT: Form Panel - Premium Design */}
+        {/* LEFT: Form Panel */}
         <div className="voice-form-panel">
           <h2 className="voice-title">🎙️ Generate Voice</h2>
 
@@ -231,7 +250,6 @@ const VoiceGenerator = () => {
               <h3>VOICE SCRIPT</h3>
               <span>{script.length} / 5000 characters</span>
             </div>
-            
             <textarea
               value={script}
               onChange={(e) => setScript(e.target.value)}
@@ -240,47 +258,47 @@ const VoiceGenerator = () => {
               rows="6"
             />
           </div>
-{/* Voice Options */}
-<div className="voice-options-grid">
-  <div className="voice-option">
-    <label>Language</label>
-    <select 
-      value={language} 
-      onChange={(e) => setLanguage(e.target.value)}
-      className="voice-select"
-    >
-      <option value="en-US">🇺🇸 English (US)</option>
-      <option value="fil-PH">🇵🇭 Tagalog (Filipino)</option>
-    </select>
-  </div>
 
-  <div className="voice-option">
-    <label>Voice Style</label>
-    <select 
-      value={gender} 
-      onChange={(e) => setGender(e.target.value)}
-      className="voice-select"
-    >
-      {language === 'en-US' ? (
-        // English voices - rendered as array
-        [
-          <option key="male" value="MALE">Male (Professional)</option>,
-          <option key="male-casual" value="MALE-CASUAL">Male (Casual)</option>,
-          <option key="male-deep" value="MALE-DEEP">Male (Deep)</option>,
-          <option key="male-narration" value="MALE-NARRATION">Male (Narration)</option>,
-          <option key="male-studio" value="MALE-STUDIO">Male (Studio - Premium)</option>,
-          <option key="male-newscast" value="MALE-NEWSCAST">Male (Newscast)</option>
-        ]
-      ) : (
-        // Filipino voices - rendered as array
-        [
-          <option key="fil-fem" value="FIL-FEMALE">Babae (Female)</option>,
-          <option key="fil-male" value="FIL-MALE">Lalaki (Male)</option>
-        ]
-      )}
-    </select>
-  </div>
-</div>
+          {/* Voice Options */}
+          <div className="voice-options-grid">
+            <div className="voice-option">
+              <label>Language</label>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="voice-select"
+              >
+                <option value="en-US">🇺🇸 English (US)</option>
+                <option value="fil-PH">🇵🇭 Tagalog (Filipino)</option>
+              </select>
+            </div>
+
+            <div className="voice-option">
+              <label>Voice Style</label>
+              <select
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                className="voice-select"
+              >
+                {availableVoices.map(voice => (
+                  <option key={voice.value} value={voice.value}>
+                    {voice.label}
+                  </option>
+                ))}
+              </select>
+
+              {/* Coming Soon voices preview */}
+              <div className="voice-coming-soon-list">
+                {currentVoices.filter(v => !v.available).map(voice => (
+                  <div key={voice.value} className="voice-coming-soon-item">
+                    <span className="voice-coming-soon-label">{voice.label}</span>
+                    <span className="coming-soon-badge">🔜 Coming Soon</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Generate Button */}
           {script && !generating && !audioBlobUrl && (
             <button onClick={handleGenerateVoice} className="voice-generate-btn">
@@ -297,7 +315,7 @@ const VoiceGenerator = () => {
             </div>
           )}
 
-          {/* Error Message */}
+          {/* Error */}
           {error && !generating && (
             <div className="voice-error">
               {error}
@@ -308,12 +326,22 @@ const VoiceGenerator = () => {
           )}
         </div>
 
-        {/* RIGHT: Results Panel - Premium Design with Working Audio */}
+        {/* RIGHT: Results Panel */}
         <div className="voice-results-panel">
           {!generating && !audioBlobUrl && (
             <div className="voice-empty">
               <div className="voice-empty-icon">🎤</div>
               <p>Your voiceover will appear here</p>
+
+              {/* Coming Soon — Video Combo teaser */}
+              <div className="voice-combo-teaser">
+                <div className="combo-teaser-icon">🎬</div>
+                <p><strong>Combo Generator</strong></p>
+                <p className="combo-teaser-sub">
+                  Generate description + voice + video in one click
+                </p>
+                <span className="coming-soon-badge large">🔜 Coming Soon</span>
+              </div>
             </div>
           )}
 
@@ -339,6 +367,12 @@ const VoiceGenerator = () => {
                   <button onClick={handleReset} className="voice-new-btn">
                     New Voiceover
                   </button>
+                </div>
+
+                {/* Combo teaser after generation */}
+                <div className="voice-combo-teaser post-gen">
+                  <p>🎬 Want this as a full video ad?</p>
+                  <span className="coming-soon-badge">Combo Generator — Coming Soon</span>
                 </div>
               </div>
             </>
