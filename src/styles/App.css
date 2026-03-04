@@ -262,3 +262,19 @@ body::after {
   .main-headline { font-size: 2rem; }
   .sub-headline { font-size: 1.75rem; }
 }
+
+/* Add to your App.css or a separate WebView stylesheet */
+.is-webview .mobile-bottom-nav {
+  display: none !important;
+}
+
+/* Optional: Adjust padding/margins when bottom nav is hidden */
+.is-webview .main-content {
+  padding-bottom: 20px; /* Adjust as needed */
+}
+
+/* If you want to hide other elements specifically in WebView */
+.is-webview .sidebar-footer {
+  /* Example: hide footer in WebView if needed */
+  /* display: none; */
+}
