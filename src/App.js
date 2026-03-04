@@ -62,16 +62,6 @@ function App() {
     fetchProfile();
   }, []);
 
-  // ── WebView Detection (AppGeyser app) ──
-  useEffect(() => {
-    // Detect WebView (AppGeyser app) and hide site's bottom nav
-    const isWebView = /wv|WebView/i.test(navigator.userAgent) ||
-                      window.navigator.standalone === true;
-    if (isWebView) {
-      document.body.classList.add('is-webview');
-    }
-  }, []); // Empty dependency array means this runs once on mount
-
   const handleLoginSuccess = (userData) => {
     setUser(userData);
     localStorage.setItem('tindahan_user', JSON.stringify(userData));

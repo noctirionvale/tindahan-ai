@@ -457,13 +457,3 @@
   }
 }
 
-/* ── Hide bottom nav inside AppGeyser WebView app ── */
-.is-webview .mobile-bottom-nav {
-  display: none !important;
-}
-
-.is-webview .main-content,
-.is-webview .main-content.full-height,
-.is-webview .main-content.with-footer {
-  padding-bottom: 12px !important;
-}
