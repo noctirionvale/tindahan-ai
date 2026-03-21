@@ -600,7 +600,14 @@ app.get('/api/voice/usage', authenticateToken, async (req, res) => {
 });
 
 // ============================================
-// SERVER LISTEN - ALWAYS AT THE END
+// EXPORT FOR VERCEL (SERVERLESS)
 // ============================================
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server on ${PORT}`));
+module.exports = app;
+
+// ============================================
+// SERVER LISTEN - ONLY FOR LOCAL DEVELOPMENT
+// ============================================
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server running on port ${PORT}`));
+}
