@@ -1,6 +1,6 @@
 // Tindahan.AI Service Worker
 // In public/service-worker.js - change:
-const CACHE_NAME = 'tindahan-ai-v4'; // Change from v3 to v4
+const CACHE_NAME = 'tindahan-ai-v5'; // Change from v3 to v5
 const urlsToCache = [
   '/',
   '/static/css/main.css',
@@ -48,8 +48,9 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   // Skip Railway API calls - always fetch fresh
-  if (event.request.url.includes('railway.app') || 
-      event.request.url.includes('deepseek.com')) {
+  // Skip API calls - always fetch fresh
+if (event.request.url.includes('/api/') || 
+    event.request.url.includes('deepseek.com')) {
     return;
   }
 
