@@ -47,7 +47,7 @@ const VoiceGenerator = () => {
     try {
       const token = localStorage.getItem('tindahan_token');
       const response = await axios.get(
-        'https://tindahan-ai-production.up.railway.app/api/voice/usage',
+        '/api/voice/usage',
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
       if (response.data.success) {
@@ -68,7 +68,7 @@ const VoiceGenerator = () => {
     try {
       const token = localStorage.getItem('tindahan_token');
       const response = await axios.post(
-        'https://tindahan-ai-production.up.railway.app/api/voice/generate-script',
+        '/api/voice/generate-script',
         {
           productName,
           features,
@@ -105,7 +105,7 @@ const VoiceGenerator = () => {
       const token = localStorage.getItem('tindahan_token');
 
       const response = await axios.post(
-        'https://tindahan-ai-production.up.railway.app/api/voice/generate',
+        '/api/voice/generate',
         { text: script, language, gender },
         {
           headers: {
@@ -173,22 +173,21 @@ const VoiceGenerator = () => {
     setError('');
   };
 
-  // Voice options — confirmed working vs coming soon
+  // Voice options
   const voiceOptions = {
-    'en-US': [
-      { value: 'MALE-CASUAL', label: 'Male (Casual)', available: true },
-      { value: 'MALE-DEEP', label: 'Male (Deep)', available: true },
-      { value: 'MALE-NARRATION', label: 'Male (Narration)', available: true },
-      { value: 'MALE-STUDIO', label: 'Male (Studio — Premium)', available: true },
-      { value: 'MALE-NEWSCAST', label: 'Male (Newscast)', available: true },
-    ],
-    'fil-PH': [
-      { value: 'FIL-FEMALE', label: 'Babae (Female)', available: true },
-      { value: 'FIL-MALE', label: 'Lalaki (Male)', available: true },
-      { value: 'FIL-FEMALE-CASUAL', label: 'Babae (Casual)', available: false },
-      { value: 'FIL-MALE-DEEP', label: 'Lalaki (Deep)', available: false },
-    ]
-  };
+  'FEMALE': { name: 'en-US-Neural2-F', languageCode: 'en-US' },
+  'MALE': { name: 'en-US-Neural2-D', languageCode: 'en-US' },
+  'FEMALE-CASUAL': { name: 'en-US-Neural2-C', languageCode: 'en-US' },
+  'MALE-CASUAL': { name: 'en-US-Neural2-A', languageCode: 'en-US' },
+  'FEMALE-CALM': { name: 'en-US-Neural2-G', languageCode: 'en-US' },
+  'FEMALE-CHEERFUL': { name: 'en-US-Neural2-H', languageCode: 'en-US' },
+  'MALE-DEEP': { name: 'en-US-Neural2-I', languageCode: 'en-US' },
+  'MALE-NARRATION': { name: 'en-US-Neural2-J', languageCode: 'en-US' },
+  'FEMALE-STUDIO': { name: 'en-US-Studio-O', languageCode: 'en-US' },
+  'MALE-STUDIO': { name: 'en-US-Studio-Q', languageCode: 'en-US' },
+  'FIL-FEMALE': { name: 'fil-PH-Wavenet-A', languageCode: 'fil-PH' },
+  'FIL-MALE': { name: 'fil-PH-Wavenet-C', languageCode: 'fil-PH' }
+};
 
   const currentVoices = voiceOptions[language] || voiceOptions['en-US'];
   const availableVoices = currentVoices.filter(v => v.available);

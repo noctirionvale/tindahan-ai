@@ -21,7 +21,7 @@ const ProfileModal = ({ user, setUser, onClose, onLogout, onNavigateToPricing })
     try {
       const token = localStorage.getItem('tindahan_token');
       const response = await axios.get(
-        'https://tindahan-ai-production.up.railway.app/api/user/usage',
+        '/api/user/usage',
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
       if (response.data.success) setUsage(response.data.usage);
@@ -35,7 +35,7 @@ const ProfileModal = ({ user, setUser, onClose, onLogout, onNavigateToPricing })
     try {
       const token = localStorage.getItem('tindahan_token');
       await axios.put(
-        'https://tindahan-ai-production.up.railway.app/api/user/profile',
+        '/api/user/profile',
         { name: editedName },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
@@ -59,7 +59,7 @@ const ProfileModal = ({ user, setUser, onClose, onLogout, onNavigateToPricing })
     try {
       const token = localStorage.getItem('tindahan_token');
       await axios.put(
-        'https://tindahan-ai-production.up.railway.app/api/user/password',
+        '/api/user/password',
         { currentPassword: passwords.current, newPassword: passwords.new },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );

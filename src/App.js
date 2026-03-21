@@ -29,7 +29,7 @@ function App() {
     const fetchProfile = async () => {
       try {
         const response = await fetch(
-          'https://tindahan-ai-production.up.railway.app/api/user/profile',
+          '/api/user/profile',
           { headers: { 'Authorization': `Bearer ${token}` } }
         );
 

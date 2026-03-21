@@ -24,7 +24,7 @@ SECTION 3: CRITICAL
     try {
       const token = localStorage.getItem('tindahan_token');
 
-const response = await axios.post('https://tindahan-ai-production.up.railway.app/api/compare', {
+const response = await axios.post('/api/compare', {
   question: strictPrompt
 }, { 
   timeout: 60000,

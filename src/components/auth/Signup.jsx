@@ -42,7 +42,7 @@ const Signup = ({ onSignupSuccess, switchToLogin }) => {
     }
 
     try {
-      const response = await axios.post('https://tindahan-ai-production.up.railway.app/api/auth/signup', {
+      const response = await axios.post('/api/auth/signup', {
         name: formData.name,
         email: formData.email,
         password: formData.password

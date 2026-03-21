@@ -20,7 +20,7 @@ const VideoGenerator = () => {
     try {
       const token = localStorage.getItem('tindahan_token');
       const response = await axios.get(
-        'https://tindahan-ai-production.up.railway.app/api/video/usage',
+        '/api/video/usage',
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
       if (response.data.success) {
@@ -102,7 +102,7 @@ const VideoGenerator = () => {
       const token = localStorage.getItem('tindahan_token');
       
       const response = await axios.post(
-        'https://tindahan-ai-production.up.railway.app/api/video/generate',
+        '/api/video/generate',
         { imageUrl },
         { 
           headers: { 'Authorization': `Bearer ${token}` },

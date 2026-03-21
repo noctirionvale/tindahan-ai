@@ -44,7 +44,7 @@ const ProfilePictureUpload = ({ user, onUpdate }) => {
       formData.append('image', file);
 
       const response = await axios.post(
-        'https://tindahan-ai-production.up.railway.app/api/user/avatar/upload',
+        '/api/user/avatar/upload',
         formData,
         {
           headers: {

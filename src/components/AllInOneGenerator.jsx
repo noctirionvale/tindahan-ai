@@ -74,7 +74,7 @@ const AllInOneGenerator = () => {
     try {
       const token = localStorage.getItem('tindahan_token');
       const response = await axios.get(
-        'https://tindahan-ai-production.up.railway.app/api/user/usage',
+        '/api/user/usage',
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
       if (response.data.success) {
@@ -206,7 +206,7 @@ STYLE 3: CRITICAL
 Make each style distinct and appropriate for ${platform}.`;
 
     const response = await axios.post(
-      'https://tindahan-ai-production.up.railway.app/api/compare',
+      '/api/compare',
       { question: prompt },
       { headers: { 'Authorization': `Bearer ${token}` } }
     );
@@ -261,7 +261,7 @@ Make each style distinct and appropriate for ${platform}.`;
     const imageUrl = await uploadToImgur(selectedFile);
     
     const response = await axios.post(
-      'https://tindahan-ai-production.up.railway.app/api/video/generate',
+      '/api/video/generate',
       { imageUrl },
       { 
         headers: { 'Authorization': `Bearer ${token}` },
@@ -279,7 +279,7 @@ Make each style distinct and appropriate for ${platform}.`;
     let voiceScript = script;
     if (!voiceScript.trim()) {
       const scriptResponse = await axios.post(
-        'https://tindahan-ai-production.up.railway.app/api/voice/generate-script',
+        '/api/voice/generate-script',
         {
           productName,
           features,
@@ -296,7 +296,7 @@ Make each style distinct and appropriate for ${platform}.`;
 
     // Then generate voice
     const voiceResponse = await axios.post(
-      'https://tindahan-ai-production.up.railway.app/api/voice/generate',
+      '/api/voice/generate',
       { text: voiceScript, language, gender },
       {
         headers: {

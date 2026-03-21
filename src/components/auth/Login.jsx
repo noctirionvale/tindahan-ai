@@ -4,7 +4,7 @@ import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider, twitterProvider } from '../../firebase';
 import './Auth.css';
 
-const API = 'https://tindahan-ai-production.up.railway.app';
+const API = '';
 
 const Login = ({ onLoginSuccess, switchToSignup }) => {
   const [formData, setFormData] = useState({ email: '', password: '' });

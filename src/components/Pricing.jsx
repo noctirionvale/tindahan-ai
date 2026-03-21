@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Pricing.css';
 
-const API = 'https://tindahan-ai-production.up.railway.app';
+const API = '';
 
 const EXCHANGE_RATES = { PHP: 1, USD: 0.017, CNY: 0.12, NGN: 27.5 };
 const CURRENCY_SYMBOLS = { PHP: '₱', USD: '$', CNY: '¥', NGN: '₦' };

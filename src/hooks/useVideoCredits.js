@@ -7,7 +7,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { VIDEO_CREDITS_PLAN } from './Pricing';
 
-const API = 'https://tindahan-ai-production.up.railway.app';
+const API = '';
 
 export const useVideoCredits = () => {
   const [showCreditModal, setShowCreditModal] = useState(false);
