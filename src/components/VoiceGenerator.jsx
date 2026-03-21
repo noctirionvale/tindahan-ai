@@ -97,7 +97,7 @@ const VoiceGenerator = () => {
     try {
       const token = localStorage.getItem('tindahan_token');
       const response = await axios.post(
-        '/api/voice/generate-script',
+        '/api/generate/script',
         {
           productName,
           features,
@@ -134,7 +134,7 @@ const VoiceGenerator = () => {
     try {
       const token = localStorage.getItem('tindahan_token');
       const response = await axios.post(
-        '/api/voice/generate',
+        '/api/generate/voice',
         { text: script, language, gender },
         {
           headers: {
