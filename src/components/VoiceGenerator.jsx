@@ -16,18 +16,42 @@ const VoiceGenerator = () => {
   const [scriptGenerating, setScriptGenerating] = useState(false);
   const audioRef = useRef(null);
 
+  // Voice options by language
+  const enVoices = [
+    { value: 'FEMALE', label: '👩 Female (Neural)' },
+    { value: 'MALE', label: '👨 Male (Neural)' },
+    { value: 'FEMALE-CASUAL', label: '👩 Female Casual' },
+    { value: 'MALE-CASUAL', label: '👨 Male Casual' },
+    { value: 'FEMALE-CALM', label: '👩 Female Calm' },
+    { value: 'FEMALE-CHEERFUL', label: '👩 Female Cheerful' },
+    { value: 'MALE-DEEP', label: '👨 Male Deep' },
+    { value: 'MALE-NARRATION', label: '👨 Male Narration' },
+    { value: 'FEMALE-STUDIO', label: '👩 Female Studio' },
+    { value: 'MALE-STUDIO', label: '👨 Male Studio' },
+  ];
+
+  const filVoices = [
+    { value: 'FIL-FEMALE', label: '👩 Babae (Filipino)' },
+    { value: 'FIL-MALE', label: '👨 Lalaki (Filipino)' },
+  ];
+
+  const availableVoices = language === 'fil-PH' ? filVoices : enVoices;
+
+  // Fetch usage on mount
   useEffect(() => {
     fetchUsage();
   }, []);
 
+  // Cleanup blob URLs on unmount or change
   useEffect(() => {
     return () => {
-      if (audioBlobUrl && audioBlobUrl.startsWith('blob:')) {
+      if (audioBlobUrl?.startsWith('blob:')) {
         URL.revokeObjectURL(audioBlobUrl);
       }
     };
   }, [audioBlobUrl]);
 
+  // Auto-play when audio is ready
   useEffect(() => {
     if (audioBlobUrl && audioRef.current) {
       audioRef.current.load();
@@ -37,23 +61,28 @@ const VoiceGenerator = () => {
     }
   }, [audioBlobUrl]);
 
-  // Reset gender when language changes to avoid invalid voice selection
+  // Reset gender when language changes
   useEffect(() => {
-    if (language === 'en-US') setGender('FEMALE');
-    if (language === 'fil-PH') setGender('FIL-FEMALE');
+    setGender(language === 'fil-PH' ? 'FIL-FEMALE' : 'FEMALE');
   }, [language]);
 
   const fetchUsage = async () => {
     try {
       const token = localStorage.getItem('tindahan_token');
-      const response = await axios.get(
-        '/api/voice/usage',
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
+      const response = await axios.get('/api/user/usage', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (response.data.success) {
-        setUsage(response.data.usage);
+        const voices = response.data.usage.voices;
+        setUsage({
+          remaining: voices.limit - voices.used,
+          limit: voices.limit,
+          today: voices.used,
+          total: voices.total
+        });
       }
     } catch (err) {
+      // Silently fail - endpoint may not exist yet
       console.error('Failed to fetch voice usage:', err);
     }
   };
@@ -74,7 +103,7 @@ const VoiceGenerator = () => {
           features,
           language: language.startsWith('fil') ? 'fil' : 'en'
         },
-        { headers: { 'Authorization': `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.data.success) {
         setScript(response.data.script);
@@ -95,7 +124,8 @@ const VoiceGenerator = () => {
     setGenerating(true);
     setError('');
 
-    if (audioBlobUrl && audioBlobUrl.startsWith('blob:')) {
+    // Cleanup previous blob
+    if (audioBlobUrl?.startsWith('blob:')) {
       URL.revokeObjectURL(audioBlobUrl);
     }
     setAudioBlobUrl(null);
@@ -103,13 +133,12 @@ const VoiceGenerator = () => {
 
     try {
       const token = localStorage.getItem('tindahan_token');
-
       const response = await axios.post(
         '/api/voice/generate',
         { text: script, language, gender },
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
           timeout: 30000
@@ -119,33 +148,33 @@ const VoiceGenerator = () => {
       if (response.data.success && response.data.audioUrl) {
         setGeneratedAudio(response.data.audioUrl);
 
+        // Convert base64 to blob for local playback
         const base64Data = response.data.audioUrl.split(',')[1];
         const byteCharacters = atob(base64Data);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
+        const byteArray = new Uint8Array(
+          Array.from(byteCharacters, char => char.charCodeAt(0))
+        );
         const blob = new Blob([byteArray], { type: 'audio/mpeg' });
         const blobUrl = URL.createObjectURL(blob);
         setAudioBlobUrl(blobUrl);
 
+        // Update usage if provided
         if (response.data.usage) {
-          setUsage({
-            ...usage,
+          setUsage(prev => ({
+            ...prev,
             remaining: response.data.usage.remaining,
-            today: (usage?.today || 0) + 1,
-            total: (usage?.total || 0) + 1
-          });
+            today: (prev?.today || 0) + 1,
+            total: (prev?.total || 0) + 1
+          }));
         }
       }
     } catch (err) {
       console.error('Generation error:', err);
-      if (err.response?.status === 429) {
-        setError('Limit reached! Upgrade your plan.');
-      } else {
-        setError('Failed to generate voice. Please try again.');
-      }
+      setError(
+        err.response?.status === 429
+          ? 'Limit reached! Upgrade your plan.'
+          : 'Failed to generate voice. Please try again.'
+      );
     } finally {
       setGenerating(false);
     }
@@ -162,7 +191,7 @@ const VoiceGenerator = () => {
   };
 
   const handleReset = () => {
-    if (audioBlobUrl && audioBlobUrl.startsWith('blob:')) {
+    if (audioBlobUrl?.startsWith('blob:')) {
       URL.revokeObjectURL(audioBlobUrl);
     }
     setAudioBlobUrl(null);
@@ -172,25 +201,6 @@ const VoiceGenerator = () => {
     setFeatures('');
     setError('');
   };
-
-  // Voice options
-  const voiceOptions = {
-  'FEMALE': { name: 'en-US-Neural2-F', languageCode: 'en-US' },
-  'MALE': { name: 'en-US-Neural2-D', languageCode: 'en-US' },
-  'FEMALE-CASUAL': { name: 'en-US-Neural2-C', languageCode: 'en-US' },
-  'MALE-CASUAL': { name: 'en-US-Neural2-A', languageCode: 'en-US' },
-  'FEMALE-CALM': { name: 'en-US-Neural2-G', languageCode: 'en-US' },
-  'FEMALE-CHEERFUL': { name: 'en-US-Neural2-H', languageCode: 'en-US' },
-  'MALE-DEEP': { name: 'en-US-Neural2-I', languageCode: 'en-US' },
-  'MALE-NARRATION': { name: 'en-US-Neural2-J', languageCode: 'en-US' },
-  'FEMALE-STUDIO': { name: 'en-US-Studio-O', languageCode: 'en-US' },
-  'MALE-STUDIO': { name: 'en-US-Studio-Q', languageCode: 'en-US' },
-  'FIL-FEMALE': { name: 'fil-PH-Wavenet-A', languageCode: 'fil-PH' },
-  'FIL-MALE': { name: 'fil-PH-Wavenet-C', languageCode: 'fil-PH' }
-};
-
-  const currentVoices = voiceOptions[language] || voiceOptions['en-US'];
-  const availableVoices = currentVoices.filter(v => v.available);
 
   return (
     <div className="voice-wrapper">
@@ -285,16 +295,6 @@ const VoiceGenerator = () => {
                   </option>
                 ))}
               </select>
-
-              {/* Coming Soon voices preview */}
-              <div className="voice-coming-soon-list">
-                {currentVoices.filter(v => !v.available).map(voice => (
-                  <div key={voice.value} className="voice-coming-soon-item">
-                    <span className="voice-coming-soon-label">{voice.label}</span>
-                    <span className="coming-soon-badge">🔜 Coming Soon</span>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
 
