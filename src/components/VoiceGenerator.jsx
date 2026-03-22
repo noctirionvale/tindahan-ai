@@ -1,380 +1,307 @@
-import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-import './VoiceGenerator.css';
+import React, { useState, useRef } from 'react';
+import './VideoGenerator.css';
 
-const VoiceGenerator = () => {
+const VideoGenerator = () => {
   const [productName, setProductName] = useState('');
-  const [features, setFeatures] = useState('');
-  const [script, setScript] = useState('');
-  const [language, setLanguage] = useState('en-US');
-  const [gender, setGender] = useState('FEMALE');
+  const [callToAction, setCallToAction] = useState('Order now!');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [generating, setGenerating] = useState(false);
-  const [generatedAudio, setGeneratedAudio] = useState(null);
-  const [audioBlobUrl, setAudioBlobUrl] = useState(null);
+  const [renderId, setRenderId] = useState(null);
+  const [videoUrl, setVideoUrl] = useState(null);
+  const [status, setStatus] = useState('');
   const [error, setError] = useState('');
-  const [usage, setUsage] = useState(null);
-  const [scriptGenerating, setScriptGenerating] = useState(false);
-  const audioRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const pollRef = useRef(null);
 
-  // Voice options by language
-  const enVoices = [
-    { value: 'FEMALE', label: '👩 Female (Neural)' },
-    { value: 'MALE', label: '👨 Male (Neural)' },
-    { value: 'FEMALE-CASUAL', label: '👩 Female Casual' },
-    { value: 'MALE-CASUAL', label: '👨 Male Casual' },
-    { value: 'FEMALE-CALM', label: '👩 Female Calm' },
-    { value: 'FEMALE-CHEERFUL', label: '👩 Female Cheerful' },
-    { value: 'MALE-DEEP', label: '👨 Male Deep' },
-    { value: 'MALE-NARRATION', label: '👨 Male Narration' },
-    { value: 'FEMALE-STUDIO', label: '👩 Female Studio' },
-    { value: 'MALE-STUDIO', label: '👨 Male Studio' },
-  ];
-
-  const filVoices = [
-    { value: 'FIL-FEMALE', label: '👩 Babae (Filipino)' },
-    { value: 'FIL-MALE', label: '👨 Lalaki (Filipino)' },
-  ];
-
-  const availableVoices = language === 'fil-PH' ? filVoices : enVoices;
-
-  // Fetch usage on mount
-  useEffect(() => {
-    fetchUsage();
-  }, []);
-
-  // Cleanup blob URLs on unmount or change
-  useEffect(() => {
-    return () => {
-      if (audioBlobUrl?.startsWith('blob:')) {
-        URL.revokeObjectURL(audioBlobUrl);
-      }
-    };
-  }, [audioBlobUrl]);
-
-  // Auto-play when audio is ready
-  useEffect(() => {
-    if (audioBlobUrl && audioRef.current) {
-      audioRef.current.load();
-      audioRef.current.play().catch(err => {
-        console.log('Autoplay prevented:', err);
-      });
-    }
-  }, [audioBlobUrl]);
-
-  // Reset gender when language changes
-  useEffect(() => {
-    setGender(language === 'fil-PH' ? 'FIL-FEMALE' : 'FEMALE');
-  }, [language]);
-
-  const fetchUsage = async () => {
-    try {
-      const token = localStorage.getItem('tindahan_token');
-      const response = await axios.get('/api/user/usage', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (response.data.success) {
-        const voices = response.data.usage.voices;
-        setUsage({
-          remaining: voices.limit - voices.used,
-          limit: voices.limit,
-          today: voices.used,
-          total: voices.total
-        });
-      }
-    } catch (err) {
-      // Silently fail - endpoint may not exist yet
-      console.error('Failed to fetch voice usage:', err);
-    }
-  };
-
-  const handleGenerateScript = async () => {
-    if (!productName.trim()) {
-      setError('Please enter a product name');
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Image must be under 10MB');
       return;
     }
-    setScriptGenerating(true);
+    setSelectedFile(file);
     setError('');
-    try {
-      const token = localStorage.getItem('tindahan_token');
-      const response = await axios.post(
-        '/api/generate/script',
-        {
-          productName,
-          features,
-          language: language.startsWith('fil') ? 'fil' : 'en'
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (response.data.success) {
-        setScript(response.data.script);
-      }
-    } catch (err) {
-      setError('Failed to generate script. Please try again.');
-    } finally {
-      setScriptGenerating(false);
-    }
+    const reader = new FileReader();
+    reader.onload = (e) => setImagePreview(e.target.result);
+    reader.readAsDataURL(file);
   };
 
-  const handleGenerateVoice = async () => {
-    if (!script.trim()) {
-      setError('Please write or generate a script first');
+  const uploadToImgur = async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const response = await fetch('https://api.imgur.com/3/image', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Client-ID 4e960e7a2894a93'
+      },
+      body: formData
+    });
+    
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.data?.error || 'Imgur upload failed');
+    }
+    return data.data.link;
+  };
+
+  const pollStatus = (id, token) => {
+    pollRef.current = setInterval(async () => {
+      try {
+        const response = await fetch(
+          `/api/generate/video-status?renderId=${id}`,
+          {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }
+        );
+        const { status, url } = await response.json();
+        setStatus(status);
+
+        if (status === 'succeeded' && url) {
+          clearInterval(pollRef.current);
+          setVideoUrl(url);
+          setGenerating(false);
+          setStatus('');
+        } else if (status === 'failed') {
+          clearInterval(pollRef.current);
+          setError('Video generation failed. Please try again.');
+          setGenerating(false);
+        }
+      } catch (err) {
+        clearInterval(pollRef.current);
+        setGenerating(false);
+        setError('Failed to check video status.');
+      }
+    }, 3000);
+  };
+
+  const handleGenerate = async () => {
+    if (!selectedFile) {
+      setError('Please upload a product image');
+      return;
+    }
+    if (!productName.trim()) {
+      setError('Please enter a product name');
       return;
     }
 
     setGenerating(true);
     setError('');
-
-    // Cleanup previous blob
-    if (audioBlobUrl?.startsWith('blob:')) {
-      URL.revokeObjectURL(audioBlobUrl);
-    }
-    setAudioBlobUrl(null);
-    setGeneratedAudio(null);
+    setVideoUrl(null);
+    setStatus('Uploading image...');
 
     try {
       const token = localStorage.getItem('tindahan_token');
-      const response = await axios.post(
-        '/api/generate/voice',
-        { text: script, language, gender },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          timeout: 30000
-        }
-      );
 
-      if (response.data.success && response.data.audioUrl) {
-        setGeneratedAudio(response.data.audioUrl);
+      // Upload image to Imgur first
+      const imageUrl = await uploadToImgur(selectedFile);
+      setStatus('Generating video...');
 
-        // Convert base64 to blob for local playback
-        const base64Data = response.data.audioUrl.split(',')[1];
-        const byteCharacters = atob(base64Data);
-        const byteArray = new Uint8Array(
-          Array.from(byteCharacters, char => char.charCodeAt(0))
-        );
-        const blob = new Blob([byteArray], { type: 'audio/mpeg' });
-        const blobUrl = URL.createObjectURL(blob);
-        setAudioBlobUrl(blobUrl);
+      // Call Creatomate via our API using fetch
+      const response = await fetch('/api/generate/video', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          imageUrl,
+          caption: productName,
+          callToAction
+        })
+      });
 
-        // Update usage if provided
-        if (response.data.usage) {
-          setUsage(prev => ({
-            ...prev,
-            remaining: response.data.usage.remaining,
-            today: (prev?.today || 0) + 1,
-            total: (prev?.total || 0) + 1
-          }));
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Video generation failed');
+      }
+
+      if (result.success) {
+        const id = result.renderId;
+        setRenderId(id);
+
+        // If already done
+        if (result.url) {
+          setVideoUrl(result.url);
+          setGenerating(false);
+          setStatus('');
+        } else {
+          // Poll for completion
+          setStatus('Rendering video (30-60 seconds)...');
+          pollStatus(id, token);
         }
       }
     } catch (err) {
-      console.error('Generation error:', err);
-      setError(
-        err.response?.status === 429
-          ? 'Limit reached! Upgrade your plan.'
-          : 'Failed to generate voice. Please try again.'
-      );
-    } finally {
+      console.error('Video error:', err);
+      if (err.message?.includes('429') || err.message?.includes('limit')) {
+        setError("You've used your free video generation. Upgrade to get more!");
+      } else {
+        setError('Failed to generate video. Please try again.');
+      }
       setGenerating(false);
+      setStatus('');
     }
-  };
-
-  const handleDownload = () => {
-    if (!generatedAudio) return;
-    const link = document.createElement('a');
-    link.href = generatedAudio;
-    link.download = `tindahan-voice-${Date.now()}.mp3`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   const handleReset = () => {
-    if (audioBlobUrl?.startsWith('blob:')) {
-      URL.revokeObjectURL(audioBlobUrl);
-    }
-    setAudioBlobUrl(null);
-    setGeneratedAudio(null);
-    setScript('');
-    setProductName('');
-    setFeatures('');
+    if (pollRef.current) clearInterval(pollRef.current);
+    setSelectedFile(null);
+    setImagePreview(null);
+    setVideoUrl(null);
+    setRenderId(null);
+    setStatus('');
     setError('');
+    setProductName('');
+    setCallToAction('Order now!');
   };
 
   return (
-    <div className="voice-wrapper">
-      <div className="voice-split">
-        {/* LEFT: Form Panel */}
-        <div className="voice-form-panel">
-          <h2 className="voice-title">🎙️ Generate Voice</h2>
+    <div className="video-wrapper">
+      <div className="video-split">
+        {/* LEFT: Form */}
+        <div className="video-form-panel">
+          <h2 className="video-title">🎬 Generate Video Ad</h2>
+          <p className="video-subtitle">
+            Upload your product photo and get a professional video ad in seconds!
+          </p>
 
-          {usage && (
-            <div className="voice-usage">
-              🎤 {usage.remaining}/{usage.limit} left today
-            </div>
-          )}
-
-          {/* Product Details Section */}
-          <div className="voice-section">
-            <div className="voice-section-header">
-              <h3>PRODUCT DETAILS</h3>
-              <span>Required for script generation</span>
+          {/* Image Upload */}
+          <div className="video-section">
+            <div className="video-section-header">
+              <h3>PRODUCT IMAGE</h3>
+              <span>Required</span>
             </div>
 
-            <div className="voice-input-group">
-              <label>Product Name *</label>
+            {!imagePreview ? (
+              <div
+                className="video-upload-box"
+                onClick={() => fileInputRef.current.click()}
+              >
+                <div className="video-upload-icon">📸</div>
+                <p>Click to upload product photo</p>
+                <small>JPG, PNG up to 10MB</small>
+              </div>
+            ) : (
+              <div className="video-preview-wrapper">
+                <img src={imagePreview} alt="Preview" className="video-preview-img" />
+                <button className="video-remove-btn" onClick={() => {
+                  setSelectedFile(null);
+                  setImagePreview(null);
+                }}>✕ Remove</button>
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              style={{ display: 'none' }}
+            />
+          </div>
+
+          {/* Product Details */}
+          <div className="video-section">
+            <div className="video-section-header">
+              <h3>VIDEO TEXT</h3>
+              <span>Customize your ad</span>
+            </div>
+
+            <div className="video-input-group">
+              <label>Product Name / Caption *</label>
               <input
                 type="text"
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
-                placeholder="e.g., Wireless Bluetooth Earbuds"
-                className="voice-input"
+                placeholder="e.g., Nora Treatment Oil"
+                className="video-input"
               />
             </div>
 
-            <div className="voice-input-group">
-              <label>Features (Optional)</label>
-              <textarea
-                value={features}
-                onChange={(e) => setFeatures(e.target.value)}
-                placeholder="e.g., Noise cancellation, 20-hour battery, waterproof..."
-                className="voice-textarea"
-                rows="3"
+            <div className="video-input-group">
+              <label>Call To Action</label>
+              <input
+                type="text"
+                value={callToAction}
+                onChange={(e) => setCallToAction(e.target.value)}
+                placeholder="e.g., Order now! Visit our store today"
+                className="video-input"
               />
-            </div>
-
-            <button
-              onClick={handleGenerateScript}
-              disabled={scriptGenerating || !productName}
-              className="voice-script-btn"
-            >
-              {scriptGenerating ? 'Generating Script...' : '✨ Auto-Generate Script'}
-            </button>
-          </div>
-
-          {/* Script Section */}
-          <div className="voice-section">
-            <div className="voice-section-header">
-              <h3>VOICE SCRIPT</h3>
-              <span>{script.length} / 5000 characters</span>
-            </div>
-            <textarea
-              value={script}
-              onChange={(e) => setScript(e.target.value)}
-              placeholder="Write your voiceover script here or generate one automatically..."
-              className="voice-script-textarea"
-              rows="6"
-            />
-          </div>
-
-          {/* Voice Options */}
-          <div className="voice-options-grid">
-            <div className="voice-option">
-              <label>Language</label>
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="voice-select"
-              >
-                <option value="en-US">🇺🇸 English (US)</option>
-                <option value="fil-PH">🇵🇭 Tagalog (Filipino)</option>
-              </select>
-            </div>
-
-            <div className="voice-option">
-              <label>Voice Style</label>
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className="voice-select"
-              >
-                {availableVoices.map(voice => (
-                  <option key={voice.value} value={voice.value}>
-                    {voice.label}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
 
           {/* Generate Button */}
-          {script && !generating && !audioBlobUrl && (
-            <button onClick={handleGenerateVoice} className="voice-generate-btn">
-              Generate Voice 🎤
-            </button>
-          )}
+          <button
+            onClick={handleGenerate}
+            disabled={generating}
+            className="video-generate-btn"
+          >
+            {generating ? (
+              <span>⏳ {status || 'Generating...'}</span>
+            ) : (
+              '🎬 Generate Video Ad'
+            )}
+          </button>
 
-          {/* Generating State */}
-          {generating && (
-            <div className="voice-generating">
-              <div className="voice-spinner"></div>
-              <p>Creating your voiceover...</p>
-              <p className="voice-hint">This may take up to 30 seconds</p>
-            </div>
-          )}
-
-          {/* Error */}
-          {error && !generating && (
-            <div className="voice-error">
+          {error && (
+            <div className="video-error">
               {error}
-              {error.includes('limit') && (
-                <a href="#pricing" className="voice-upgrade-link">Upgrade Now →</a>
+              {error.includes('free') && (
+                <a href="#pricing" className="video-upgrade-link">Upgrade Now →</a>
               )}
             </div>
           )}
         </div>
 
-        {/* RIGHT: Results Panel */}
-        <div className="voice-results-panel">
-          {!generating && !audioBlobUrl && (
-            <div className="voice-empty">
-              <div className="voice-empty-icon">🎤</div>
-              <p>Your voiceover will appear here</p>
-
-              {/* Coming Soon — Video Combo teaser */}
-              <div className="voice-combo-teaser">
-                <div className="combo-teaser-icon">🎬</div>
-                <p><strong>Combo Generator</strong></p>
-                <p className="combo-teaser-sub">
-                  Generate description + voice + video in one click
-                </p>
-                <span className="coming-soon-badge large">🔜 Coming Soon</span>
-              </div>
+        {/* RIGHT: Result */}
+        <div className="video-results-panel">
+          {!generating && !videoUrl && (
+            <div className="video-empty">
+              <div className="video-empty-icon">🎬</div>
+              <p>Your video ad will appear here</p>
+              <p className="video-empty-sub">
+                Powered by Creatomate — professional video ads in seconds
+              </p>
             </div>
           )}
 
-          {audioBlobUrl && !generating && (
-            <>
-              <div className="voice-results-header">
-                <h3>Your Voiceover</h3>
-              </div>
-              <div className="voice-result-container">
-                <div className="voice-player-wrapper">
-                  <audio
-                    ref={audioRef}
-                    controls
-                    src={audioBlobUrl}
-                    className="voice-player"
-                  />
-                </div>
+          {generating && (
+            <div className="video-generating">
+              <div className="video-spinner"></div>
+              <p>{status || 'Generating your video...'}</p>
+              <p className="video-hint">This usually takes 30-60 seconds</p>
+            </div>
+          )}
 
-                <div className="voice-action-buttons">
-                  <button onClick={handleDownload} className="voice-download-btn">
-                    ⬇️ Download MP3
-                  </button>
-                  <button onClick={handleReset} className="voice-new-btn">
-                    New Voiceover
-                  </button>
-                </div>
-
-                {/* Combo teaser after generation */}
-                <div className="voice-combo-teaser post-gen">
-                  <p>🎬 Want this as a full video ad?</p>
-                  <span className="coming-soon-badge">Combo Generator — Coming Soon</span>
-                </div>
+          {videoUrl && !generating && (
+            <div className="video-result">
+              <div className="video-result-header">
+                <h3>Your Video Ad ✅</h3>
               </div>
-            </>
+              <video
+                src={videoUrl}
+                controls
+                autoPlay
+                loop
+                className="video-player"
+              />
+              <div className="video-action-buttons">
+                <a
+                  href={videoUrl}
+                  download={`tindahan-video-${Date.now()}.mp4`}
+                  className="video-download-btn"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  ⬇️ Download Video
+                </a>
+                <button onClick={handleReset} className="video-new-btn">
+                  New Video
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -382,4 +309,4 @@ const VoiceGenerator = () => {
   );
 };
 
-export default VoiceGenerator;
+export default VideoGenerator;

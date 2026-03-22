@@ -5,7 +5,6 @@ import ProductDescriptionGenerator from './components/ProductDescriptionGenerato
 import VideoGenerator from './components/VideoGenerator';
 import VoiceGenerator from './components/VoiceGenerator';
 import Pricing from './components/Pricing';
-import AllInOneGenerator from './components/AllInOneGenerator';
 import ProfileModal from './components/ProfileModal';
 import './styles/App.css';
 import './styles/Sidebar.css';
@@ -147,10 +146,6 @@ function App() {
               <span className="tab-icon">🎙️</span>
               <span className="tab-label">Voice</span>
             </button>
-            <button className={`sidebar-tab ${activeTab === 'package' ? 'active' : ''}`} onClick={() => setActiveTab('package')}>
-              <span className="tab-icon">📦</span>
-              <span className="tab-label">Package</span>
-            </button>
             <button className={`sidebar-tab ${activeTab === 'pricing' ? 'active' : ''}`} onClick={() => setActiveTab('pricing')}>
               <span className="tab-icon">💳</span>
               <span className="tab-label">Pricing</span>
@@ -185,7 +180,6 @@ function App() {
             {activeTab === 'description' && <ProductDescriptionGenerator />}
             {activeTab === 'video' && <VideoGenerator />}
             {activeTab === 'voice' && <VoiceGenerator />}
-            {activeTab === 'package' && <AllInOneGenerator />}
             {activeTab === 'pricing' && <Pricing />}
           </div>
 
@@ -233,10 +227,6 @@ function App() {
           <button className={`mobile-nav-item ${activeTab === 'voice' ? 'active' : ''}`} onClick={() => setActiveTab('voice')}>
             <span className="nav-icon">🎙️</span>
             <span className="nav-label">Voice</span>
-          </button>
-          <button className={`mobile-nav-item ${activeTab === 'package' ? 'active' : ''}`} onClick={() => setActiveTab('package')}>
-            <span className="nav-icon">📦</span>
-            <span className="nav-label">Pack</span>
           </button>
           <button className={`mobile-nav-item ${activeTab === 'pricing' ? 'active' : ''}`} onClick={() => setActiveTab('pricing')}>
             <span className="nav-icon">💳</span>
