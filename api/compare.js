@@ -1,4 +1,3 @@
-import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import pkg from 'pg';
 const { Pool } = pkg;
@@ -52,22 +51,30 @@ export default async function handler(req, res) {
       [decoded.id]
     );
 
-    // Call DeepSeek
+    // Call DeepSeek with native fetch
     const { question } = req.body;
-    const response = await axios.post('https://api.deepseek.com/v1/chat/completions', {
-      model: 'deepseek-chat',
-      messages: [{ role: 'user', content: question }]
-    }, {
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
         'Content-Type': 'application/json'
       },
-      timeout: 30000
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [{ role: 'user', content: question }]
+      }),
+      signal: AbortSignal.timeout(30000)
     });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'DeepSeek API request failed');
+    }
 
     return res.status(200).json({
       success: true,
-      data: response.data.choices[0].message.content
+      data: data.choices[0].message.content
     });
 
   } catch (error) {

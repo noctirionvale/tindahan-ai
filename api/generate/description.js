@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import pkg from 'pg';
-import axios from 'axios';
 const { Pool } = pkg;
 
 const pool = new Pool({
@@ -14,6 +13,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
@@ -46,18 +46,28 @@ export default async function handler(req, res) {
       [decoded.id]
     );
 
+    // Call DeepSeek with native fetch
     const { question } = req.body;
-    const response = await axios.post('https://api.deepseek.com/v1/chat/completions', {
-      model: 'deepseek-chat',
-      messages: [{ role: 'user', content: question }]
-    }, {
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [{ role: 'user', content: question }]
+      })
     });
 
-    res.json({ success: true, data: response.data.choices[0].message.content });
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'DeepSeek API request failed');
+    }
+
+    res.json({ success: true, data: data.choices[0].message.content });
+    
   } catch (error) {
     console.error('Description error:', error);
     res.status(500).json({ error: error.message });
