@@ -7,7 +7,6 @@ const VideoGenerator = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [generating, setGenerating] = useState(false);
-  const [renderId, setRenderId] = useState(null);
   const [videoUrl, setVideoUrl] = useState(null);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
@@ -121,7 +120,6 @@ const VideoGenerator = () => {
 
       if (result.success) {
         const id = result.renderId;
-        setRenderId(id);
 
         // If already done
         if (result.url) {
@@ -151,7 +149,6 @@ const VideoGenerator = () => {
     setSelectedFile(null);
     setImagePreview(null);
     setVideoUrl(null);
-    setRenderId(null);
     setStatus('');
     setError('');
     setProductName('');
